@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115 私立弘明實驗高級中學 美術歷程系統</title>
+    <style>
+        body {
+            background-image: url('login.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+        }
+        main { display: flex; height: 100vh; }
+        
+        .left, .right {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        /* 左側文字淡入動畫 */
+        .left h1 { 
+            color: #333; 
+            max-width: 400px; 
+            line-height: 1.4;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .r-m {
+            margin-bottom: 10px;
+        }
+
+        /* 頁籤按鈕動畫過渡 */
+        .r-m button {
+            cursor: pointer; 
+            background-color: transparent; 
+            border: 0;
+            border-bottom: 2px solid transparent; 
+            padding: 5px 15px; 
+            font-size: 16px; 
+            margin-right: 10px;
+            color: #666;
+            transition: all 0.4s ease; /* 平滑過渡 */
+        }
+        .r-m button.active { 
+            border-bottom-color: rgb(161, 161, 255); 
+            color: rgb(161, 161, 255); 
+            font-weight: bold;
+        }
+        
+        /* 表單區塊與淡入動畫 */
+        #login, #signup { 
+            padding: 15px 0; 
+        }
+        
+        /* 預設隱藏註冊表單，並準備好動畫類別 */
+        .form-container {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        #login input, #signup input {
+            background-color: transparent; 
+            border: 0; 
+            border-bottom: 1px solid #ccc;
+            height: 30px; 
+            margin: 10px 0; 
+            padding: 5px; 
+            font-size: 14px; 
+            width: 250px; 
+            box-sizing: border-box;
+            transition: all 0.3s ease; /* 輸入框聚焦動畫 */
+        }
+        #login input:focus, #signup input:focus { 
+            outline: none; 
+            border-bottom-color: rgb(161, 161, 255); 
+            padding-left: 10px; /* 聚焦時文字微微右移 */
+        }
+        
+        /* 送出按鈕懸停動畫 */
+        #login input[type="submit"], #signup input[type="submit"] {
+            background-color: rgb(161, 161, 255); 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin-top: 15px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #login input[type="submit"]:hover, #signup input[type="submit"]:hover {
+            background-color: rgb(120, 120, 255);
+            transform: translateY(-2px); /* 懸停時微微浮起 */
+        }
+        #login input[type="submit"]:active, #signup input[type="submit"]:active {
+            transform: translateY(0); /* 點擊時壓回 */
+        }
+
+        /* 手機端阻擋畫面與點擊動畫 */
+        #mobile-blocker {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #f8f9fa;
+            color: #c92a2a;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            animation: fadeIn 0.4s ease;
+        }
+
+        /* ─── 核心定義的動畫效果 (Keyframes) ─── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: cubic-bezier(0.4, 0, 0.2, 1); }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mobile-blocker">
+        ⚠️ 本系統僅限使用電腦操作。<br>
+        <span style="font-size: 14px; color: #666; margin-top: 10px;">請切換至桌上型電腦或筆記型電腦開啟此網頁。</span>
+    </div>
+
+    <main id="main-content">
+        <div class="left">
+            <h1>115 私立弘明實驗高級中學<br>美術歷程系統</h1>
+        </div>
+        <div class="right">
+            <div class="r-m">
+                <button id="btn-login" class="active" onclick="toggleForm('login')">登入系統</button>
+                <button id="btn-signup" onclick="toggleForm('signup')">帳號開通</button>
+            </div>
+            
+            <div id="login" class="form-container" style="display: block;">
+                <form id="form-login">
+                    <input type="text" id="login-id" placeholder="學號" required>
+                    <br>
+                    <input type="password" id="login-pw" placeholder="密碼" required>
+                    <br>
+                    <input type="submit" value="送出">
+                </form>
+            </div>
+            
+            <div id="signup" class="form-container">
+                <form id="form-signup">
+                    <input type="text" id="signup-id" placeholder="學號" required>
+                    <br>
+                    <input type="password" id="signup-pw" placeholder="設定密碼" required>
+                    <br>
+                    <input type="password" id="signup-pw2" placeholder="確認密碼" required>
+                    <br>
+                    <input type="submit" value="送出">
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let GAS_API_URL = "";
+
+        function postForm(payload) {
+            const formData = new URLSearchParams();
+            Object.keys(payload).forEach(key => formData.append(key, payload[key]));
+
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            });
+        }
+
+        // 偵測裝置與讀取設定
+        document.addEventListener("DOMContentLoaded", function() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('mobile-blocker').style.display = 'flex';
+                return;
+            }
+
+            fetch('api.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('無法讀取設定檔');
+                    return response.json();
+                })
+                .then(config => {
+                    GAS_API_URL = config.gasUrl;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('系統初始化失敗，請聯絡系統管理員。');
+                });
+        });
+
+        // 表單切換邏輯（帶有動畫觸發）
+        function toggleForm(type) {
+            const loginForm = document.getElementById('login');
+            const signupForm = document.getElementById('signup');
+            const btnLogin = document.getElementById('btn-login');
+            const btnSignup = document.getElementById('btn-signup');
+
+            if (type === 'login') {
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'block'; // 觸發 CSS fadeIn 動畫
+                btnLogin.classList.add('active'); 
+                btnSignup.classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block'; // 觸發 CSS fadeIn 動畫
+                btnLogin.classList.remove('active'); 
+                btnSignup.classList.add('active');
+            }
+        }
+
+        // 處理【登入】提交
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
+
+            const studentId = document.getElementById('login-id').value;
+            const password = document.getElementById('login-pw').value;
+
+            postForm({ action: 'login', studentId: studentId, password: password })
+            .then(data => {
+                if (data.success) {
+                    alert('登入成功！歡迎 ' + data.user.name);
+                    sessionStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = 'index.html'; 
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => alert('系統連線錯誤，請稍後再試'));
+        });
+
+        // 處理【帳號開通】提交
+        document.getElementById('form-signup').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
+
+            const studentId = document.getElementById('signup-id').value;
+            const password = document.getElementById('signup-pw').value;
+            const passwordConfirm = document.getElementById('signup-pw2').value;
+
+            if (password !== passwordConfirm) {
+                alert('兩次輸入的密碼不一致！');
+                return;
+            }
+
+            postForm({ action: 'signup', studentId: studentId, password: password })
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    toggleForm('login');
+                }
+            })
+            .catch(err => alert('系統連線錯誤，請稍後再試'));
+        });
+    </script>
+</body>
+</html>

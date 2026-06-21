@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115 私立弘明實驗高級中學 美術歷程管理後台</title>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #2f343b;
+            background-color: #f4f6f9;
+        }
+        .left {
+            width: 280px;
+            box-sizing: border-box;
+            padding: 30px;
+            background-color: #fff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        .right {
+            flex: 1;
+            box-sizing: border-box;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        h1 { margin: 0 0 18px; font-size: 20px; line-height: 1.4; }
+        h2 { margin: 0 0 12px; font-size: 18px; }
+        h3 { margin-top: 0; }
+        .admin-info { color: #666; line-height: 1.7; }
+        .menu-link {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            color: #444;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .menu-link:hover, .menu-link.active {
+            background-color: rgb(161, 161, 255);
+            color: white;
+            font-weight: bold;
+        }
+        .panel {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .panel.active { display: block; }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 16px 0;
+        }
+        input, textarea, select {
+            box-sizing: border-box;
+            min-height: 38px;
+            padding: 8px 10px;
+            border: 1px solid #d8dde6;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        textarea {
+            min-height: 72px;
+            resize: vertical;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(160px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .field-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #555;
+            font-size: 14px;
+        }
+        .field-grid .wide { grid-column: 1 / -1; }
+        button {
+            min-height: 38px;
+            padding: 8px 16px;
+            border: 0;
+            border-radius: 4px;
+            color: white;
+            background-color: rgb(161, 161, 255);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background-color: rgb(120, 120, 255); }
+        button.secondary {
+            color: #444;
+            background-color: #eef0f5;
+        }
+        button.secondary:hover { background-color: #dde2ec; }
+        button.danger { background-color: #d94848; }
+        button.danger:hover { background-color: #b83232; }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+        th, td {
+            border-bottom: 1px solid #e5e8ef;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background-color: #f8f9fa; color: #555; }
+        .muted { color: #666; line-height: 1.6; }
+        .status {
+            min-height: 22px;
+            margin: 12px 0 0;
+            color: #555;
+        }
+        .status.error { color: #c92a2a; }
+        .status.success { color: #2b8a3e; }
+        .empty {
+            padding: 18px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .status-active { color: #2b8a3e; font-weight: bold; }
+        .status-revoked { color: #c92a2a; }
+        .qr-box {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #e5e8ef;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        .qr-box.active { display: block; }
+        .qr-box img {
+            width: 180px;
+            height: 180px;
+            display: block;
+            margin-top: 10px;
+            background: white;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 900px) {
+            body { display: block; }
+            .left { width: 100%; }
+            .right { padding: 20px; }
+            .field-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="left">
+        <h1>115 私立弘明實驗高級中學<br>美術歷程管理後台</h1>
+        <hr style="width:100%; border:0; border-top:1px solid #eee;">
+        <p class="admin-info">
+            管理員：<span id="admin-name">讀取中...</span><br>
+            帳號：<span id="admin-id">-</span>
+        </p>
+        <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程管理</a>
+        <a href="#" class="menu-link" onclick="switchPanel('submissions-panel', this)">繳交紀錄</a>
+        <a href="#" class="menu-link" onclick="switchPanel('users-panel', this)">帳號清單</a>
+        <a href="#" class="menu-link" onclick="logout()">登出</a>
+    </aside>
+
+    <main class="right">
+        <section id="schedule-panel" class="panel active">
+            <h2>時程管理</h2>
+            <p class="muted">新增或刪除學生端顯示的美術歷程時程。</p>
+            <form id="schedule-form">
+                <div class="field-grid">
+                    <label>項目
+                        <input type="text" id="task" required>
+                    </label>
+                    <label>截止日期
+                        <input type="date" id="deadline" required>
+                    </label>
+                    <label class="wide">備註
+                        <textarea id="note"></textarea>
+                    </label>
+                </div>
+                <button type="submit" id="schedule-submit">新增時程</button>
+                <button type="button" class="secondary" onclick="loadSchedule()">重新整理</button>
+            </form>
+            <p id="schedule-status" class="status"></p>
+            <table>
+                <thead>
+                    <tr><th>項目</th><th>截止日期</th><th>備註</th><th>操作</th></tr>
+                </thead>
+                <tbody id="schedule-list">
+                    <tr><td colspan="4">正在載入時程資料...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="submissions-panel" class="panel">
+            <h2>繳交紀錄</h2>
+            <div class="toolbar">
+                <select id="submission-task-filter">
+                    <option value="">全部項目</option>
+                </select>
+                <select id="submission-class-filter">
+                    <option value="">全部班級</option>
+                </select>
+                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、班級">
+                <button type="button" onclick="loadSubmissions()">重新整理</button>
+                <button type="button" class="danger" onclick="clearSubmissions()">清除繳交紀錄</button>
+            </div>
+            <div id="qr-box" class="qr-box">
+                <strong id="qr-title">檔案 QR Code</strong>
+                <img id="qr-image" alt="檔案 QR Code">
+                <p><a id="qr-link" href="#" target="_blank" rel="noopener">開啟檔案</a></p>
+            </div>
+            <p id="submissions-status" class="status"></p>
+            <table>
+                <thead>
+                    <tr><th>項目</th><th>學號</th><th>姓名</th><th>班級</th><th>檔案</th><th>時間</th><th>狀態</th><th>QR Code</th></tr>
+                </thead>
+                <tbody id="submissions-list">
+                    <tr><td colspan="8">正在載入繳交紀錄...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="users-panel" class="panel">
+            <h2>帳號清單</h2>
+            <div class="toolbar">
+                <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、班級、社團">
+                <button type="button" onclick="loadUsers()">重新整理</button>
+            </div>
+            <p id="users-status" class="status"></p>
+            <table>
+                <thead>
+                    <tr><th>學號</th><th>姓名</th><th>班級</th><th>美術社團</th></tr>
+                </thead>
+                <tbody id="users-list">
+                    <tr><td colspan="4">正在載入帳號清單...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        let GAS_API_URL = "";
+        let currentUser = null;
+        let scheduleRows = [];
+        let submissionRows = [];
+        let userRows = [];
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const userData = sessionStorage.getItem('user');
+            if (!userData) {
+                alert('未登入，請先登入系統！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                currentUser = JSON.parse(userData);
+            } catch (err) {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (currentUser.className !== "管理員") {
+                alert("您不是管理員，將返回學生頁面。");
+                window.location.href = "index.html";
+                return;
+            }
+
+            document.getElementById('admin-name').innerText = currentUser.name || '管理員';
+            document.getElementById('admin-id').innerText = currentUser.studentId || '-';
+
+            fetch('api.json')
+                .then(res => {
+                    if (!res.ok) throw new Error('無法讀取設定檔');
+                    return res.json();
+                })
+                .then(config => {
+                    GAS_API_URL = config.gasUrl;
+                    loadSchedule();
+                    loadSubmissions();
+                    loadUsers();
+                })
+                .catch(err => {
+                    setStatus('schedule-status', '系統初始化失敗，請確認 api.json。', 'error');
+                    setStatus('submissions-status', '系統初始化失敗，請確認 api.json。', 'error');
+                    setStatus('users-status', '系統初始化失敗，請確認 api.json。', 'error');
+                });
+
+            document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
+            document.getElementById('submission-task-filter').addEventListener('change', renderSubmissions);
+            document.getElementById('submission-class-filter').addEventListener('change', renderSubmissions);
+            document.getElementById('user-keyword').addEventListener('input', renderUsers);
+        });
+
+        function switchPanel(panelId, element) {
+            document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+            document.getElementById(panelId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        function setStatus(id, text, type) {
+            const element = document.getElementById(id);
+            element.innerText = text || '';
+            element.className = `status ${type || ''}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[char]));
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return escapeHtml(value);
+            return date.toLocaleDateString('zh-TW');
+        }
+
+        function normalizeRows(data) {
+            if (Array.isArray(data)) return data;
+            if (Array.isArray(data.rows)) return data.rows;
+            if (Array.isArray(data.data)) return data.data;
+            if (Array.isArray(data.submissions)) return data.submissions;
+            if (Array.isArray(data.users)) return data.users;
+            return [];
+        }
+
+        function apiGet(action) {
+            return fetch(`${GAS_API_URL}?action=${encodeURIComponent(action)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                });
+        }
+
+        function apiPost(payload) {
+            const formData = new URLSearchParams();
+            Object.keys(payload).forEach(key => formData.append(key, payload[key] ?? ''));
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            });
+        }
+
+        function loadSchedule() {
+            if (!GAS_API_URL) return;
+            setStatus('schedule-status', '正在載入時程...', '');
+            apiGet('getSchedule')
+                .then(data => {
+                    scheduleRows = normalizeRows(data);
+                    renderSchedule();
+                    setStatus('schedule-status', '', '');
+                })
+                .catch(err => {
+                    scheduleRows = [];
+                    renderSchedule();
+                    setStatus('schedule-status', '時程載入失敗，請確認 GAS 是否支援 getSchedule。', 'error');
+                });
+        }
+
+        function renderSchedule() {
+            const tbody = document.getElementById('schedule-list');
+            if (scheduleRows.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前尚無安排時程。</div></td></tr>";
+                return;
+            }
+
+            tbody.innerHTML = scheduleRows.map((item, index) => {
+                const id = item.id || item.row || item.rowIndex || index;
+                return `
+                    <tr>
+                        <td>${escapeHtml(item.task)}</td>
+                        <td>${formatDate(item.deadline)}</td>
+                        <td>${escapeHtml(item.note || '')}</td>
+                        <td><button type="button" class="danger delete-schedule" data-id="${escapeHtml(id)}">刪除</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('schedule-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!GAS_API_URL) return;
+
+            const button = document.getElementById('schedule-submit');
+            button.disabled = true;
+            setStatus('schedule-status', '正在新增時程...', '');
+
+            apiPost({
+                action: 'addSchedule',
+                task: document.getElementById('task').value.trim(),
+                deadline: document.getElementById('deadline').value,
+                note: document.getElementById('note').value.trim(),
+                adminId: currentUser.studentId || ''
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || '新增失敗');
+                setStatus('schedule-status', data.message || '時程已新增。', 'success');
+                e.target.reset();
+                loadSchedule();
+            })
+            .catch(err => {
+                setStatus('schedule-status', err.message || '新增失敗，請確認 GAS 是否支援 addSchedule。', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+            });
+        });
+
+        document.getElementById('schedule-list').addEventListener('click', function(e) {
+            const button = e.target.closest('.delete-schedule');
+            if (!button) return;
+            deleteSchedule(button.dataset.id);
+        });
+
+        function deleteSchedule(id) {
+            if (!confirm('確定要刪除此時程嗎？')) return;
+            setStatus('schedule-status', '正在刪除時程...', '');
+
+            apiPost({
+                action: 'deleteSchedule',
+                id: id,
+                adminId: currentUser.studentId || ''
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || '刪除失敗');
+                setStatus('schedule-status', data.message || '時程已刪除。', 'success');
+                loadSchedule();
+            })
+            .catch(err => {
+                setStatus('schedule-status', err.message || '刪除失敗，請確認 GAS 是否支援 deleteSchedule。', 'error');
+            });
+        }
+
+        function loadSubmissions() {
+            if (!GAS_API_URL) return;
+            setStatus('submissions-status', '正在載入繳交紀錄...', '');
+            apiGet('getSubmissions')
+                .then(data => {
+                    submissionRows = normalizeRows(data);
+                    populateSubmissionFilters();
+                    renderSubmissions();
+                    setStatus('submissions-status', '', '');
+                })
+                .catch(err => {
+                    submissionRows = [];
+                    renderSubmissions();
+                    setStatus('submissions-status', '繳交紀錄載入失敗，請確認 GAS 是否支援 getSubmissions。', 'error');
+                });
+        }
+
+        function renderSubmissions() {
+            const tbody = document.getElementById('submissions-list');
+            const keyword = document.getElementById('submission-keyword').value.trim().toLowerCase();
+            const taskFilter = document.getElementById('submission-task-filter').value;
+            const classFilter = document.getElementById('submission-class-filter').value;
+            const rows = submissionRows.filter(item => {
+                const text = `${item.task || item.scheduleTask || ''} ${item.studentId || ''} ${item.studentName || item.name || ''} ${item.className || ''} ${item.filename || ''}`.toLowerCase();
+                const taskMatches = !taskFilter || (item.task || item.scheduleTask || '') === taskFilter;
+                const classMatches = !classFilter || (item.className || '') === classFilter;
+                return taskMatches && classMatches && text.includes(keyword);
+            });
+
+            if (rows.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>目前沒有符合條件的繳交紀錄。</div></td></tr>";
+                return;
+            }
+
+            tbody.innerHTML = rows.map(item => {
+                const fileUrl = item.url || item.fileUrl || item.link || '';
+                const filename = item.filename || item.fileName || '查看檔案';
+                const fileCell = fileUrl
+                    ? `<a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener">${escapeHtml(filename)}</a>`
+                    : escapeHtml(filename);
+                const isRevoked = item.status === 'revoked';
+                const statusCell = isRevoked
+                    ? '<span class="status-revoked">已撤銷</span>'
+                    : '<span class="status-active">有效繳交</span>';
+                const qrCell = fileUrl
+                    ? `<button type="button" class="secondary show-qr" data-url="${escapeHtml(fileUrl)}" data-title="${escapeHtml(filename)}">產生</button>`
+                    : '-';
+                return `
+                    <tr>
+                        <td>${escapeHtml(item.task || item.scheduleTask || '')}</td>
+                        <td>${escapeHtml(item.studentId || '')}</td>
+                        <td>${escapeHtml(item.studentName || item.name || '')}</td>
+                        <td>${escapeHtml(item.className || '')}</td>
+                        <td>${fileCell}</td>
+                        <td>${escapeHtml(item.createdAt || item.timestamp || item.uploadTime || '')}</td>
+                        <td>${statusCell}</td>
+                        <td>${qrCell}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function populateSubmissionFilters() {
+            const taskSelect = document.getElementById('submission-task-filter');
+            const classSelect = document.getElementById('submission-class-filter');
+            const currentTask = taskSelect.value;
+            const currentClass = classSelect.value;
+            const tasks = [...new Set(submissionRows.map(item => item.task || item.scheduleTask || '').filter(Boolean))].sort();
+            const classes = [...new Set(submissionRows.map(item => item.className || '').filter(Boolean))].sort();
+
+            taskSelect.innerHTML = '<option value="">全部項目</option>' + tasks.map(task =>
+                `<option value="${escapeHtml(task)}">${escapeHtml(task)}</option>`
+            ).join('');
+            classSelect.innerHTML = '<option value="">全部班級</option>' + classes.map(className =>
+                `<option value="${escapeHtml(className)}">${escapeHtml(className)}</option>`
+            ).join('');
+            taskSelect.value = tasks.includes(currentTask) ? currentTask : '';
+            classSelect.value = classes.includes(currentClass) ? currentClass : '';
+        }
+
+        document.getElementById('submissions-list').addEventListener('click', function(e) {
+            const button = e.target.closest('.show-qr');
+            if (!button) return;
+            showQrCode(button.dataset.url, button.dataset.title);
+        });
+
+        function showQrCode(url, title) {
+            const box = document.getElementById('qr-box');
+            document.getElementById('qr-title').innerText = title || '檔案 QR Code';
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
+            document.getElementById('qr-link').href = url;
+            box.classList.add('active');
+        }
+
+        function clearSubmissions() {
+            const password = prompt('清除所有繳交紀錄需要輸入確認密碼：');
+            if (password === null) return;
+            if (password !== '990607') {
+                alert('密碼錯誤。');
+                return;
+            }
+            if (!confirm('確定要清除所有繳交紀錄嗎？此動作不會刪除 Drive 檔案，但會清空紀錄表。')) return;
+
+            setStatus('submissions-status', '正在清除繳交紀錄...', '');
+            apiPost({
+                action: 'clearSubmissions',
+                password: password,
+                adminId: currentUser.studentId || ''
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || '清除失敗');
+                setStatus('submissions-status', data.message || '繳交紀錄已清除。', 'success');
+                loadSubmissions();
+            })
+            .catch(err => {
+                setStatus('submissions-status', err.message || '清除失敗。', 'error');
+            });
+        }
+
+        function loadUsers() {
+            if (!GAS_API_URL) return;
+            setStatus('users-status', '正在載入帳號清單...', '');
+            apiGet('getUsers')
+                .then(data => {
+                    userRows = normalizeRows(data);
+                    renderUsers();
+                    setStatus('users-status', '', '');
+                })
+                .catch(err => {
+                    userRows = [];
+                    renderUsers();
+                    setStatus('users-status', '帳號清單載入失敗，請確認 GAS 是否支援 getUsers。', 'error');
+                });
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('users-list');
+            const keyword = document.getElementById('user-keyword').value.trim().toLowerCase();
+            const rows = userRows.filter(item => {
+                const text = `${item.studentId || ''} ${item.name || ''} ${item.className || ''} ${item.club || ''}`.toLowerCase();
+                return text.includes(keyword);
+            });
+
+            if (rows.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前沒有符合條件的帳號。</div></td></tr>";
+                return;
+            }
+
+            tbody.innerHTML = rows.map(item => `
+                <tr>
+                    <td>${escapeHtml(item.studentId || '')}</td>
+                    <td>${escapeHtml(item.name || '')}</td>
+                    <td>${escapeHtml(item.className || '')}</td>
+                    <td>${escapeHtml(item.club || '')}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
