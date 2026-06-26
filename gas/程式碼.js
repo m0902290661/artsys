@@ -1,5 +1,9 @@
 const SPREADSHEET_ID = "1O2wUFvNN9mnIaI09kxaeyHI_UcDy77u5E1TTVlz82uA";
 const MAIN_FOLDER_ID = "1yrORQBOk72ghb5vVPRhMs0gSOVy0HEPi";
+const SESSION_TTL_HOURS = 8;
+const USER_HEADERS = [
+  "studentId", "name", "className", "club", "password", "sessionToken", "sessionExpiresAt"
+];
 
 function authorizeDriveAndSheet() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -33,22 +37,35 @@ function doGet(e) {
   }
 
   if (action === "getSubmissions") {
+    var adminSession = requireSession_(ss, params, true);
+    if (!adminSession.success) return jsonOutput(adminSession);
     return jsonOutput(getSubmissionRows_(ss));
   }
 
   if (action === "getMySubmissions") {
+    var mySession = requireSession_(ss, params, false);
+    if (!mySession.success) return jsonOutput(mySession);
+    if (mySession.user.studentId.toString() !== (params.studentId || "").toString()) {
+      return jsonOutput({ success: false, message: "登入狀態不符，請重新登入。" });
+    }
     return jsonOutput(getSubmissionRows_(ss).filter(function(item) {
       return item.studentId.toString() === (params.studentId || "").toString();
     }));
   }
 
   if (action === "getUsers") {
-    return jsonOutput(getSheetObjects_(ss, "users", [
-      "studentId", "name", "className", "club", "password"
-    ]).map(function(user) {
+    var usersSession = requireSession_(ss, params, true);
+    if (!usersSession.success) return jsonOutput(usersSession);
+    return jsonOutput(getSheetObjects_(ss, "users", USER_HEADERS).map(function(user) {
       delete user.password;
+      delete user.sessionToken;
+      delete user.sessionExpiresAt;
       return user;
     }));
+  }
+
+  if (action === "validateSession") {
+    return jsonOutput(requireSession_(ss, params, false));
   }
 
   if (action === "authCheck") {
@@ -63,10 +80,11 @@ function doPost(e) {
   var action = params.action;
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var userSheet = ss.getSheetByName("users");
+  ensureUserSessionColumns_(userSheet);
   var userData = userSheet.getDataRange().getValues();
 
   if (action === "login") {
-    return login_(userData, params);
+    return login_(userSheet, userData, params);
   }
 
   if (action === "signup") {
@@ -74,42 +92,82 @@ function doPost(e) {
   }
 
   if (action === "uploadPDF") {
+    var uploadSession = requireSession_(ss, params, false);
+    if (!uploadSession.success) return jsonOutput(uploadSession);
+    if (uploadSession.user.studentId.toString() !== (params.studentId || "").toString()) {
+      return jsonOutput({ success: false, message: "登入狀態不符，請重新登入。" });
+    }
     return uploadPdf_(ss, params);
   }
 
   if (action === "addSchedule") {
+    var addSession = requireSession_(ss, params, true);
+    if (!addSession.success) return jsonOutput(addSession);
     return addSchedule_(ss, params);
   }
 
   if (action === "deleteSchedule") {
+    var deleteSession = requireSession_(ss, params, true);
+    if (!deleteSession.success) return jsonOutput(deleteSession);
     return deleteSchedule_(ss, params);
   }
 
   if (action === "revokeSubmission") {
+    var revokeSession = requireSession_(ss, params, false);
+    if (!revokeSession.success) return jsonOutput(revokeSession);
+    if (revokeSession.user.studentId.toString() !== (params.studentId || "").toString()) {
+      return jsonOutput({ success: false, message: "登入狀態不符，請重新登入。" });
+    }
     return revokeSubmission_(ss, params);
   }
 
   if (action === "clearSubmissions") {
+    var clearSession = requireSession_(ss, params, true);
+    if (!clearSession.success) return jsonOutput(clearSession);
     return clearSubmissions_(ss, params);
+  }
+
+  if (action === "addUser") {
+    var addUserSession = requireSession_(ss, params, true);
+    if (!addUserSession.success) return jsonOutput(addUserSession);
+    return addUser_(userSheet, userData, params);
+  }
+
+  if (action === "updateUserPassword") {
+    var passwordSession = requireSession_(ss, params, true);
+    if (!passwordSession.success) return jsonOutput(passwordSession);
+    return updateUserPassword_(userSheet, userData, params);
   }
 
   return jsonOutput({ success: false, message: "未知的 POST action" });
 }
 
-function login_(userData, params) {
+function login_(userSheet, userData, params) {
+  var headerMap = getHeaderMap_(userSheet);
+  var tokenCol = headerMap.sessionToken + 1;
+  var expiresCol = headerMap.sessionExpiresAt + 1;
+
   for (var i = 1; i < userData.length; i++) {
     if (
       userData[i][0].toString() === params.studentId.toString() &&
       userData[i][4].toString() === params.password.toString()
     ) {
+      var token = Utilities.getUuid() + "-" + new Date().getTime();
+      var expiresAt = new Date(new Date().getTime() + SESSION_TTL_HOURS * 60 * 60 * 1000);
+      userSheet.getRange(i + 1, tokenCol).setValue(token);
+      userSheet.getRange(i + 1, expiresCol).setValue(expiresAt);
       return jsonOutput({
         success: true,
         message: "登入成功",
+        sessionToken: token,
+        sessionExpiresAt: expiresAt,
         user: {
           studentId: userData[i][0],
           name: userData[i][1],
           className: userData[i][2],
-          club: userData[i][3]
+          club: userData[i][3],
+          sessionToken: token,
+          sessionExpiresAt: expiresAt
         }
       });
     }
@@ -128,6 +186,119 @@ function signup_(userSheet, userData, params) {
     }
   }
   return jsonOutput({ success: false, message: "找不到此學號" });
+}
+
+function addUser_(userSheet, userData, params) {
+  var studentId = (params.newStudentId || params.targetStudentId || "").toString().trim();
+  var name = (params.name || "").toString().trim();
+  var className = (params.className || "").toString().trim();
+  var club = (params.club || "").toString().trim();
+  var password = (params.password || "").toString();
+
+  if (!studentId || !name || !className) {
+    return jsonOutput({ success: false, message: "請填寫學號、姓名與班級。" });
+  }
+
+  for (var i = 1; i < userData.length; i++) {
+    if (userData[i][0].toString() === studentId) {
+      return jsonOutput({ success: false, message: "此學號已存在，未新增。" });
+    }
+  }
+
+  userSheet.appendRow([studentId, name, className, club, password, "", ""]);
+  return jsonOutput({ success: true, message: "人員已新增。" });
+}
+
+function updateUserPassword_(userSheet, userData, params) {
+  var studentId = (params.targetStudentId || "").toString().trim();
+  var password = (params.password || "").toString();
+
+  if (!studentId || !password) {
+    return jsonOutput({ success: false, message: "缺少學號或新密碼。" });
+  }
+
+  for (var i = 1; i < userData.length; i++) {
+    if (userData[i][0].toString() === studentId) {
+      userSheet.getRange(i + 1, 5).setValue(password);
+      userSheet.getRange(i + 1, 6).setValue("");
+      userSheet.getRange(i + 1, 7).setValue("");
+      return jsonOutput({ success: true, message: "密碼已更新，該帳號需重新登入。" });
+    }
+  }
+
+  return jsonOutput({ success: false, message: "找不到此學號。" });
+}
+
+function ensureUserSessionColumns_(sheet) {
+  var lastColumn = Math.max(sheet.getLastColumn(), USER_HEADERS.length);
+  var headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+
+  for (var i = 0; i < USER_HEADERS.length; i++) {
+    if (headers[i] !== USER_HEADERS[i]) {
+      sheet.getRange(1, i + 1).setValue(USER_HEADERS[i]);
+    }
+  }
+}
+
+function getHeaderMap_(sheet) {
+  ensureUserSessionColumns_(sheet);
+  var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), USER_HEADERS.length)).getValues()[0];
+  var map = {};
+  for (var i = 0; i < headers.length; i++) {
+    if (headers[i]) map[headers[i]] = i;
+  }
+  return map;
+}
+
+function requireSession_(ss, params, adminOnly) {
+  var studentId = (params.studentId || params.adminId || "").toString();
+  var sessionToken = (params.sessionToken || "").toString();
+
+  if (!studentId || !sessionToken) {
+    return { success: false, message: "登入已失效，請重新登入。" };
+  }
+
+  var userSheet = ss.getSheetByName("users");
+  ensureUserSessionColumns_(userSheet);
+  var headerMap = getHeaderMap_(userSheet);
+  var data = userSheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][headerMap.studentId].toString() !== studentId) continue;
+
+    var storedToken = (data[i][headerMap.sessionToken] || "").toString();
+    var expiresAt = data[i][headerMap.sessionExpiresAt];
+    var expiresDate = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+
+    if (!storedToken || storedToken !== sessionToken) {
+      return { success: false, message: "登入密鑰不一致，請重新登入。" };
+    }
+    if (!expiresAt || Number.isNaN(expiresDate.getTime()) || expiresDate.getTime() <= new Date().getTime()) {
+      return { success: false, message: "登入已逾時，請重新登入。" };
+    }
+
+    var user = {
+      studentId: data[i][headerMap.studentId],
+      name: data[i][headerMap.name],
+      className: data[i][headerMap.className],
+      club: data[i][headerMap.club],
+      sessionToken: storedToken,
+      sessionExpiresAt: expiresDate
+    };
+
+    if (adminOnly && user.className !== "管理員") {
+      return { success: false, message: "權限不足。" };
+    }
+
+    return {
+      success: true,
+      message: "登入狀態有效",
+      user: user,
+      sessionExpiresAt: expiresDate
+    };
+  }
+
+  return { success: false, message: "找不到登入帳號，請重新登入。" };
 }
 
 function uploadPdf_(ss, params) {
@@ -306,9 +477,50 @@ function revokeSubmission_(ss, params) {
     return jsonOutput({ success: false, message: "此繳交紀錄已撤銷" });
   }
 
+  var deleteResult = trashDriveFileByUrl_(row[5]);
+  if (!deleteResult.success) {
+    return jsonOutput(deleteResult);
+  }
+
   sheet.getRange(rowNumber, 8).setValue("revoked");
   sheet.getRange(rowNumber, 9).setValue(new Date());
-  return jsonOutput({ success: true, message: "已撤銷繳交紀錄，可以重新提交此項目。" });
+  sheet.getRange(rowNumber, 6).setValue("");
+  return jsonOutput({ success: true, message: "已撤銷繳交紀錄並刪除雲端檔案，可以重新提交此項目。" });
+}
+
+function trashDriveFileByUrl_(url) {
+  if (!url) {
+    return { success: true, message: "沒有檔案連結，僅撤銷紀錄。" };
+  }
+
+  var fileId = extractDriveFileId_(url);
+  if (!fileId) {
+    return { success: false, message: "無法解析雲端檔案連結，未撤銷繳交紀錄。" };
+  }
+
+  try {
+    DriveApp.getFileById(fileId).setTrashed(true);
+    return { success: true, message: "檔案已移至垃圾桶。" };
+  } catch (err) {
+    return { success: false, message: "雲端檔案刪除失敗，未撤銷繳交紀錄: " + err.toString() };
+  }
+}
+
+function extractDriveFileId_(url) {
+  var text = String(url || "");
+  var patterns = [
+    /\/d\/([a-zA-Z0-9_-]+)/,
+    /[?&]id=([a-zA-Z0-9_-]+)/,
+    /\/file\/d\/([a-zA-Z0-9_-]+)/
+  ];
+
+  for (var i = 0; i < patterns.length; i++) {
+    var match = text.match(patterns[i]);
+    if (match && match[1]) return match[1];
+  }
+
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(text)) return text;
+  return "";
 }
 
 function clearSubmissions_(ss, params) {

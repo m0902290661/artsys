@@ -14,7 +14,8 @@
             background-color: #f4f6f9;
         }
         .left {
-            flex: 3;
+            flex: 0 0 22%;
+            box-sizing: border-box;
             background-color: #fff;
             padding: 30px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
@@ -22,7 +23,9 @@
             flex-direction: column;
         }
         .right {
-            flex: 7;
+            flex: 0 0 78%;
+            box-sizing: border-box;
+            min-width: 0;
             padding: 40px;
             overflow-y: auto;
         }
@@ -59,14 +62,6 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background-color: #f8f9fa; }
-        select {
-            min-width: 260px;
-            min-height: 38px;
-            padding: 8px 10px;
-            border: 1px solid #d8dde6;
-            border-radius: 4px;
-            font-size: 14px;
-        }
 
         /* 上傳按鈕 */
         .upload-btn {
@@ -85,17 +80,70 @@
             cursor: pointer;
         }
         .danger-btn:hover { background-color: #b83232; }
+        .danger-btn:disabled { cursor: not-allowed; opacity: 0.65; }
         .status-active { color: #2b8a3e; font-weight: bold; }
         .status-revoked { color: #c92a2a; }
+        .assignment-title { min-width: 180px; font-weight: bold; color: #333; }
+        .assignment-note { color: #666; line-height: 1.5; }
+        .assignment-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            min-width: 280px;
+        }
+        .assignment-actions input[type="file"] {
+            max-width: 210px;
+        }
+        .assignment-message {
+            flex-basis: 100%;
+            min-height: 18px;
+            color: #666;
+            font-size: 13px;
+        }
+        .submission-link {
+            display: inline-block;
+            margin-top: 6px;
+        }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            color: #444;
+            background: rgba(244, 246, 249, 0.96);
+        }
+        .loading-overlay.hidden {
+            display: none;
+        }
+        .loading-spinner {
+            width: 42px;
+            height: 42px;
+            border: 4px solid #d8dde6;
+            border-top-color: rgb(120, 120, 255);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
 <body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div id="loading-text">正在載入系統資料...</div>
+    </div>
 
     <div class="left">
         <h1>115 私立弘明實驗高級中學<br>美術歷程系統</h1>
@@ -107,40 +155,23 @@
             當前美術社團：<span id="u-club">-</span>
         </p>
         <br>
-        <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">📅 時程表</a>
-        <a href="#" class="menu-link" onclick="switchPanel('upload-panel', this)">📤 繳交作業 (PDF)</a>
-        <a href="#" class="menu-link" onclick="switchPanel('status-panel', this)">📁 已繳交內容</a>
-        <a href="#" class="menu-link" onclick="logout()">🚪 登出</a>
+        <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程與繳交</a>
+        <a href="#" class="menu-link" onclick="switchPanel('status-panel', this)">已繳交內容</a>
+        <a href="#" class="menu-link" onclick="logout()">登出</a>
     </div>
 
     <div class="right">
         <div id="schedule-panel" class="panel" style="display: block;">
-            <h3>最新美術歷程時程表</h3>
+            <h3>美術歷程時程與繳交</h3>
+            <p class="notice">請在對應項目直接選擇 PDF 檔案並送出。已繳交的項目需先到「已繳交內容」撤銷並刪除原檔後才能重新提交。</p>
             <table>
                 <thead>
-                    <tr><th>項目</th><th>截止日期</th><th>備註</th></tr>
+                    <tr><th>項目</th><th>截止日期</th><th>備註</th><th>狀態</th><th>繳交</th></tr>
                 </thead>
                 <tbody id="schedule-list">
-                    <tr><td colspan="3">正在載入時程資料...</td></tr>
+                    <tr><td colspan="5">正在載入時程資料...</td></tr>
                 </tbody>
             </table>
-        </div>
-
-        <div id="upload-panel" class="panel">
-            <h3>繳交美術歷程作業</h3>
-            <p class="notice">請選擇您的作業 PDF 檔案進行上傳（系統會自動歸類至您的學號資料夾）。</p>
-            <form id="upload-form">
-                <label for="schedule-task">繳交項目</label>
-                <br>
-                <select id="schedule-task" required>
-                    <option value="">正在載入時程項目...</option>
-                </select>
-                <br><br>
-                <input type="file" id="pdf-file" accept="application/pdf" required>
-                <br><br>
-                <button type="submit" class="upload-btn" id="submit-btn">確認送出上傳</button>
-            </form>
-            <p id="upload-message" class="notice"></p>
         </div>
 
         <div id="status-panel" class="panel">
@@ -163,6 +194,7 @@
         let currentUser = null;
         let scheduleItems = [];
         let mySubmissions = [];
+        let submissionsLoaded = false;
 
         document.addEventListener("DOMContentLoaded", function () {
             // 1. 驗證權限與身份
@@ -189,19 +221,24 @@
                 return;
             }
 
-            // 2. 渲染左側學生基本資料
-            document.getElementById('u-name').innerText = currentUser.name;
-            document.getElementById('u-id').innerText = currentUser.studentId;
-            document.getElementById('u-class').innerText = currentUser.className;
-            document.getElementById('u-club').innerText = currentUser.club;
-
-            // 3. 讀取配置並加載時程
             fetch('api.json')
                 .then(res => res.json())
                 .then(config => {
                     GAS_API_URL = config.gasUrl;
-                    loadSchedule();
-                    loadMySubmissions();
+                    return validateSession();
+                })
+                .then(user => {
+                    currentUser = user;
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                    renderCurrentUser();
+                    return Promise.all([loadSchedule(), loadMySubmissions()]);
+                })
+                .then(() => {
+                    hideLoading();
+                })
+                .catch(err => {
+                    if (err && err.redirect) return;
+                    forceLogout(err.message || '登入已失效，請重新登入。');
                 });
         });
 
@@ -235,6 +272,54 @@
             });
         }
 
+        function getAuthParams() {
+            return {
+                studentId: currentUser?.studentId || '',
+                sessionToken: currentUser?.sessionToken || ''
+            };
+        }
+
+        function withAuthQuery(url) {
+            const params = new URLSearchParams(getAuthParams());
+            return `${url}&${params.toString()}`;
+        }
+
+        function validateSession() {
+            if (!currentUser?.studentId || !currentUser?.sessionToken) {
+                return Promise.reject(new Error('登入已失效，請重新登入。'));
+            }
+            return fetch(withAuthQuery(`${GAS_API_URL}?action=validateSession`))
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.success) throw new Error(data.message || '登入已失效，請重新登入。');
+                    if (data.user.className === "管理員") {
+                        window.location.href = "manage.html";
+                        throw { redirect: true };
+                    }
+                    return data.user;
+                });
+        }
+
+        function renderCurrentUser() {
+            document.getElementById('u-name').innerText = currentUser.name;
+            document.getElementById('u-id').innerText = currentUser.studentId;
+            document.getElementById('u-class').innerText = currentUser.className;
+            document.getElementById('u-club').innerText = currentUser.club;
+        }
+
+        function forceLogout(message) {
+            sessionStorage.removeItem('user');
+            if (message) alert(message);
+            window.location.href = 'login.html';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
         // 切換右側面板
         function switchPanel(panelId, element) {
             document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
@@ -251,68 +336,91 @@
 
         // 撈取 Google Sheet 的時程表 (GET)
         function loadSchedule() {
-            if (!GAS_API_URL) return;
-            fetch(`${GAS_API_URL}?action=getSchedule`)
+            if (!GAS_API_URL) return Promise.resolve();
+            return fetch(`${GAS_API_URL}?action=getSchedule`)
                 .then(res => res.json())
                 .then(data => {
-                    const tbody = document.getElementById('schedule-list');
-                    tbody.innerHTML = "";
-                    if(data.length === 0) {
-                        tbody.innerHTML = "<tr><td colspan='3'>目前尚無安排時程。</td></tr>";
-                        scheduleItems = [];
-                        renderScheduleOptions([]);
-                        return;
-                    }
-                    scheduleItems = data;
-                    renderScheduleOptions(data);
-                    data.forEach(item => {
-                        let dateStr = new Date(item.deadline).toLocaleDateString('zh-TW');
-                        tbody.innerHTML += `<tr><td>${escapeHtml(item.task)}</td><td>${dateStr}</td><td>${escapeHtml(item.note || '')}</td></tr>`;
-                    });
+                    scheduleItems = Array.isArray(data) ? data : [];
+                    renderSchedule();
                 })
                 .catch(err => {
-                    document.getElementById('schedule-list').innerHTML = "<tr><td colspan='3'>時程載入失敗。</td></tr>";
-                    renderScheduleOptions([]);
+                    scheduleItems = [];
+                    document.getElementById('schedule-list').innerHTML = "<tr><td colspan='5'>時程載入失敗。</td></tr>";
                 });
         }
 
-        function renderScheduleOptions(items) {
-            const select = document.getElementById('schedule-task');
-            select.innerHTML = "";
+        function getActiveSubmission(task) {
+            return mySubmissions.find(item =>
+                item.status !== 'revoked' &&
+                (item.task || '').toString() === (task || '').toString()
+            );
+        }
 
-            if (!items || items.length === 0) {
-                select.innerHTML = '<option value="">目前沒有可繳交的時程項目</option>';
+        function renderSchedule() {
+            const tbody = document.getElementById('schedule-list');
+            if (!scheduleItems || scheduleItems.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='5'>目前尚無安排時程。</td></tr>";
                 return;
             }
 
-            select.innerHTML = '<option value="">請選擇繳交項目</option>';
-            const activeTasks = new Set(mySubmissions.filter(item => item.status !== 'revoked').map(item => item.task));
-            items.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.task;
-                option.textContent = activeTasks.has(item.task) ? `${item.task}（已繳交）` : item.task;
-                option.disabled = activeTasks.has(item.task);
-                select.appendChild(option);
-            });
+            tbody.innerHTML = scheduleItems.map((item, index) => {
+                const submitted = getActiveSubmission(item.task);
+                const date = new Date(item.deadline);
+                const dateStr = Number.isNaN(date.getTime()) ? escapeHtml(item.deadline || '-') : date.toLocaleDateString('zh-TW');
+                const task = escapeHtml(item.task || '');
+                const statusCell = !submissionsLoaded
+                    ? '<span class="notice">檢查繳交狀態中...</span>'
+                    : submitted
+                    ? `<span class="status-active">已繳交</span><br><a class="submission-link" href="${escapeHtml(submitted.url || '#')}" target="_blank" rel="noopener">${escapeHtml(submitted.filename || '查看檔案')}</a>`
+                    : '<span class="status-revoked">未繳交</span>';
+                const actionCell = !submissionsLoaded
+                    ? '<span class="notice">請稍候...</span>'
+                    : submitted
+                    ? '<span class="notice">如需重新提交，請先撤銷原繳交內容並刪除檔案。</span>'
+                    : `
+                        <div class="assignment-actions">
+                            <input type="file" class="task-file" data-task="${task}" accept="application/pdf">
+                            <button type="button" class="upload-btn submit-task" data-task="${task}">送出</button>
+                            <span class="assignment-message"></span>
+                        </div>
+                    `;
+
+                return `
+                    <tr>
+                        <td class="assignment-title">${task}</td>
+                        <td>${dateStr}</td>
+                        <td class="assignment-note">${escapeHtml(item.note || '')}</td>
+                        <td>${statusCell}</td>
+                        <td>${actionCell}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function loadMySubmissions() {
-            if (!GAS_API_URL || !currentUser) return;
+            if (!GAS_API_URL || !currentUser) return Promise.resolve();
             document.getElementById('status-message').innerText = '正在載入繳交紀錄...';
-            fetch(`${GAS_API_URL}?action=getMySubmissions&studentId=${encodeURIComponent(currentUser.studentId)}`)
+            return fetch(withAuthQuery(`${GAS_API_URL}?action=getMySubmissions`))
                 .then(res => {
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     return res.json();
                 })
                 .then(data => {
+                    if (!Array.isArray(data) && data && data.success === false) {
+                        forceLogout(data.message || '登入已失效，請重新登入。');
+                        return;
+                    }
                     mySubmissions = Array.isArray(data) ? data : [];
+                    submissionsLoaded = true;
                     renderMySubmissions();
-                    renderScheduleOptions(scheduleItems);
+                    renderSchedule();
                     document.getElementById('status-message').innerText = '';
                 })
                 .catch(err => {
                     mySubmissions = [];
+                    submissionsLoaded = false;
                     renderMySubmissions();
+                    renderSchedule();
                     document.getElementById('status-message').innerText = '繳交紀錄載入失敗。';
                 });
         }
@@ -350,32 +458,52 @@
         document.getElementById('my-submissions-list').addEventListener('click', function(e) {
             const button = e.target.closest('.revoke-submission');
             if (!button) return;
-            if (!confirm('確定要撤銷這份繳交內容嗎？撤銷後才可以重新提交同項目。')) return;
+            if (button.disabled) return;
+            if (!confirm('確定要撤銷這份繳交內容並刪除雲端檔案嗎？撤銷後才可以重新提交同項目。')) return;
+
+            button.disabled = true;
+            button.innerText = '撤銷中...';
 
             postForm({
                 action: 'revokeSubmission',
                 id: button.dataset.id,
-                studentId: currentUser.studentId
+                ...getAuthParams()
             })
             .then(data => {
+                if (!data.success && /登入|密鑰|逾時/.test(data.message || '')) {
+                    forceLogout(data.message);
+                    return;
+                }
                 alert(data.message || (data.success ? '已撤銷。' : '撤銷失敗。'));
                 loadMySubmissions();
             })
-            .catch(err => alert('撤銷連線失敗，請稍後再試。'));
+            .catch(err => alert('撤銷連線失敗，請稍後再試。'))
+            .finally(() => {
+                button.disabled = false;
+                button.innerText = '撤銷';
+            });
         });
 
-        // 處理 PDF 檔案非同步上傳至 GAS
-        document.getElementById('upload-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const fileInput = document.getElementById('pdf-file');
-            const taskSelect = document.getElementById('schedule-task');
-            if(fileInput.files.length === 0) return;
+        document.getElementById('schedule-list').addEventListener('click', function(e) {
+            const button = e.target.closest('.submit-task');
+            if (!button) return;
+            submitScheduleTask(button);
+        });
+
+        function submitScheduleTask(button) {
+            if (button.disabled) return;
             if (!GAS_API_URL) {
                 alert('API 尚未就緒，請稍後再試');
                 return;
             }
-            if (!taskSelect.value) {
-                alert('請先選擇繳交項目。');
+
+            const actionBox = button.closest('.assignment-actions');
+            const fileInput = actionBox.querySelector('.task-file');
+            const message = actionBox.querySelector('.assignment-message');
+            const task = button.dataset.task || '';
+
+            if (!fileInput.files.length) {
+                alert('請先選擇 PDF 檔案。');
                 return;
             }
 
@@ -385,28 +513,26 @@
                 return;
             }
 
-            const btn = document.getElementById('submit-btn');
-            const message = document.getElementById('upload-message');
-            btn.innerText = "檔案上傳中，請勿關閉視窗...";
-            btn.disabled = true;
-            message.innerText = "正在讀取檔案...";
+            button.disabled = true;
+            fileInput.disabled = true;
+            button.innerText = '上傳中...';
+            message.innerText = '正在讀取檔案...';
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const dataUrl = e.target.result;
                 const base64Data = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
-                
-                // GAS 端通常用 Utilities.base64Decode 接純 base64，不能包含 data:application/pdf;base64, 前綴。
                 const formData = new URLSearchParams();
                 formData.append("action", "uploadPDF");
                 formData.append("studentId", currentUser.studentId);
+                formData.append("sessionToken", currentUser.sessionToken || "");
                 formData.append("studentName", currentUser.name);
                 formData.append("className", currentUser.className);
                 formData.append("club", currentUser.club || "");
-                formData.append("task", taskSelect.value);
-                formData.append("scheduleTask", taskSelect.value);
+                formData.append("task", task);
+                formData.append("scheduleTask", task);
                 formData.append("originalFilename", file.name);
-                formData.append("filename", `${taskSelect.value}_${currentUser.studentId}_${currentUser.name}_${file.name}`);
+                formData.append("filename", `${task}_${currentUser.studentId}_${currentUser.name}_${file.name}`);
                 formData.append("mimeType", "application/pdf");
                 formData.append("file", dataUrl);
                 formData.append("fileBase64", base64Data);
@@ -422,33 +548,41 @@
                     return res.json();
                 })
                 .then(data => {
+                    if (!data.success && /登入|密鑰|逾時/.test(data.message || '')) {
+                        forceLogout(data.message);
+                        return;
+                    }
+
                     const text = data.message || (data.success ? "上傳成功。" : "上傳失敗。");
                     alert(text);
                     message.innerText = text;
-                    btn.innerText = "確認送出上傳";
-                    btn.disabled = false;
-                    if(data.success) {
-                        fileInput.value = ""; // 清空選取
-                        taskSelect.value = "";
+                    if (data.success) {
+                        fileInput.value = "";
                         loadMySubmissions();
+                        return;
                     }
+                    button.disabled = false;
+                    fileInput.disabled = false;
+                    button.innerText = '送出';
                 })
                 .catch(err => {
                     console.error(err);
                     message.innerText = "上傳連線發生錯誤，請稍後再試。";
                     alert("上傳連線發生錯誤，請稍後再試。");
-                    btn.innerText = "確認送出上傳";
-                    btn.disabled = false;
+                    button.disabled = false;
+                    fileInput.disabled = false;
+                    button.innerText = '送出';
                 });
             };
             reader.onerror = function() {
                 message.innerText = "檔案讀取失敗，請重新選擇 PDF。";
                 alert("檔案讀取失敗，請重新選擇 PDF。");
-                btn.innerText = "確認送出上傳";
-                btn.disabled = false;
+                button.disabled = false;
+                fileInput.disabled = false;
+                button.innerText = '送出';
             };
-            reader.readAsDataURL(file); // 將檔案讀取為 Base64
-        });
+            reader.readAsDataURL(file);
+        }
     </script>
 </body>
 </html>

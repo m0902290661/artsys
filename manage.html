@@ -88,6 +88,23 @@
             font-size: 14px;
         }
         .field-grid .wide { grid-column: 1 / -1; }
+        .user-form {
+            margin: 14px 0 18px;
+            padding: 16px;
+            background: #f8f9fa;
+            border: 1px solid #e5e8ef;
+            border-radius: 6px;
+        }
+        .password-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            min-width: 240px;
+        }
+        .password-tools input {
+            width: 150px;
+        }
         button {
             min-height: 38px;
             padding: 8px 16px;
@@ -221,9 +238,14 @@
                 <select id="submission-class-filter">
                     <option value="">全部班級</option>
                 </select>
+                <select id="submission-status-filter">
+                    <option value="">全部狀態</option>
+                    <option value="active">有效繳交</option>
+                    <option value="revoked">已撤銷</option>
+                </select>
                 <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、班級">
                 <button type="button" onclick="loadSubmissions()">重新整理</button>
-                <button type="button" class="danger" onclick="clearSubmissions()">清除繳交紀錄</button>
+                <button type="button" class="danger" id="clear-submissions-btn" onclick="clearSubmissions(this)">清除繳交紀錄</button>
             </div>
             <div id="qr-box" class="qr-box">
                 <strong id="qr-title">檔案 QR Code</strong>
@@ -243,6 +265,26 @@
 
         <section id="users-panel" class="panel">
             <h2>帳號清單</h2>
+            <form id="user-form" class="user-form">
+                <div class="field-grid">
+                    <label>學號
+                        <input type="text" id="new-user-id" required>
+                    </label>
+                    <label>姓名
+                        <input type="text" id="new-user-name" required>
+                    </label>
+                    <label>班級
+                        <input type="text" id="new-user-class" required>
+                    </label>
+                    <label>美術社團
+                        <input type="text" id="new-user-club">
+                    </label>
+                    <label>初始密碼
+                        <input type="password" id="new-user-password">
+                    </label>
+                </div>
+                <button type="submit" id="user-submit">增加人員</button>
+            </form>
             <div class="toolbar">
                 <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、班級、社團">
                 <button type="button" onclick="loadUsers()">重新整理</button>
@@ -250,10 +292,10 @@
             <p id="users-status" class="status"></p>
             <table>
                 <thead>
-                    <tr><th>學號</th><th>姓名</th><th>班級</th><th>美術社團</th></tr>
+                    <tr><th>學號</th><th>姓名</th><th>班級</th><th>美術社團</th><th>修改密碼</th></tr>
                 </thead>
                 <tbody id="users-list">
-                    <tr><td colspan="4">正在載入帳號清單...</td></tr>
+                    <tr><td colspan="5">正在載入帳號清單...</td></tr>
                 </tbody>
             </table>
         </section>
@@ -288,9 +330,6 @@
                 return;
             }
 
-            document.getElementById('admin-name').innerText = currentUser.name || '管理員';
-            document.getElementById('admin-id').innerText = currentUser.studentId || '-';
-
             fetch('api.json')
                 .then(res => {
                     if (!res.ok) throw new Error('無法讀取設定檔');
@@ -298,11 +337,23 @@
                 })
                 .then(config => {
                     GAS_API_URL = config.gasUrl;
+                    return validateSession();
+                })
+                .then(user => {
+                    currentUser = user;
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                    document.getElementById('admin-name').innerText = currentUser.name || '管理員';
+                    document.getElementById('admin-id').innerText = currentUser.studentId || '-';
                     loadSchedule();
                     loadSubmissions();
                     loadUsers();
                 })
                 .catch(err => {
+                    if (err && err.redirect) return;
+                    if (/登入|密鑰|逾時|權限/.test(err.message || '')) {
+                        forceLogout(err.message);
+                        return;
+                    }
                     setStatus('schedule-status', '系統初始化失敗，請確認 api.json。', 'error');
                     setStatus('submissions-status', '系統初始化失敗，請確認 api.json。', 'error');
                     setStatus('users-status', '系統初始化失敗，請確認 api.json。', 'error');
@@ -311,6 +362,7 @@
             document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
             document.getElementById('submission-task-filter').addEventListener('change', renderSubmissions);
             document.getElementById('submission-class-filter').addEventListener('change', renderSubmissions);
+            document.getElementById('submission-status-filter').addEventListener('change', renderSubmissions);
             document.getElementById('user-keyword').addEventListener('input', renderUsers);
         });
 
@@ -323,6 +375,12 @@
 
         function logout() {
             sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        function forceLogout(message) {
+            sessionStorage.removeItem('user');
+            if (message) alert(message);
             window.location.href = 'login.html';
         }
 
@@ -358,17 +416,58 @@
             return [];
         }
 
-        function apiGet(action) {
-            return fetch(`${GAS_API_URL}?action=${encodeURIComponent(action)}`)
+        function getAuthParams() {
+            return {
+                adminId: currentUser?.studentId || '',
+                studentId: currentUser?.studentId || '',
+                sessionToken: currentUser?.sessionToken || ''
+            };
+        }
+
+        function appendAuth(url) {
+            const params = new URLSearchParams(getAuthParams());
+            return `${url}&${params.toString()}`;
+        }
+
+        function validateSession() {
+            if (!currentUser?.studentId || !currentUser?.sessionToken) {
+                return Promise.reject(new Error('登入已失效，請重新登入。'));
+            }
+
+            return fetch(appendAuth(`${GAS_API_URL}?action=validateSession`))
                 .then(res => {
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     return res.json();
+                })
+                .then(data => {
+                    if (!data.success) throw new Error(data.message || '登入已失效，請重新登入。');
+                    if (data.user.className !== "管理員") {
+                        alert("您不是管理員，將返回學生頁面。");
+                        window.location.href = "index.html";
+                        throw { redirect: true };
+                    }
+                    return data.user;
+                });
+        }
+
+        function apiGet(action) {
+            return fetch(appendAuth(`${GAS_API_URL}?action=${encodeURIComponent(action)}`))
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data && data.success === false) {
+                        throw new Error(data.message || 'API 操作失敗');
+                    }
+                    return data;
                 });
         }
 
         function apiPost(payload) {
             const formData = new URLSearchParams();
-            Object.keys(payload).forEach(key => formData.append(key, payload[key] ?? ''));
+            const authedPayload = { ...getAuthParams(), ...payload };
+            Object.keys(authedPayload).forEach(key => formData.append(key, authedPayload[key] ?? ''));
             return fetch(GAS_API_URL, {
                 method: 'POST',
                 body: formData.toString(),
@@ -377,6 +476,13 @@
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
+            })
+            .then(data => {
+                if (data && data.success === false && /登入|密鑰|逾時|權限/.test(data.message || '')) {
+                    forceLogout(data.message);
+                    throw new Error(data.message);
+                }
+                return data;
             });
         }
 
@@ -421,6 +527,7 @@
             if (!GAS_API_URL) return;
 
             const button = document.getElementById('schedule-submit');
+            if (button.disabled) return;
             button.disabled = true;
             setStatus('schedule-status', '正在新增時程...', '');
 
@@ -448,11 +555,15 @@
         document.getElementById('schedule-list').addEventListener('click', function(e) {
             const button = e.target.closest('.delete-schedule');
             if (!button) return;
-            deleteSchedule(button.dataset.id);
+            deleteSchedule(button);
         });
 
-        function deleteSchedule(id) {
+        function deleteSchedule(button) {
+            if (button.disabled) return;
             if (!confirm('確定要刪除此時程嗎？')) return;
+            const id = button.dataset.id;
+            button.disabled = true;
+            button.innerText = '刪除中...';
             setStatus('schedule-status', '正在刪除時程...', '');
 
             apiPost({
@@ -467,6 +578,10 @@
             })
             .catch(err => {
                 setStatus('schedule-status', err.message || '刪除失敗，請確認 GAS 是否支援 deleteSchedule。', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerText = '刪除';
             });
         }
 
@@ -492,11 +607,14 @@
             const keyword = document.getElementById('submission-keyword').value.trim().toLowerCase();
             const taskFilter = document.getElementById('submission-task-filter').value;
             const classFilter = document.getElementById('submission-class-filter').value;
+            const statusFilter = document.getElementById('submission-status-filter').value;
             const rows = submissionRows.filter(item => {
                 const text = `${item.task || item.scheduleTask || ''} ${item.studentId || ''} ${item.studentName || item.name || ''} ${item.className || ''} ${item.filename || ''}`.toLowerCase();
                 const taskMatches = !taskFilter || (item.task || item.scheduleTask || '') === taskFilter;
                 const classMatches = !classFilter || (item.className || '') === classFilter;
-                return taskMatches && classMatches && text.includes(keyword);
+                const rowStatus = item.status === 'revoked' ? 'revoked' : 'active';
+                const statusMatches = !statusFilter || rowStatus === statusFilter;
+                return taskMatches && classMatches && statusMatches && text.includes(keyword);
             });
 
             if (rows.length === 0) {
@@ -564,7 +682,8 @@
             box.classList.add('active');
         }
 
-        function clearSubmissions() {
+        function clearSubmissions(button) {
+            if (button && button.disabled) return;
             const password = prompt('清除所有繳交紀錄需要輸入確認密碼：');
             if (password === null) return;
             if (password !== '990607') {
@@ -573,6 +692,10 @@
             }
             if (!confirm('確定要清除所有繳交紀錄嗎？此動作不會刪除 Drive 檔案，但會清空紀錄表。')) return;
 
+            if (button) {
+                button.disabled = true;
+                button.innerText = '清除中...';
+            }
             setStatus('submissions-status', '正在清除繳交紀錄...', '');
             apiPost({
                 action: 'clearSubmissions',
@@ -586,6 +709,12 @@
             })
             .catch(err => {
                 setStatus('submissions-status', err.message || '清除失敗。', 'error');
+            })
+            .finally(() => {
+                if (button) {
+                    button.disabled = false;
+                    button.innerText = '清除繳交紀錄';
+                }
             });
         }
 
@@ -614,7 +743,7 @@
             });
 
             if (rows.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前沒有符合條件的帳號。</div></td></tr>";
+                tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>目前沒有符合條件的帳號。</div></td></tr>";
                 return;
             }
 
@@ -624,8 +753,86 @@
                     <td>${escapeHtml(item.name || '')}</td>
                     <td>${escapeHtml(item.className || '')}</td>
                     <td>${escapeHtml(item.club || '')}</td>
+                    <td>
+                        <div class="password-tools">
+                            <input type="password" class="user-password" placeholder="新密碼">
+                            <button type="button" class="secondary update-password" data-id="${escapeHtml(item.studentId || '')}">更新</button>
+                        </div>
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        document.getElementById('user-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!GAS_API_URL) return;
+
+            const button = document.getElementById('user-submit');
+            if (button.disabled) return;
+            button.disabled = true;
+            button.innerText = '新增中...';
+            setStatus('users-status', '正在新增人員...', '');
+
+            apiPost({
+                action: 'addUser',
+                newStudentId: document.getElementById('new-user-id').value.trim(),
+                name: document.getElementById('new-user-name').value.trim(),
+                className: document.getElementById('new-user-class').value.trim(),
+                club: document.getElementById('new-user-club').value.trim(),
+                password: document.getElementById('new-user-password').value
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || '新增失敗');
+                setStatus('users-status', data.message || '人員已新增。', 'success');
+                e.target.reset();
+                loadUsers();
+            })
+            .catch(err => {
+                setStatus('users-status', err.message || '新增失敗。', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerText = '增加人員';
+            });
+        });
+
+        document.getElementById('users-list').addEventListener('click', function(e) {
+            const button = e.target.closest('.update-password');
+            if (!button) return;
+            updateUserPassword(button);
+        });
+
+        function updateUserPassword(button) {
+            if (button.disabled) return;
+            const input = button.closest('.password-tools').querySelector('.user-password');
+            const password = input.value;
+            if (!password) {
+                alert('請輸入新密碼。');
+                return;
+            }
+            if (!confirm(`確定要更新 ${button.dataset.id} 的密碼嗎？`)) return;
+
+            button.disabled = true;
+            button.innerText = '更新中...';
+            setStatus('users-status', '正在更新密碼...', '');
+
+            apiPost({
+                action: 'updateUserPassword',
+                targetStudentId: button.dataset.id,
+                password: password
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || '密碼更新失敗');
+                input.value = '';
+                setStatus('users-status', data.message || '密碼已更新。', 'success');
+            })
+            .catch(err => {
+                setStatus('users-status', err.message || '密碼更新失敗。', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerText = '更新';
+            });
         }
     </script>
 </body>

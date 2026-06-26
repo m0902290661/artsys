@@ -101,6 +101,11 @@
         #login input[type="submit"]:active, #signup input[type="submit"]:active {
             transform: translateY(0); /* 點擊時壓回 */
         }
+        #login input[type="submit"]:disabled, #signup input[type="submit"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+            transform: none;
+        }
 
         /* 手機端阻擋畫面與點擊動畫 */
         #mobile-blocker {
@@ -238,6 +243,11 @@
             e.preventDefault();
             if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
 
+            const submitButton = e.target.querySelector('input[type="submit"]');
+            if (submitButton.disabled) return;
+            submitButton.disabled = true;
+            submitButton.value = '登入中...';
+
             const studentId = document.getElementById('login-id').value;
             const password = document.getElementById('login-pw').value;
 
@@ -245,13 +255,22 @@
             .then(data => {
                 if (data.success) {
                     alert('登入成功！歡迎 ' + data.user.name);
-                    sessionStorage.setItem('user', JSON.stringify(data.user));
+                    const user = {
+                        ...data.user,
+                        sessionToken: data.sessionToken || data.user.sessionToken,
+                        sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
+                    };
+                    sessionStorage.setItem('user', JSON.stringify(user));
                     window.location.href = 'index.html'; 
                 } else {
                     alert(data.message);
                 }
             })
-            .catch(err => alert('系統連線錯誤，請稍後再試'));
+            .catch(err => alert('系統連線錯誤，請稍後再試'))
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.value = '送出';
+            });
         });
 
         // 處理【帳號開通】提交
@@ -259,12 +278,19 @@
             e.preventDefault();
             if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
 
+            const submitButton = e.target.querySelector('input[type="submit"]');
+            if (submitButton.disabled) return;
+            submitButton.disabled = true;
+            submitButton.value = '送出中...';
+
             const studentId = document.getElementById('signup-id').value;
             const password = document.getElementById('signup-pw').value;
             const passwordConfirm = document.getElementById('signup-pw2').value;
 
             if (password !== passwordConfirm) {
                 alert('兩次輸入的密碼不一致！');
+                submitButton.disabled = false;
+                submitButton.value = '送出';
                 return;
             }
 
@@ -275,7 +301,11 @@
                     toggleForm('login');
                 }
             })
-            .catch(err => alert('系統連線錯誤，請稍後再試'));
+            .catch(err => alert('系統連線錯誤，請稍後再試'))
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.value = '送出';
+            });
         });
     </script>
 </body>
