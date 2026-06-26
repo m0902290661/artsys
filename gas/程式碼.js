@@ -87,6 +87,10 @@ function doPost(e) {
     return login_(userSheet, userData, params);
   }
 
+  if (action === "logout") {
+    return logout_(userSheet, userData, params);
+  }
+
   if (action === "signup") {
     return signup_(userSheet, userData, params);
   }
@@ -146,16 +150,23 @@ function login_(userSheet, userData, params) {
   var headerMap = getHeaderMap_(userSheet);
   var tokenCol = headerMap.sessionToken + 1;
   var expiresCol = headerMap.sessionExpiresAt + 1;
+  var studentId = (params.studentId || "").toString().trim();
+  var password = (params.password || "").toString();
+
+  if (!studentId || !password) {
+    return jsonOutput({ success: false, message: "請輸入學號與密碼。" });
+  }
 
   for (var i = 1; i < userData.length; i++) {
     if (
-      userData[i][0].toString() === params.studentId.toString() &&
-      userData[i][4].toString() === params.password.toString()
+      userData[i][0].toString() === studentId &&
+      userData[i][4].toString() === password
     ) {
       var token = Utilities.getUuid() + "-" + new Date().getTime();
       var expiresAt = new Date(new Date().getTime() + SESSION_TTL_HOURS * 60 * 60 * 1000);
       userSheet.getRange(i + 1, tokenCol).setValue(token);
       userSheet.getRange(i + 1, expiresCol).setValue(expiresAt);
+      SpreadsheetApp.flush();
       return jsonOutput({
         success: true,
         message: "登入成功",
@@ -173,6 +184,28 @@ function login_(userSheet, userData, params) {
     }
   }
   return jsonOutput({ success: false, message: "學號或密碼錯誤" });
+}
+
+function logout_(userSheet, userData, params) {
+  var headerMap = getHeaderMap_(userSheet);
+  var studentId = (params.studentId || params.adminId || "").toString().trim();
+  var sessionToken = (params.sessionToken || "").toString();
+
+  if (!studentId || !sessionToken) {
+    return jsonOutput({ success: true, message: "已登出。" });
+  }
+
+  for (var i = 1; i < userData.length; i++) {
+    if (userData[i][headerMap.studentId].toString() !== studentId) continue;
+    if ((userData[i][headerMap.sessionToken] || "").toString() === sessionToken) {
+      userSheet.getRange(i + 1, headerMap.sessionToken + 1).setValue("");
+      userSheet.getRange(i + 1, headerMap.sessionExpiresAt + 1).setValue("");
+      SpreadsheetApp.flush();
+    }
+    return jsonOutput({ success: true, message: "已登出。" });
+  }
+
+  return jsonOutput({ success: true, message: "已登出。" });
 }
 
 function signup_(userSheet, userData, params) {

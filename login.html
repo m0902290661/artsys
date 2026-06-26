@@ -180,6 +180,10 @@
     <script>
         let GAS_API_URL = "";
 
+        window.addEventListener('pageshow', function() {
+            sessionStorage.removeItem('user');
+        });
+
         function postForm(payload) {
             const formData = new URLSearchParams();
             Object.keys(payload).forEach(key => formData.append(key, payload[key]));
@@ -196,6 +200,8 @@
 
         // 偵測裝置與讀取設定
         document.addEventListener("DOMContentLoaded", function() {
+            sessionStorage.removeItem('user');
+
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
             if (isMobile) {
@@ -260,6 +266,7 @@
                         sessionToken: data.sessionToken || data.user.sessionToken,
                         sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
                     };
+                    sessionStorage.removeItem('user');
                     sessionStorage.setItem('user', JSON.stringify(user));
                     window.location.href = 'index.html'; 
                 } else {

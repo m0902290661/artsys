@@ -146,7 +146,7 @@
     </div>
 
     <div class="left">
-        <h1>115 私立弘明實驗高級中學<br>美術歷程系統</h1>
+        <h1>弘明實驗高級中學<br>115美術歷程系統</h1>
         <hr style="width:100%; border:0; border-top:1px solid #eee;">
         <h2>姓名：<span id="u-name">讀取中...</span></h2>
         <p>
@@ -316,6 +316,17 @@
             window.location.href = 'login.html';
         }
 
+        function clearServerSession() {
+            if (!GAS_API_URL || !currentUser?.studentId || !currentUser?.sessionToken) {
+                return Promise.resolve();
+            }
+            return postForm({
+                action: 'logout',
+                studentId: currentUser.studentId,
+                sessionToken: currentUser.sessionToken
+            }).catch(() => {});
+        }
+
         function hideLoading() {
             document.getElementById('loading-overlay').classList.add('hidden');
         }
@@ -330,8 +341,10 @@
         }
 
         function logout() {
-            sessionStorage.removeItem('user');
-            window.location.href = 'login.html';
+            clearServerSession().finally(() => {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            });
         }
 
         // 撈取 Google Sheet 的時程表 (GET)

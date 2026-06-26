@@ -374,14 +374,34 @@
         }
 
         function logout() {
-            sessionStorage.removeItem('user');
-            window.location.href = 'login.html';
+            clearServerSession().finally(() => {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            });
         }
 
         function forceLogout(message) {
             sessionStorage.removeItem('user');
             if (message) alert(message);
             window.location.href = 'login.html';
+        }
+
+        function clearServerSession() {
+            if (!GAS_API_URL || !currentUser?.studentId || !currentUser?.sessionToken) {
+                return Promise.resolve();
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('action', 'logout');
+            formData.append('studentId', currentUser.studentId);
+            formData.append('adminId', currentUser.studentId);
+            formData.append('sessionToken', currentUser.sessionToken);
+
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).catch(() => {});
         }
 
         function setStatus(id, text, type) {
