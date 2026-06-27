@@ -4,6 +4,9 @@ const SESSION_TTL_HOURS = 8;
 const USER_HEADERS = [
   "studentId", "name", "className", "club", "password", "sessionToken", "sessionExpiresAt"
 ];
+const REPORT_HEADERS = [
+  "createdAt", "reportType", "studentId", "studentName", "className", "contact", "subject", "description", "status", "handledAt", "handledBy"
+];
 
 function authorizeDriveAndSheet() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -62,6 +65,12 @@ function doGet(e) {
       delete user.sessionExpiresAt;
       return user;
     }));
+  }
+
+  if (action === "getReports") {
+    var reportsSession = requireSession_(ss, params, true);
+    if (!reportsSession.success) return jsonOutput(reportsSession);
+    return jsonOutput(getReportRows_(ss));
   }
 
   if (action === "validateSession") {
@@ -141,6 +150,21 @@ function doPost(e) {
     var passwordSession = requireSession_(ss, params, true);
     if (!passwordSession.success) return jsonOutput(passwordSession);
     return updateUserPassword_(userSheet, userData, params);
+  }
+
+  if (action === "submitReport") {
+    var reportSession = requireSession_(ss, params, false);
+    if (!reportSession.success) return jsonOutput(reportSession);
+    if (reportSession.user.studentId.toString() !== (params.studentId || "").toString()) {
+      return jsonOutput({ success: false, message: "登入狀態不符，請重新登入。" });
+    }
+    return submitReport_(ss, params, reportSession.user);
+  }
+
+  if (action === "updateReportStatus") {
+    var reportStatusSession = requireSession_(ss, params, true);
+    if (!reportStatusSession.success) return jsonOutput(reportStatusSession);
+    return updateReportStatus_(ss, params, reportStatusSession.user);
   }
 
   return jsonOutput({ success: false, message: "未知的 POST action" });
@@ -419,6 +443,105 @@ function getSheetObjects_(ss, sheetName, keys) {
     rows.push(item);
   }
   return rows;
+}
+
+function getReportSheet_(ss) {
+  var sheet = ss.getSheetByName("reports");
+  if (!sheet) {
+    sheet = ss.insertSheet("reports");
+    sheet.appendRow(REPORT_HEADERS);
+    return sheet;
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(REPORT_HEADERS);
+    return sheet;
+  }
+
+  var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), REPORT_HEADERS.length)).getValues()[0];
+  for (var i = 0; i < REPORT_HEADERS.length; i++) {
+    if (headers[i] !== REPORT_HEADERS[i]) {
+      sheet.getRange(1, i + 1).setValue(REPORT_HEADERS[i]);
+    }
+  }
+  return sheet;
+}
+
+function submitReport_(ss, params, user) {
+  var reportType = (params.reportType || "").toString().trim();
+  var subject = (params.subject || "").toString().trim();
+  var description = (params.description || "").toString().trim();
+  var contact = (params.contact || "").toString().trim();
+
+  if (!reportType || !subject || !description) {
+    return jsonOutput({ success: false, message: "請填寫問題類型、主旨與問題說明。" });
+  }
+
+  var sheet = getReportSheet_(ss);
+  sheet.appendRow([
+    new Date(),
+    reportType,
+    user.studentId || "",
+    user.name || "",
+    user.className || "",
+    contact,
+    subject,
+    description,
+    "pending",
+    "",
+    ""
+  ]);
+
+  return jsonOutput({ success: true, message: "問題回報已送出，請等待管理員處理。" });
+}
+
+function getReportRows_(ss) {
+  var sheet = getReportSheet_(ss);
+  var data = sheet.getDataRange().getValues();
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    if (!data[i][0] && !data[i][2] && !data[i][6]) continue;
+    rows.push({
+      id: i + 1,
+      createdAt: data[i][0],
+      reportType: data[i][1],
+      studentId: data[i][2],
+      studentName: data[i][3],
+      className: data[i][4],
+      contact: data[i][5],
+      subject: data[i][6],
+      description: data[i][7],
+      status: data[i][8] || "pending",
+      handledAt: data[i][9] || "",
+      handledBy: data[i][10] || ""
+    });
+  }
+  return rows;
+}
+
+function updateReportStatus_(ss, params, adminUser) {
+  var sheet = getReportSheet_(ss);
+  var rowNumber = Number(params.id);
+  var status = (params.status || "").toString();
+  var allowedStatuses = ["pending", "processing", "done"];
+
+  if (!rowNumber || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
+    return jsonOutput({ success: false, message: "找不到要更新的回報。" });
+  }
+  if (allowedStatuses.indexOf(status) === -1) {
+    return jsonOutput({ success: false, message: "狀態不正確。" });
+  }
+
+  sheet.getRange(rowNumber, 9).setValue(status);
+  if (status === "done") {
+    sheet.getRange(rowNumber, 10).setValue(new Date());
+    sheet.getRange(rowNumber, 11).setValue(adminUser.name || adminUser.studentId || "");
+  } else {
+    sheet.getRange(rowNumber, 10).setValue("");
+    sheet.getRange(rowNumber, 11).setValue("");
+  }
+
+  return jsonOutput({ success: true, message: "回報狀態已更新。" });
 }
 
 function appendSubmission_(ss, params, file) {

@@ -1,17 +1,352 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>弘明實驗高中 美術作品歷程檔案系統</title>
+    <title>弘明實驗高中 美術作品歷程檔案系統 - 問題回報</title>
     <style>
-
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #2f343b;
+            background: #f4f6f9;
+            padding: 32px 20px;
+        }
+        main {
+            width: min(100%, 760px);
+            margin: 0 auto;
+        }
+        .top-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: rgb(92, 92, 220);
+            text-decoration: none;
+        }
+        .top-link:hover {
+            text-decoration: underline;
+        }
+        .report-card {
+            padding: 28px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+        .lead {
+            margin: 0 0 22px;
+            color: #666;
+            line-height: 1.7;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #555;
+            font-size: 14px;
+        }
+        .wide {
+            grid-column: 1 / -1;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 11px;
+            border: 1px solid #d8dde6;
+            border-radius: 4px;
+            font: inherit;
+        }
+        textarea {
+            min-height: 128px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        .hint {
+            margin: 6px 0 0;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .password-note {
+            display: none;
+            margin: 14px 0 0;
+            padding: 12px;
+            color: #6b4b00;
+            background: #fff7db;
+            border: 1px solid #f0d98c;
+            border-radius: 6px;
+            line-height: 1.6;
+        }
+        .password-note.active {
+            display: block;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 18px;
+        }
+        button {
+            width: auto;
+            border: 0;
+            color: white;
+            background: rgb(161, 161, 255);
+            cursor: pointer;
+        }
+        button:hover {
+            background: rgb(120, 120, 255);
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        .secondary {
+            color: #444;
+            background: #eef0f5;
+        }
+        .secondary:hover {
+            background: #dde2ec;
+        }
+        .status {
+            min-height: 22px;
+            margin: 14px 0 0;
+            color: #555;
+            line-height: 1.6;
+        }
+        .status.success {
+            color: #2b8a3e;
+        }
+        .status.error {
+            color: #c92a2a;
+        }
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 12px;
+            }
+            .report-card {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
+            .actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+            button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-    <form action="">
-        <h2>問題回報</h2>
-        
-    </form>
+    <main>
+        <a class="top-link" href="index.html">返回系統首頁</a>
+        <section class="report-card">
+            <h1>問題回報</h1>
+            <p class="lead">請填寫下列表單，管理員會依目前登入帳號協助處理。若是密碼修改，請勿填寫原本的密碼。</p>
+
+            <form id="report-form">
+                <div class="field-grid">
+                    <label>問題類型
+                        <select id="report-type" required>
+                            <option value="">請選擇</option>
+                            <option value="password-reset">密碼重設 / 修改密碼</option>
+                            <option value="login">無法登入 / 帳號開通問題</option>
+                            <option value="upload">檔案上傳或繳交問題</option>
+                            <option value="profile">個人資料需更正</option>
+                            <option value="system">系統操作或顯示異常</option>
+                            <option value="other">其他問題</option>
+                        </select>
+                    </label>
+                    <label>登入學號
+                        <input type="text" id="student-id" readonly>
+                    </label>
+                    <label>姓名
+                        <input type="text" id="student-name" readonly>
+                    </label>
+                    <label>班級
+                        <input type="text" id="class-name" readonly>
+                    </label>
+                    <label class="wide">聯絡方式
+                        <input type="text" id="contact" placeholder="例如：Email、電話、班級座號或可聯絡方式">
+                    </label>
+                    <label class="wide">主旨
+                        <input type="text" id="subject" maxlength="80" required>
+                    </label>
+                    <label class="wide">問題說明
+                        <textarea id="description" placeholder="請描述遇到的狀況、發生時間、操作步驟，或需要管理員協助的內容。" required></textarea>
+                    </label>
+                </div>
+
+                <div id="password-note" class="password-note">
+                    密碼修改申請送出後，管理員會依登入帳號在後台協助處理。為了安全，請不要在說明欄填寫原密碼。
+                </div>
+                <p class="hint">送出後會建立一筆待處理紀錄，請留意管理員後續通知。</p>
+
+                <div class="actions">
+                    <button type="submit" id="submit-btn">送出回報</button>
+                    <button type="reset" class="secondary">清除重填</button>
+                </div>
+                <p id="status" class="status"></p>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        let GAS_API_URL = "";
+        let currentUser = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const userData = sessionStorage.getItem('user');
+            if (!userData) {
+                alert('請先登入後再使用問題回報。');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                currentUser = JSON.parse(userData);
+            } catch (err) {
+                sessionStorage.removeItem('user');
+                alert('登入資料異常，請重新登入。');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('student-id').value = currentUser.studentId || '';
+            document.getElementById('student-name').value = currentUser.name || '';
+            document.getElementById('class-name').value = currentUser.className || '';
+
+            fetch('api.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('無法讀取設定檔');
+                    return response.json();
+                })
+                .then(config => {
+                    GAS_API_URL = config.gasUrl;
+                    return validateSession();
+                })
+                .then(user => {
+                    currentUser = user;
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                    document.getElementById('student-id').value = user.studentId || '';
+                    document.getElementById('student-name').value = user.name || '';
+                    document.getElementById('class-name').value = user.className || '';
+                })
+                .catch(err => forceLogout(err.message || '登入已失效，請重新登入。'));
+        });
+
+        document.getElementById('report-type').addEventListener('change', function(e) {
+            document.getElementById('password-note').classList.toggle(
+                'active',
+                e.target.value === 'password-reset'
+            );
+        });
+
+        document.getElementById('report-form').addEventListener('reset', function() {
+            setTimeout(() => {
+                document.getElementById('password-note').classList.remove('active');
+                document.getElementById('student-id').value = currentUser?.studentId || '';
+                document.getElementById('student-name').value = currentUser?.name || '';
+                document.getElementById('class-name').value = currentUser?.className || '';
+                setStatus('', '');
+            }, 0);
+        });
+
+        document.getElementById('report-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!GAS_API_URL) {
+                setStatus('API 尚未就緒，請稍後再試。', 'error');
+                return;
+            }
+
+            const button = document.getElementById('submit-btn');
+            if (button.disabled) return;
+
+            button.disabled = true;
+            button.innerText = '送出中...';
+            setStatus('正在送出回報...', '');
+
+            postForm({
+                action: 'submitReport',
+                reportType: document.getElementById('report-type').value,
+                studentId: currentUser.studentId || '',
+                sessionToken: currentUser.sessionToken || '',
+                contact: document.getElementById('contact').value.trim(),
+                subject: document.getElementById('subject').value.trim(),
+                description: document.getElementById('description').value.trim()
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || '送出失敗');
+                setStatus(data.message || '回報已送出，請等待管理員處理。', 'success');
+                e.target.reset();
+            })
+            .catch(err => setStatus(err.message || '送出失敗，請稍後再試。', 'error'))
+            .finally(() => {
+                button.disabled = false;
+                button.innerText = '送出回報';
+            });
+        });
+
+        function postForm(payload) {
+            const formData = new URLSearchParams();
+            Object.keys(payload).forEach(key => formData.append(key, payload[key] ?? ''));
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            });
+        }
+
+        function validateSession() {
+            if (!currentUser?.studentId || !currentUser?.sessionToken) {
+                return Promise.reject(new Error('登入已失效，請重新登入。'));
+            }
+            const params = new URLSearchParams({
+                action: 'validateSession',
+                studentId: currentUser.studentId,
+                sessionToken: currentUser.sessionToken
+            });
+            return fetch(`${GAS_API_URL}?${params.toString()}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.success) throw new Error(data.message || '登入已失效，請重新登入。');
+                    return data.user;
+                });
+        }
+
+        function forceLogout(message) {
+            sessionStorage.removeItem('user');
+            if (message) alert(message);
+            window.location.href = 'login.html';
+        }
+
+        function setStatus(text, type) {
+            const element = document.getElementById('status');
+            element.innerText = text || '';
+            element.className = `status ${type || ''}`;
+        }
+    </script>
 </body>
 </html>

@@ -10,12 +10,14 @@
             display: flex;
             margin: 0;
             font-family: Arial, sans-serif;
-            height: 100vh;
+            min-height: 100vh;
             background-color: #f4f6f9;
+        }
+        * {
+            box-sizing: border-box;
         }
         .left {
             flex: 0 0 22%;
-            box-sizing: border-box;
             background-color: #fff;
             padding: 30px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
@@ -24,7 +26,6 @@
         }
         .right {
             flex: 0 0 78%;
-            box-sizing: border-box;
             min-width: 0;
             padding: 40px;
             overflow-y: auto;
@@ -56,10 +57,11 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             animation: fadeIn 0.4s ease forwards;
+            overflow-x: auto;
         }
         
         /* 表格樣式 */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; min-width: 760px; border-collapse: collapse; margin-top: 15px; }
         th, td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background-color: #f8f9fa; }
 
@@ -136,6 +138,70 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        @media (max-width: 900px) {
+            body {
+                display: block;
+            }
+            .left {
+                width: 100%;
+                padding: 22px 18px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }
+            .right {
+                width: 100%;
+                padding: 18px;
+                overflow: visible;
+            }
+            .left h1 {
+                font-size: 18px;
+                margin-bottom: 14px;
+            }
+            .left h2 {
+                font-size: 16px;
+            }
+            .menu-link {
+                margin: 6px 0;
+                padding: 12px 14px;
+            }
+            .panel {
+                padding: 20px 16px;
+            }
+            .assignment-actions {
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .right {
+                padding: 12px;
+            }
+            .panel {
+                padding: 16px 12px;
+                border-radius: 6px;
+            }
+            table {
+                min-width: 680px;
+            }
+            th, td {
+                padding: 10px;
+            }
+            .assignment-title {
+                min-width: 140px;
+            }
+            .assignment-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .assignment-actions input[type="file"],
+            .assignment-actions .upload-btn,
+            .danger-btn,
+            #status-panel .upload-btn {
+                width: 100%;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 
@@ -157,6 +223,7 @@
         <br>
         <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程與繳交</a>
         <a href="#" class="menu-link" onclick="switchPanel('status-panel', this)">已繳交內容</a>
+        <a href="question.html" class="menu-link">問題回報</a>
         <a href="#" class="menu-link" onclick="logout()">登出</a>
     </div>
 
