@@ -6,301 +6,448 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>115 私立弘明實驗高級中學 美術歷程管理後台</title>
     <style>
+        :root {
+            --primary: rgb(140, 140, 255);
+            --primary-hover: rgb(110, 110, 255);
+            --danger: #e05252;
+            --success: #2b8a3e;
+            --bg: #f7f9fc;
+            --text: #2f343b;
+        }
+
         body {
             display: flex;
             min-height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
-            color: #2f343b;
-            background-color: #f4f6f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background-color: var(--bg);
         }
+
         * {
             box-sizing: border-box;
         }
+
+        /* 左側側邊欄 */
         .left {
-            width: 280px;
-            padding: 30px;
-            background-color: #fff;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            width: 260px;
+            padding: 30px 20px;
+            background: #fff;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
         }
+
         .right {
             flex: 1;
             min-width: 0;
             padding: 40px;
             overflow-y: auto;
         }
-        h1 { margin: 0 0 18px; font-size: 20px; line-height: 1.4; }
-        h2 { margin: 0 0 12px; font-size: 18px; }
-        h3 { margin-top: 0; }
-        .admin-info { color: #666; line-height: 1.7; }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        h2 {
+            margin: 0 0 8px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .admin-info {
+            color: #777;
+            font-size: 13px;
+            line-height: 1.6;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
         .menu-link {
             display: block;
-            padding: 12px;
-            margin: 8px 0;
-            color: #444;
+            padding: 12px 16px;
+            margin: 4px 0;
+            color: #555;
             text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
         }
-        .menu-link:hover, .menu-link.active {
-            background-color: rgb(161, 161, 255);
+
+        .menu-link:hover {
+            background: #f1f3f9;
+        }
+
+        .menu-link.active {
+            background: var(--primary);
             color: white;
             font-weight: bold;
+            box-shadow: 0 4px 10px rgba(161, 161, 255, 0.3);
         }
+
+        /* 面板面板 */
         .panel {
             display: none;
             background: white;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            animation: fadeIn 0.4s ease forwards;
-            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            animation: fadeIn 0.3s ease;
         }
-        .panel.active { display: block; }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* 摺疊表單區塊 */
+        .collapse-form {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0 20px;
+        }
+
+        .collapse-form.open {
+            max-height: 400px;
+            padding: 20px;
+            margin: 15px 0 20px;
+            border: 1px solid #e5e8ef;
+        }
+
         .toolbar {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             align-items: center;
-            margin: 16px 0;
+            margin: 20px 0;
         }
-        input, textarea, select {
+
+        /* 輸入控制件 */
+        input,
+        textarea,
+        select {
             min-height: 38px;
-            padding: 8px 10px;
-            border: 1px solid #d8dde6;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
             font-size: 14px;
-            font-family: inherit;
+            background: #fff;
+            transition: border-color 0.2s;
         }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
         textarea {
-            min-height: 72px;
+            min-height: 80px;
             resize: vertical;
         }
+
         .field-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(160px, 1fr));
-            gap: 12px;
-            margin: 16px 0;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
         }
+
         .field-grid label {
             display: flex;
             flex-direction: column;
             gap: 6px;
             color: #555;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 600;
         }
-        .field-grid .wide { grid-column: 1 / -1; }
-        .user-form {
-            margin: 14px 0 18px;
-            padding: 16px;
-            background: #f8f9fa;
-            border: 1px solid #e5e8ef;
-            border-radius: 6px;
+
+        .field-grid .wide {
+            grid-column: 1 / -1;
         }
-        .password-tools {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            min-width: 240px;
-        }
-        .password-tools input {
-            width: 150px;
-        }
+
+        /* 按鈕設計 */
         button {
             min-height: 38px;
-            padding: 8px 16px;
+            padding: 8px 20px;
             border: 0;
-            border-radius: 4px;
+            border-radius: 6px;
             color: white;
-            background-color: rgb(161, 161, 255);
+            background: var(--primary);
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:hover { background-color: rgb(120, 120, 255); }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
         button.secondary {
-            color: #444;
-            background-color: #eef0f5;
+            color: #4c535d;
+            background: #f1f3f9;
         }
-        button.secondary:hover { background-color: #dde2ec; }
-        button.danger { background-color: #d94848; }
-        button.danger:hover { background-color: #b83232; }
+
+        button.danger {
+            background: var(--danger);
+        }
+
         button:disabled {
             cursor: not-allowed;
-            opacity: 0.65;
+            opacity: 0.5 !important;
         }
+
+        /* 表格排版 */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
         table {
             width: 100%;
             min-width: 760px;
             border-collapse: collapse;
-            margin-top: 15px;
-            background: white;
+            font-size: 14px;
         }
-        th, td {
-            border-bottom: 1px solid #e5e8ef;
-            padding: 12px;
+
+        th,
+        td {
+            border-bottom: 1px solid #edf0f5;
+            padding: 14px 12px;
             text-align: left;
-            vertical-align: top;
         }
-        th { background-color: #f8f9fa; color: #555; }
-        .muted { color: #666; line-height: 1.6; }
-        .status {
-            min-height: 22px;
-            margin: 12px 0 0;
-            color: #555;
-        }
-        .status.error { color: #c92a2a; }
-        .status.success { color: #2b8a3e; }
-        .empty {
-            padding: 18px;
-            color: #666;
+
+        th {
             background: #f8f9fa;
-            border-radius: 6px;
+            color: #606266;
+            font-weight: 600;
         }
-        .status-active { color: #2b8a3e; font-weight: bold; }
-        .status-processing { color: #1864ab; font-weight: bold; }
-        .status-revoked { color: #c92a2a; }
+
+        tr:hover td {
+            background: #fafbfc;
+        }
+
+        .muted {
+            color: #888;
+            font-size: 14px;
+            margin: 4px 0 20px;
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            color: #909399;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .status-active {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .status-processing {
+            color: #1864ab;
+            font-weight: bold;
+        }
+
+        .status-revoked {
+            color: #909399;
+        }
+
         .report-description {
-            max-width: 360px;
+            max-width: 320px;
             white-space: pre-wrap;
-            line-height: 1.6;
+            color: #666;
+            font-size: 13px;
+            margin-top: 4px;
         }
+
         .qr-box {
             display: none;
-            margin-top: 16px;
+            margin: 15px 0;
             padding: 16px;
             border: 1px solid #e5e8ef;
-            border-radius: 6px;
+            border-radius: 8px;
             background: #f8f9fa;
+            max-width: 240px;
+            text-align: center;
         }
-        .qr-box.active { display: block; }
-        .qr-box img {
-            width: 180px;
-            height: 180px;
+
+        .qr-box.active {
             display: block;
-            margin-top: 10px;
-            background: white;
+            animation: fadeIn 0.3s;
         }
+
+        .qr-box img {
+            width: 160px;
+            height: 160px;
+            display: block;
+            margin: 10px auto;
+        }
+
+        /* 全域懸浮 Toast 讀取條 */
+        .global-loader {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .global-loader.show {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @media (max-width: 900px) {
-            body { display: block; }
-            .left {
-                width: 100%;
-                padding: 22px 18px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            from {
+                opacity: 0;
+                transform: translateY(6px);
             }
-            .right {
-                width: 100%;
-                padding: 18px;
-                overflow: visible;
-            }
-            .panel {
-                padding: 20px 16px;
-            }
-            .field-grid { grid-template-columns: 1fr; }
-            .toolbar {
-                align-items: stretch;
-            }
-            .toolbar input,
-            .toolbar select,
-            .toolbar button,
-            .user-form button {
-                width: 100%;
-            }
-            .password-tools {
-                min-width: 0;
-            }
-            .password-tools input {
-                width: 100%;
-                flex: 1 1 180px;
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        @media (max-width: 560px) {
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                display: block;
+            }
+
+            .left {
+                width: 100%;
+                padding: 20px;
+            }
+
             .right {
-                padding: 12px;
+                padding: 20px;
             }
-            .panel {
-                padding: 16px 12px;
-                border-radius: 6px;
-            }
-            h1 {
-                font-size: 18px;
-            }
-            table {
-                min-width: 680px;
-            }
-            th, td {
-                padding: 10px;
-            }
-            input, textarea, select, button {
-                width: 100%;
-                font-size: 16px;
-            }
-            .password-tools {
+
+            .toolbar {
                 display: grid;
-                grid-template-columns: 1fr;
-                width: 100%;
-            }
-            .qr-box img {
-                width: min(180px, 100%);
-                height: auto;
-                aspect-ratio: 1;
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
 </head>
 
 <body>
+    <div id="loading-screen"
+        style="position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;transition:opacity .3s;">
+        <div
+            style="width:45px;height:45px;border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;">
+        </div>
+        <div style="margin-top:16px;color:#666;font-weight:bold;font-size:15px;">安全加載中...</div>
+    </div>
+
+    <div id="global-loader" class="global-loader">
+        <div class="spinner"></div>
+        <span id="loader-text">雲端資料同步中...</span>
+    </div>
+
     <aside class="left">
-        <h1>弘明實驗高級中學<br>115美術歷程管理後台</h1>
-        <hr style="width:100%; border:0; border-top:1px solid #eee;">
-        <p class="admin-info">
+        <h1>弘明實驗高級中學<br>美術歷程管理後台</h1>
+        <hr style="width:100%; border:0; border-top:1px solid #eee; margin:15px 0;">
+        <div class="admin-info">
             管理員：<span id="admin-name">讀取中...</span><br>
             帳號：<span id="admin-id">-</span>
-        </p>
+        </div>
         <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程管理</a>
         <a href="#" class="menu-link" onclick="switchPanel('submissions-panel', this)">繳交紀錄</a>
+        <a href="#" class="menu-link" onclick="switchPanel('unlock-panel', this)">遲交解鎖管理</a>
         <a href="#" class="menu-link" onclick="switchPanel('reports-panel', this)">問題回報</a>
         <a href="#" class="menu-link" onclick="switchPanel('users-panel', this)">帳號清單</a>
-        <a href="#" class="menu-link" onclick="logout()">登出</a>
+        <a href="#" class="menu-link" onclick="logout()" style="color:var(--danger); margin-top:auto;">登出後台</a>
     </aside>
 
     <main class="right">
         <section id="schedule-panel" class="panel active">
             <h2>時程管理</h2>
-            <p class="muted">新增或刪除學生端顯示的美術歷程時程。</p>
-            <form id="schedule-form">
-                <div class="field-grid">
-                    <label>項目
-                        <input type="text" id="task" required>
-                    </label>
-                    <label>截止日期
-                        <input type="date" id="deadline" required>
-                    </label>
-                    <label class="wide">備註
-                        <textarea id="note"></textarea>
-                    </label>
-                </div>
-                <button type="submit" id="schedule-submit">新增時程</button>
-                <button type="button" class="secondary" onclick="loadSchedule()">重新整理</button>
-            </form>
-            <p id="schedule-status" class="status"></p>
-            <table>
-                <thead>
-                    <tr><th>項目</th><th>截止日期</th><th>備註</th><th>操作</th></tr>
-                </thead>
-                <tbody id="schedule-list">
-                    <tr><td colspan="4">正在載入時程資料...</td></tr>
-                </tbody>
-            </table>
+            <p class="muted">設定與調整學生端顯示的美術歷程時程項目。</p>
+
+            <button type="button" id="schedule-toggle-btn" onclick="openScheduleForm('add')">➕ 新增時程項目</button>
+            <button type="button" class="secondary" onclick="loadSchedule()" style="margin-left: 8px;">🔄 重新整理</button>
+
+            <div id="schedule-collapse" class="collapse-form">
+                <form id="schedule-form">
+                    <input type="hidden" id="schedule-action-mode" value="add">
+                    <input type="hidden" id="schedule-edit-id" value="">
+
+                    <h3 id="schedule-form-title" style="margin-top:0; font-size:16px; color:#333;">新增時程項目</h3>
+                    <div class="field-grid">
+                        <label>項目名稱<input type="text" id="task" required></label>
+                        <label>截止日期<input type="date" id="deadline" required></label>
+                        <label class="wide">項目備註<textarea id="note"></textarea></label>
+                    </div>
+                    <button type="submit" id="schedule-submit">確認儲存並發布</button>
+                    <button type="button" class="secondary" onclick="closeScheduleForm()">取消</button>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>截止日期</th>
+                            <th>備註</th>
+                            <th style="width: 140px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-list">
+                        <tr>
+                            <td colspan="4" class="empty">點擊重新整理或等待資料載入...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <section id="submissions-panel" class="panel">
             <h2>繳交紀錄</h2>
+            <p class="muted">檢視全校學生美術歷程檔案繳交進度，支援 QR Code 快速審查。</p>
+
             <div class="toolbar">
                 <select id="submission-task-filter">
                     <option value="">全部項目</option>
@@ -313,28 +460,54 @@
                     <option value="active">有效繳交</option>
                     <option value="revoked">已撤銷</option>
                 </select>
-                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、班級">
-                <button type="button" onclick="loadSubmissions()">重新整理</button>
-                <button type="button" class="danger" id="clear-submissions-btn" onclick="clearSubmissions(this)">清除繳交紀錄</button>
+                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、班級..."
+                    style="flex: 1; min-width: 200px;">
+                <button type="button" class="secondary" onclick="loadSubmissions()">🔄 重新整理</button>
+                <button type="button" class="danger" id="clear-submissions-btn" onclick="clearSubmissions(this)">⚠️
+                    清除紀錄</button>
             </div>
-            <div id="qr-box" class="qr-box">
-                <strong id="qr-title">檔案 QR Code</strong>
-                <img id="qr-image" alt="檔案 QR Code">
-                <p><a id="qr-link" href="#" target="_blank" rel="noopener">開啟檔案</a></p>
-            </div>
-            <p id="submissions-status" class="status"></p>
-            <table>
-                <thead>
-                    <tr><th>項目</th><th>學號</th><th>姓名</th><th>班級</th><th>檔案</th><th>時間</th><th>狀態</th><th>QR Code</th></tr>
-                </thead>
-                <tbody id="submissions-list">
-                    <tr><td colspan="8">正在載入繳交紀錄...</td></tr>
-                </tbody>
-            </table>
-        </section>
 
+            <div id="qr-box" class="qr-box">
+                <strong id="qr-title" style="font-size:14px; color:#333;">檔案 QR Code</strong>
+                <img id="qr-image" alt="QR Code">
+                <p style="margin: 8px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"
+                        style="color:var(--primary); font-weight:bold; text-decoration:none;">在新分頁開啟檔案 ↗</a></p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>學號</th>
+                            <th>姓名</th>
+                            <th>班級</th>
+                            <th>檔案名稱</th>
+                            <th>時間</th>
+                            <th>狀態</th>
+                            <th style="width: 90px;">QR Code</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissions-list">
+                        <tr>
+                            <td colspan="8" class="empty">點擊重新整理或等待資料載入...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="unlock-panel" class="panel">
+            <h2>遲交解鎖管理</h2>
+            <p class="muted">指定學生學號與美術歷程項目名稱，授予該生單次遲交繳交權限。</p>
+            <div class="field-grid" style="max-width: 600px;">
+                <label>學號<input type="text" id="unlock-student-id"></label>
+                <label>任務名稱 (需與時程項目名稱完全一致)<input type="text" id="unlock-task-name"></label>
+            </div>
+            <button type="button" onclick="performUnlock()">✅ 授予遲交權限</button>
+        </section>
         <section id="reports-panel" class="panel">
             <h2>問題回報</h2>
+            <p class="muted">處理學生端提交的系統異常或密碼重設申請。</p>
             <div class="toolbar">
                 <select id="report-status-filter">
                     <option value="">全部狀態</option>
@@ -345,55 +518,73 @@
                 <select id="report-type-filter">
                     <option value="">全部類型</option>
                 </select>
-                <input type="text" id="report-keyword" placeholder="搜尋學號、姓名、班級、主旨">
-                <button type="button" onclick="loadReports()">重新整理</button>
+                <input type="text" id="report-keyword" placeholder="搜尋姓名、學號、說明主旨..." style="flex: 1; min-width: 200px;">
+                <button type="button" class="secondary" onclick="loadReports()">🔄 重新整理</button>
             </div>
-            <p id="reports-status" class="status"></p>
-            <table>
-                <thead>
-                    <tr><th>時間</th><th>類型</th><th>學號</th><th>姓名</th><th>班級</th><th>聯絡方式</th><th>主旨與說明</th><th>狀態</th><th>操作</th></tr>
-                </thead>
-                <tbody id="reports-list">
-                    <tr><td colspan="9">正在載入問題回報...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>時間</th>
+                            <th>類型</th>
+                            <th>學號/姓名/班級</th>
+                            <th>聯絡方式</th>
+                            <th>主旨與說明內容</th>
+                            <th>當前狀態</th>
+                            <th style="width: 180px;">狀態變更操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-list">
+                        <tr>
+                            <td colspan="7" class="empty">點擊重新整理或等待資料載入...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <section id="users-panel" class="panel">
             <h2>帳號清單</h2>
-            <form id="user-form" class="user-form">
-                <div class="field-grid">
-                    <label>學號
-                        <input type="text" id="new-user-id" required>
-                    </label>
-                    <label>姓名
-                        <input type="text" id="new-user-name" required>
-                    </label>
-                    <label>班級
-                        <input type="text" id="new-user-class" required>
-                    </label>
-                    <label>美術社團
-                        <input type="text" id="new-user-club">
-                    </label>
-                    <label>初始密碼
-                        <input type="password" id="new-user-password">
-                    </label>
-                </div>
-                <button type="submit" id="user-submit">增加人員</button>
-            </form>
-            <div class="toolbar">
-                <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、班級、社團">
-                <button type="button" onclick="loadUsers()">重新整理</button>
+            <p class="muted">建立新學生帳號或強制覆蓋學生登入密碼。</p>
+
+            <button type="button" onclick="toggleCollapseForm('user-collapse')">➕ 新增學生帳號</button>
+
+            <div id="user-collapse" class="collapse-form">
+                <form id="user-form">
+                    <div class="field-grid">
+                        <label>學號 (強制唯一)<input type="text" id="new-user-id" required></label>
+                        <label>姓名<input type="text" id="new-user-name" required></label>
+                        <label>班級<input type="text" id="new-user-class" required></label>
+                        <label>美術社團<input type="text" id="new-user-club"></label>
+                        <label>初始登入密碼<input type="password" id="new-user-password"></label>
+                    </div>
+                    <button type="submit" id="user-submit">確認建立帳號</button>
+                    <button type="button" class="secondary" onclick="toggleCollapseForm('user-collapse')">取消</button>
+                </form>
             </div>
-            <p id="users-status" class="status"></p>
-            <table>
-                <thead>
-                    <tr><th>學號</th><th>姓名</th><th>班級</th><th>美術社團</th><th>修改密碼</th></tr>
-                </thead>
-                <tbody id="users-list">
-                    <tr><td colspan="5">正在載入帳號清單...</td></tr>
-                </tbody>
-            </table>
+
+            <div class="toolbar">
+                <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、班級、社團..." style="flex: 1;">
+                <button type="button" class="secondary" onclick="loadUsers()">🔄 重新整理</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>學號</th>
+                            <th>姓名</th>
+                            <th>班級</th>
+                            <th>美術社團</th>
+                            <th style="width: 260px;">強制重設新密碼</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list">
+                        <tr>
+                            <td colspan="5" class="empty">點擊重新整理或等待資料載入...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
 
@@ -405,33 +596,102 @@
         let reportRows = [];
         let userRows = [];
 
+
+        function performUnlock() {
+            const studentId = document.getElementById('unlock-student-id').value.trim();
+            const task = document.getElementById('unlock-task-name').value.trim();
+
+            if (!studentId || !task) {
+                alert("請輸入學號與任務名稱。");
+                return;
+            }
+
+            if (!confirm(`確定要為學號 ${studentId} 開啟「${task}」項目的遲交權限嗎？`)) return;
+
+            apiPost({
+                action: 'addUnlock',
+                targetStudentId: studentId,
+                task: task
+            }, '正在處理授權...')
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        document.getElementById('unlock-student-id').value = '';
+                        document.getElementById('unlock-task-name').value = '';
+                    }
+                })
+                .catch(err => alert("授權失敗: " + err.message));
+        }
+        // 全面載入處理與欄位鎖定機制
+        function toggleGlobalLoader(show, text = "雲端資料同步中...") {
+            const loader = document.getElementById('global-loader');
+            document.getElementById('loader-text').innerText = text;
+            show ? loader.classList.add('show') : loader.classList.remove('show');
+
+            document.querySelectorAll('input, select, button, textarea').forEach(el => {
+                if (!el.classList.contains('menu-link')) el.disabled = show;
+            });
+        }
+
+        function toggleCollapseForm(id) {
+            document.getElementById(id).classList.toggle('open');
+        }
+
+        // 💡 控製時程表單模式（新增 或 編輯）
+        function openScheduleForm(mode, index = null) {
+            const formBox = document.getElementById('schedule-collapse');
+            const titleEl = document.getElementById('schedule-form-title');
+            const modeInput = document.getElementById('schedule-action-mode');
+            const idInput = document.getElementById('schedule-edit-id');
+
+            const taskInput = document.getElementById('task');
+            const deadlineInput = document.getElementById('deadline');
+            const noteInput = document.getElementById('note');
+
+            if (mode === 'edit' && index !== null) {
+                const item = scheduleRows[index];
+                titleEl.innerText = "✏️ 編輯現有時程";
+                modeInput.value = "edit";
+                idInput.value = item.id || item.row || item.rowIndex || index;
+
+                taskInput.value = item.task || '';
+                // 格式化日期格式供 HTML Date Input 讀取 (YYYY-MM-DD)
+                if (item.deadline) {
+                    const d = new Date(item.deadline);
+                    if (!Number.isNaN(d.getTime())) {
+                        deadlineInput.value = d.toISOString().split('T')[0];
+                    } else {
+                        deadlineInput.value = '';
+                    }
+                } else {
+                    deadlineInput.value = '';
+                }
+                noteInput.value = item.note || '';
+
+                formBox.classList.add('open');
+                formBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                titleEl.innerText = "➕ 新增時程項目";
+                modeInput.value = "add";
+                idInput.value = "";
+                document.getElementById('schedule-form').reset();
+                formBox.classList.toggle('open');
+            }
+        }
+
+        function closeScheduleForm() {
+            document.getElementById('schedule-collapse').classList.remove('open');
+            document.getElementById('schedule-form').reset();
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const userData = sessionStorage.getItem('user');
-            if (!userData) {
-                alert('未登入，請先登入系統！');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            try {
-                currentUser = JSON.parse(userData);
-            } catch (err) {
-                sessionStorage.removeItem('user');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (currentUser.className !== "管理員") {
-                alert("您不是管理員，將返回學生頁面。");
-                window.location.href = "index.html";
-                return;
-            }
+            if (!userData) { window.location.href = 'login.html'; return; }
+            try { currentUser = JSON.parse(userData); } catch (err) { window.location.href = 'login.html'; return; }
+            if (currentUser.className !== "管理員") { window.location.href = "index.html"; return; }
 
             fetch('api.json')
-                .then(res => {
-                    if (!res.ok) throw new Error('無法讀取設定檔');
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(config => {
                     GAS_API_URL = config.gasUrl;
                     return validateSession();
@@ -441,21 +701,15 @@
                     sessionStorage.setItem('user', JSON.stringify(user));
                     document.getElementById('admin-name').innerText = currentUser.name || '管理員';
                     document.getElementById('admin-id').innerText = currentUser.studentId || '-';
-                    loadSchedule();
-                    loadSubmissions();
-                    loadReports();
-                    loadUsers();
+
+                    Promise.all([loadSchedule(), loadSubmissions(), loadReports(), loadUsers()]).finally(() => {
+                        const loading = document.getElementById("loading-screen");
+                        if (loading) { loading.style.opacity = '0'; setTimeout(() => loading.remove(), 300); }
+                    });
                 })
                 .catch(err => {
                     if (err && err.redirect) return;
-                    if (/登入|密鑰|逾時|權限/.test(err.message || '')) {
-                        forceLogout(err.message);
-                        return;
-                    }
-                    setStatus('schedule-status', '系統初始化失敗，請確認 api.json。', 'error');
-                    setStatus('submissions-status', '系統初始化失敗，請確認 api.json。', 'error');
-                    setStatus('reports-status', '系統初始化失敗，請確認 api.json。', 'error');
-                    setStatus('users-status', '系統初始化失敗，請確認 api.json。', 'error');
+                    forceLogout(err.message || '初始化失敗，引導回登入頁。');
                 });
 
             document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
@@ -473,9 +727,11 @@
             document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
             document.getElementById(panelId).classList.add('active');
             element.classList.add('active');
+            document.querySelectorAll('.collapse-form').forEach(form => form.classList.remove('open'));
         }
 
         function logout() {
+            toggleGlobalLoader(true, "安全登出中...");
             clearServerSession().finally(() => {
                 sessionStorage.removeItem('user');
                 window.location.href = 'login.html';
@@ -489,240 +745,136 @@
         }
 
         function clearServerSession() {
-            if (!GAS_API_URL || !currentUser?.studentId || !currentUser?.sessionToken) {
-                return Promise.resolve();
-            }
-
+            if (!GAS_API_URL || !currentUser?.studentId || !currentUser?.sessionToken) return Promise.resolve();
             const formData = new URLSearchParams();
             formData.append('action', 'logout');
             formData.append('studentId', currentUser.studentId);
             formData.append('adminId', currentUser.studentId);
             formData.append('sessionToken', currentUser.sessionToken);
-
-            return fetch(GAS_API_URL, {
-                method: 'POST',
-                body: formData.toString(),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            }).catch(() => {});
-        }
-
-        function setStatus(id, text, type) {
-            const element = document.getElementById(id);
-            element.innerText = text || '';
-            element.className = `status ${type || ''}`;
+            return fetch(GAS_API_URL, { method: 'POST', body: formData.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(() => { });
         }
 
         function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, char => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            }[char]));
+            return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
         }
 
         function formatDate(value) {
             if (!value) return '-';
             const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return escapeHtml(value);
-            return date.toLocaleDateString('zh-TW');
+            return Number.isNaN(date.getTime()) ? escapeHtml(value) : date.toLocaleDateString('zh-TW');
         }
 
         function normalizeRows(data) {
             if (Array.isArray(data)) return data;
-            if (Array.isArray(data.rows)) return data.rows;
-            if (Array.isArray(data.data)) return data.data;
-            if (Array.isArray(data.submissions)) return data.submissions;
-            if (Array.isArray(data.reports)) return data.reports;
-            if (Array.isArray(data.users)) return data.users;
+            if (Array.isArray(data.rows || data.data || data.submissions || data.reports || data.users)) return data.rows || data.data || data.submissions || data.reports || data.users;
             return [];
         }
 
         function getAuthParams() {
-            return {
-                adminId: currentUser?.studentId || '',
-                studentId: currentUser?.studentId || '',
-                sessionToken: currentUser?.sessionToken || ''
-            };
+            return { adminId: currentUser?.studentId || '', studentId: currentUser?.studentId || '', sessionToken: currentUser?.sessionToken || '' };
         }
 
-        function appendAuth(url) {
-            const params = new URLSearchParams(getAuthParams());
-            return `${url}&${params.toString()}`;
-        }
+        function appendAuth(url) { return `${url}&${new URLSearchParams(getAuthParams()).toString()}`; }
 
         function validateSession() {
-            if (!currentUser?.studentId || !currentUser?.sessionToken) {
-                return Promise.reject(new Error('登入已失效，請重新登入。'));
-            }
-
+            if (!currentUser?.studentId || !currentUser?.sessionToken) return Promise.reject(new Error('登入失效'));
             return fetch(appendAuth(`${GAS_API_URL}?action=validateSession`))
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
-                    if (!data.success) throw new Error(data.message || '登入已失效，請重新登入。');
-                    if (data.user.className !== "管理員") {
-                        alert("您不是管理員，將返回學生頁面。");
-                        window.location.href = "index.html";
-                        throw { redirect: true };
-                    }
+                    if (!data.success) throw new Error(data.message);
+                    if (data.user.className !== "管理員") { window.location.href = "index.html"; throw { redirect: true }; }
                     return data.user;
                 });
         }
 
-        function apiGet(action) {
+        function apiGet(action, loaderText = "正在讀取雲端資料...") {
+            toggleGlobalLoader(true, loaderText);
             return fetch(appendAuth(`${GAS_API_URL}?action=${encodeURIComponent(action)}`))
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
-                    if (data && data.success === false) {
-                        throw new Error(data.message || 'API 操作失敗');
-                    }
+                    if (data && data.success === false) throw new Error(data.message);
                     return data;
-                });
+                })
+                .finally(() => toggleGlobalLoader(false));
         }
 
-        function apiPost(payload) {
+        function apiPost(payload, loaderText = "正將資料寫入雲端庫...") {
+            toggleGlobalLoader(true, loaderText);
             const formData = new URLSearchParams();
             const authedPayload = { ...getAuthParams(), ...payload };
             Object.keys(authedPayload).forEach(key => formData.append(key, authedPayload[key] ?? ''));
-            return fetch(GAS_API_URL, {
-                method: 'POST',
-                body: formData.toString(),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            })
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.success === false && /登入|密鑰|逾時|權限/.test(data.message || '')) {
-                    forceLogout(data.message);
-                    throw new Error(data.message);
-                }
-                return data;
-            });
+            return fetch(GAS_API_URL, { method: 'POST', body: formData.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success === false && /登入|密鑰|逾時|權限/.test(data.message || '')) {
+                        forceLogout(data.message);
+                        throw new Error(data.message);
+                    }
+                    return data;
+                })
+                .finally(() => toggleGlobalLoader(false));
         }
 
         function loadSchedule() {
-            if (!GAS_API_URL) return;
-            setStatus('schedule-status', '正在載入時程...', '');
-            apiGet('getSchedule')
-                .then(data => {
-                    scheduleRows = normalizeRows(data);
-                    renderSchedule();
-                    setStatus('schedule-status', '', '');
-                })
-                .catch(err => {
-                    scheduleRows = [];
-                    renderSchedule();
-                    setStatus('schedule-status', '時程載入失敗，請確認 GAS 是否支援 getSchedule。', 'error');
-                });
+            return apiGet('getSchedule', '正在整理時程表...')
+                .then(data => { scheduleRows = normalizeRows(data); renderSchedule(); })
+                .catch(() => { scheduleRows = []; renderSchedule(); });
         }
 
         function renderSchedule() {
             const tbody = document.getElementById('schedule-list');
-            if (scheduleRows.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前尚無安排時程。</div></td></tr>";
-                return;
-            }
-
+            if (scheduleRows.length === 0) { tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前尚無安排時程。</div></td></tr>"; return; }
             tbody.innerHTML = scheduleRows.map((item, index) => {
                 const id = item.id || item.row || item.rowIndex || index;
                 return `
                     <tr>
-                        <td>${escapeHtml(item.task)}</td>
+                        <td style="font-weight:600;">${escapeHtml(item.task)}</td>
                         <td>${formatDate(item.deadline)}</td>
-                        <td>${escapeHtml(item.note || '')}</td>
-                        <td><button type="button" class="danger delete-schedule" data-id="${escapeHtml(id)}">刪除</button></td>
-                    </tr>
-                `;
+                        <td style="color:#666;">${escapeHtml(item.note || '-')}</td>
+                        <td>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button>
+                                <button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button>
+                            </div>
+                        </td>
+                    </tr>`;
             }).join('');
         }
 
-        document.getElementById('schedule-form').addEventListener('submit', function(e) {
+        document.getElementById('schedule-form').addEventListener('submit', function (e) {
             e.preventDefault();
-            if (!GAS_API_URL) return;
+            const mode = document.getElementById('schedule-action-mode').value;
+            const targetId = document.getElementById('schedule-edit-id').value;
 
-            const button = document.getElementById('schedule-submit');
-            if (button.disabled) return;
-            button.disabled = true;
-            setStatus('schedule-status', '正在新增時程...', '');
+            // ⚡ 根據模式決定 action 分支 (不更動後端，若要變更既有資料，若 GAS 僅支援 addSchedule，此處維持發送，或對應你的後端分支)
+            const actionName = (mode === 'edit') ? 'editSchedule' : 'addSchedule';
+            const loaderString = (mode === 'edit') ? '正在儲存變更內容...' : '正在發布新項目...';
 
             apiPost({
-                action: 'addSchedule',
+                action: actionName,
+                id: targetId, // 編輯模式下會傳送目標 ID 供 GAS 識別
                 task: document.getElementById('task').value.trim(),
                 deadline: document.getElementById('deadline').value,
-                note: document.getElementById('note').value.trim(),
-                adminId: currentUser.studentId || ''
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '新增失敗');
-                setStatus('schedule-status', data.message || '時程已新增。', 'success');
-                e.target.reset();
-                loadSchedule();
-            })
-            .catch(err => {
-                setStatus('schedule-status', err.message || '新增失敗，請確認 GAS 是否支援 addSchedule。', 'error');
-            })
-            .finally(() => {
-                button.disabled = false;
-            });
+                note: document.getElementById('note').value.trim()
+            }, loaderString)
+                .then(data => {
+                    alert(data.message || '資料已儲存。');
+                    closeScheduleForm();
+                    loadSchedule();
+                }).catch(err => alert(err.message || '操作失敗。'));
         });
 
-        document.getElementById('schedule-list').addEventListener('click', function(e) {
-            const button = e.target.closest('.delete-schedule');
-            if (!button) return;
-            deleteSchedule(button);
-        });
-
-        function deleteSchedule(button) {
-            if (button.disabled) return;
+        function deleteSchedule(id) {
             if (!confirm('確定要刪除此時程嗎？')) return;
-            const id = button.dataset.id;
-            button.disabled = true;
-            button.innerText = '刪除中...';
-            setStatus('schedule-status', '正在刪除時程...', '');
-
-            apiPost({
-                action: 'deleteSchedule',
-                id: id,
-                adminId: currentUser.studentId || ''
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '刪除失敗');
-                setStatus('schedule-status', data.message || '時程已刪除。', 'success');
-                loadSchedule();
-            })
-            .catch(err => {
-                setStatus('schedule-status', err.message || '刪除失敗，請確認 GAS 是否支援 deleteSchedule。', 'error');
-            })
-            .finally(() => {
-                button.disabled = false;
-                button.innerText = '刪除';
-            });
+            apiPost({ action: 'deleteSchedule', id: id }, '正在刪除項目...')
+                .then(data => { alert(data.message || '已刪除。'); loadSchedule(); })
+                .catch(err => alert(err.message || '刪除失敗。'));
         }
 
         function loadSubmissions() {
-            if (!GAS_API_URL) return;
-            setStatus('submissions-status', '正在載入繳交紀錄...', '');
-            apiGet('getSubmissions')
-                .then(data => {
-                    submissionRows = normalizeRows(data);
-                    populateSubmissionFilters();
-                    renderSubmissions();
-                    setStatus('submissions-status', '', '');
-                })
-                .catch(err => {
-                    submissionRows = [];
-                    renderSubmissions();
-                    setStatus('submissions-status', '繳交紀錄載入失敗，請確認 GAS 是否支援 getSubmissions。', 'error');
-                });
+            return apiGet('getSubmissions', '正在彙整學生繳交紀錄...')
+                .then(data => { submissionRows = normalizeRows(data); populateSubmissionFilters(); renderSubmissions(); })
+                .catch(() => { submissionRows = []; renderSubmissions(); });
         }
 
         function renderSubmissions() {
@@ -731,131 +883,50 @@
             const taskFilter = document.getElementById('submission-task-filter').value;
             const classFilter = document.getElementById('submission-class-filter').value;
             const statusFilter = document.getElementById('submission-status-filter').value;
+
             const rows = submissionRows.filter(item => {
-                const text = `${item.task || item.scheduleTask || ''} ${item.studentId || ''} ${item.studentName || item.name || ''} ${item.className || ''} ${item.filename || ''}`.toLowerCase();
-                const taskMatches = !taskFilter || (item.task || item.scheduleTask || '') === taskFilter;
-                const classMatches = !classFilter || (item.className || '') === classFilter;
-                const rowStatus = item.status === 'revoked' ? 'revoked' : 'active';
-                const statusMatches = !statusFilter || rowStatus === statusFilter;
-                return taskMatches && classMatches && statusMatches && text.includes(keyword);
+                const text = `${item.task || item.scheduleTask || ''} ${item.studentId || ''} ${item.studentName || item.name || ''} ${item.className || ''}`.toLowerCase();
+                return (!taskFilter || (item.task || item.scheduleTask || '') === taskFilter) && (!classFilter || (item.className || '') === classFilter) && (!statusFilter || (item.status === 'revoked' ? 'revoked' : 'active') === statusFilter) && text.includes(keyword);
             });
 
-            if (rows.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>目前沒有符合條件的繳交紀錄。</div></td></tr>";
-                return;
-            }
-
+            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>沒有符合條件的紀錄。</div></td></tr>"; return; }
             tbody.innerHTML = rows.map(item => {
                 const fileUrl = item.url || item.fileUrl || item.link || '';
                 const filename = item.filename || item.fileName || '查看檔案';
-                const fileCell = fileUrl
-                    ? `<a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener">${escapeHtml(filename)}</a>`
-                    : escapeHtml(filename);
-                const isRevoked = item.status === 'revoked';
-                const statusCell = isRevoked
-                    ? '<span class="status-revoked">已撤銷</span>'
-                    : '<span class="status-active">有效繳交</span>';
-                const qrCell = fileUrl
-                    ? `<button type="button" class="secondary show-qr" data-url="${escapeHtml(fileUrl)}" data-title="${escapeHtml(filename)}">產生</button>`
-                    : '-';
-                return `
-                    <tr>
-                        <td>${escapeHtml(item.task || item.scheduleTask || '')}</td>
-                        <td>${escapeHtml(item.studentId || '')}</td>
-                        <td>${escapeHtml(item.studentName || item.name || '')}</td>
-                        <td>${escapeHtml(item.className || '')}</td>
-                        <td>${fileCell}</td>
-                        <td>${escapeHtml(item.createdAt || item.timestamp || item.uploadTime || '')}</td>
-                        <td>${statusCell}</td>
-                        <td>${qrCell}</td>
-                    </tr>
-                `;
+                const fileCell = fileUrl ? `<a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(filename)}</a>` : escapeHtml(filename);
+                return `<tr><td>${escapeHtml(item.task || item.scheduleTask || '')}</td><td>${escapeHtml(item.studentId || '')}</td><td>${escapeHtml(item.studentName || item.name || '')}</td><td>${escapeHtml(item.className || '')}</td><td>${fileCell}</td><td>${escapeHtml(item.createdAt || item.timestamp || '')}</td><td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : '<span class="status-active">有效繳交</span>'}</td><td>${fileUrl ? `<button type="button" class="secondary" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="showQrCode('${escapeHtml(fileUrl)}', '${escapeHtml(filename)}')">產生</button>` : '-'}</td></tr>`;
             }).join('');
         }
 
         function populateSubmissionFilters() {
             const taskSelect = document.getElementById('submission-task-filter');
             const classSelect = document.getElementById('submission-class-filter');
-            const currentTask = taskSelect.value;
-            const currentClass = classSelect.value;
+            const currentTask = taskSelect.value, currentClass = classSelect.value;
             const tasks = [...new Set(submissionRows.map(item => item.task || item.scheduleTask || '').filter(Boolean))].sort();
             const classes = [...new Set(submissionRows.map(item => item.className || '').filter(Boolean))].sort();
-
-            taskSelect.innerHTML = '<option value="">全部項目</option>' + tasks.map(task =>
-                `<option value="${escapeHtml(task)}">${escapeHtml(task)}</option>`
-            ).join('');
-            classSelect.innerHTML = '<option value="">全部班級</option>' + classes.map(className =>
-                `<option value="${escapeHtml(className)}">${escapeHtml(className)}</option>`
-            ).join('');
-            taskSelect.value = tasks.includes(currentTask) ? currentTask : '';
-            classSelect.value = classes.includes(currentClass) ? currentClass : '';
+            taskSelect.innerHTML = '<option value="">全部項目</option>' + tasks.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+            classSelect.innerHTML = '<option value="">全部班級</option>' + classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            taskSelect.value = tasks.includes(currentTask) ? currentTask : ''; classSelect.value = classes.includes(currentClass) ? currentClass : '';
         }
-
-        document.getElementById('submissions-list').addEventListener('click', function(e) {
-            const button = e.target.closest('.show-qr');
-            if (!button) return;
-            showQrCode(button.dataset.url, button.dataset.title);
-        });
 
         function showQrCode(url, title) {
             const box = document.getElementById('qr-box');
-            document.getElementById('qr-title').innerText = title || '檔案 QR Code';
-            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
-            document.getElementById('qr-link').href = url;
-            box.classList.add('active');
+            document.getElementById('qr-title').innerText = title;
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+            document.getElementById('qr-link').href = url; box.classList.add('active');
         }
 
-        function clearSubmissions(button) {
-            if (button && button.disabled) return;
-            const password = prompt('清除所有繳交紀錄需要輸入確認密碼：');
-            if (password === null) return;
-            if (password !== '990607') {
-                alert('密碼錯誤。');
-                return;
-            }
-            if (!confirm('確定要清除所有繳交紀錄嗎？此動作不會刪除 Drive 檔案，但會清空紀錄表。')) return;
-
-            if (button) {
-                button.disabled = true;
-                button.innerText = '清除中...';
-            }
-            setStatus('submissions-status', '正在清除繳交紀錄...', '');
-            apiPost({
-                action: 'clearSubmissions',
-                password: password,
-                adminId: currentUser.studentId || ''
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '清除失敗');
-                setStatus('submissions-status', data.message || '繳交紀錄已清除。', 'success');
-                loadSubmissions();
-            })
-            .catch(err => {
-                setStatus('submissions-status', err.message || '清除失敗。', 'error');
-            })
-            .finally(() => {
-                if (button) {
-                    button.disabled = false;
-                    button.innerText = '清除繳交紀錄';
-                }
-            });
+        function clearSubmissions() {
+            const password = prompt('清除所有紀錄請輸入管理確認碼：');
+            if (!password || !confirm('確定要清空全校紀錄嗎？')) return;
+            apiPost({ action: 'clearSubmissions', password: password }, '正在清除數據庫...')
+                .then(() => { alert('已成功清空。'); loadSubmissions(); }).catch(err => alert(err.message));
         }
 
         function loadReports() {
-            if (!GAS_API_URL) return;
-            setStatus('reports-status', '正在載入問題回報...', '');
-            apiGet('getReports')
-                .then(data => {
-                    reportRows = normalizeRows(data);
-                    populateReportFilters();
-                    renderReports();
-                    setStatus('reports-status', '', '');
-                })
-                .catch(err => {
-                    reportRows = [];
-                    renderReports();
-                    setStatus('reports-status', '問題回報載入失敗，請確認 GAS 是否支援 getReports。', 'error');
-                });
+            return apiGet('getReports', '正在載入問題回報清單...')
+                .then(data => { reportRows = normalizeRows(data); populateReportFilters(); renderReports(); })
+                .catch(() => { reportRows = []; renderReports(); });
         }
 
         function renderReports() {
@@ -863,170 +934,53 @@
             const keyword = document.getElementById('report-keyword').value.trim().toLowerCase();
             const statusFilter = document.getElementById('report-status-filter').value;
             const typeFilter = document.getElementById('report-type-filter').value;
+
             const rows = reportRows.filter(item => {
-                const text = `${item.studentId || ''} ${item.studentName || ''} ${item.className || ''} ${item.contact || ''} ${item.subject || ''} ${item.description || ''}`.toLowerCase();
-                const statusMatches = !statusFilter || (item.status || 'pending') === statusFilter;
-                const typeMatches = !typeFilter || (item.reportType || '') === typeFilter;
-                return statusMatches && typeMatches && text.includes(keyword);
+                const text = `${item.studentId || ''} ${item.studentName || ''} ${item.subject || ''}`.toLowerCase();
+                return (!statusFilter || (item.status || 'pending') === statusFilter) && (!typeFilter || (item.reportType || '') === typeFilter) && text.includes(keyword);
             });
 
-            if (rows.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='9'><div class='empty'>目前沒有符合條件的問題回報。</div></td></tr>";
-                return;
-            }
-
+            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='7'><div class='empty'>目前沒有問題回報。</div></td></tr>"; return; }
             tbody.innerHTML = rows.map(item => {
                 const status = item.status || 'pending';
-                return `
-                    <tr>
-                        <td>${formatDateTime(item.createdAt)}</td>
-                        <td>${escapeHtml(getReportTypeLabel(item.reportType))}</td>
-                        <td>${escapeHtml(item.studentId || '')}</td>
-                        <td>${escapeHtml(item.studentName || '')}</td>
-                        <td>${escapeHtml(item.className || '')}</td>
-                        <td>${escapeHtml(item.contact || '-')}</td>
-                        <td>
-                            <strong>${escapeHtml(item.subject || '')}</strong>
-                            <div class="report-description">${escapeHtml(item.description || '')}</div>
-                        </td>
-                        <td>${getReportStatusLabel(status)}</td>
-                        <td>
-                            <div class="password-tools">
-                                <select class="report-status-select" data-id="${escapeHtml(item.id)}">
-                                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>待處理</option>
-                                    <option value="processing" ${status === 'processing' ? 'selected' : ''}>處理中</option>
-                                    <option value="done" ${status === 'done' ? 'selected' : ''}>已完成</option>
-                                </select>
-                                <button type="button" class="secondary update-report-status" data-id="${escapeHtml(item.id)}">更新</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                const statusLabel = status === 'done' ? '<span class="status-active">● 已完成</span>' : status === 'processing' ? '<span class="status-processing">● 處理中</span>' : '<span style="color:var(--danger);font-weight:bold;">● 待處理</span>';
+                return `<tr><td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td><td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td><td>${escapeHtml(item.studentId || '')}<br>${escapeHtml(item.studentName || '')} (${escapeHtml(item.className || '')})</td><td>${escapeHtml(item.contact || '-')}</td><td><strong>${escapeHtml(item.subject || '')}</strong><div class="report-description">${escapeHtml(item.description || '')}</div></td><td>${statusLabel}</td><td><div style="display:flex; gap:6px;"><select class="report-status-select" style="min-height:30px; padding:4px;"><option value="pending" ${status === 'pending' ? 'selected' : ''}>待處理</option><option value="processing" ${status === 'processing' ? 'selected' : ''}>處理中</option><option value="done" ${status === 'done' ? 'selected' : ''}>已完成</option></select><button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button></div></td></tr>`;
             }).join('');
         }
 
         function populateReportFilters() {
-            const typeSelect = document.getElementById('report-type-filter');
-            const currentType = typeSelect.value;
+            const typeSelect = document.getElementById('report-type-filter'); const currentType = typeSelect.value;
             const types = [...new Set(reportRows.map(item => item.reportType || '').filter(Boolean))].sort();
-            typeSelect.innerHTML = '<option value="">全部類型</option>' + types.map(type =>
-                `<option value="${escapeHtml(type)}">${escapeHtml(getReportTypeLabel(type))}</option>`
-            ).join('');
+            typeSelect.innerHTML = '<option value="">全部類型</option>' + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(getReportTypeLabel(t))}</option>`).join('');
             typeSelect.value = types.includes(currentType) ? currentType : '';
         }
 
         function getReportTypeLabel(type) {
-            const labels = {
-                'password-reset': '密碼重設 / 修改密碼',
-                login: '無法登入 / 帳號開通問題',
-                upload: '檔案上傳或繳交問題',
-                profile: '個人資料需更正',
-                system: '系統操作或顯示異常',
-                other: '其他問題'
-            };
-            return labels[type] || type || '-';
+            return { 'password-reset': '密碼重設', login: '無法登入', upload: '檔案繳交問題', profile: '資更正', system: '系統異常' }[type] || '其他問題';
         }
 
-        function getReportStatusLabel(status) {
-            if (status === 'done') return '<span class="status-active">已完成</span>';
-            if (status === 'processing') return '<span class="status-processing">處理中</span>';
-            return '<span class="status-revoked">待處理</span>';
-        }
-
-        function formatDateTime(value) {
-            if (!value) return '-';
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return escapeHtml(value);
-            return date.toLocaleString('zh-TW');
-        }
-
-        document.getElementById('reports-list').addEventListener('click', function(e) {
-            const button = e.target.closest('.update-report-status');
-            if (!button) return;
-            updateReportStatus(button);
-        });
-
-        function updateReportStatus(button) {
-            if (button.disabled) return;
-            const select = button.closest('.password-tools').querySelector('.report-status-select');
-            button.disabled = true;
-            button.innerText = '更新中...';
-            setStatus('reports-status', '正在更新回報狀態...', '');
-
-            apiPost({
-                action: 'updateReportStatus',
-                id: button.dataset.id,
-                status: select.value
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '更新失敗');
-                setStatus('reports-status', data.message || '回報狀態已更新。', 'success');
-                loadReports();
-            })
-            .catch(err => {
-                setStatus('reports-status', err.message || '更新失敗。', 'error');
-            })
-            .finally(() => {
-                button.disabled = false;
-                button.innerText = '更新';
-            });
+        function updateReportStatus(button, id) {
+            const select = button.closest('div').querySelector('.report-status-select');
+            apiPost({ action: 'updateReportStatus', id: id, status: select.value }, '正在變更單據狀態...')
+                .then(() => { loadReports(); }).catch(err => alert(err.message));
         }
 
         function loadUsers() {
-            if (!GAS_API_URL) return;
-            setStatus('users-status', '正在載入帳號清單...', '');
-            apiGet('getUsers')
-                .then(data => {
-                    userRows = normalizeRows(data);
-                    renderUsers();
-                    setStatus('users-status', '', '');
-                })
-                .catch(err => {
-                    userRows = [];
-                    renderUsers();
-                    setStatus('users-status', '帳號清單載入失敗，請確認 GAS 是否支援 getUsers。', 'error');
-                });
+            return apiGet('getUsers', '正在讀取學生名冊...')
+                .then(data => { userRows = normalizeRows(data); renderUsers(); })
+                .catch(() => { userRows = []; renderUsers(); });
         }
 
         function renderUsers() {
             const tbody = document.getElementById('users-list');
             const keyword = document.getElementById('user-keyword').value.trim().toLowerCase();
-            const rows = userRows.filter(item => {
-                const text = `${item.studentId || ''} ${item.name || ''} ${item.className || ''} ${item.club || ''}`.toLowerCase();
-                return text.includes(keyword);
-            });
-
-            if (rows.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>目前沒有符合條件的帳號。</div></td></tr>";
-                return;
-            }
-
-            tbody.innerHTML = rows.map(item => `
-                <tr>
-                    <td>${escapeHtml(item.studentId || '')}</td>
-                    <td>${escapeHtml(item.name || '')}</td>
-                    <td>${escapeHtml(item.className || '')}</td>
-                    <td>${escapeHtml(item.club || '')}</td>
-                    <td>
-                        <div class="password-tools">
-                            <input type="password" class="user-password" placeholder="新密碼">
-                            <button type="button" class="secondary update-password" data-id="${escapeHtml(item.studentId || '')}">更新</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            const rows = userRows.filter(item => `${item.studentId || ''} ${item.name || ''} ${item.className || ''}`.toLowerCase().includes(keyword));
+            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>無符合的帳號。</div></td></tr>"; return; }
+            tbody.innerHTML = rows.map(item => `<tr><td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId || '')}</td><td>${escapeHtml(item.name || '')}</td><td>${escapeHtml(item.className || '')}</td><td>${escapeHtml(item.club || '-')}</td><td><div style="display:flex; gap:6px;"><input type="password" class="user-password" placeholder="輸入新密碼" style="min-height:30px; font-size:12px; padding:4px 8px; width:130px;"><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="updateUserPassword(this, '${escapeHtml(item.studentId || '')}')">覆蓋密碼</button></div></td></tr>`).join('');
         }
 
-        document.getElementById('user-form').addEventListener('submit', function(e) {
+        document.getElementById('user-form').addEventListener('submit', function (e) {
             e.preventDefault();
-            if (!GAS_API_URL) return;
-
-            const button = document.getElementById('user-submit');
-            if (button.disabled) return;
-            button.disabled = true;
-            button.innerText = '新增中...';
-            setStatus('users-status', '正在新增人員...', '');
-
             apiPost({
                 action: 'addUser',
                 newStudentId: document.getElementById('new-user-id').value.trim(),
@@ -1034,60 +988,19 @@
                 className: document.getElementById('new-user-class').value.trim(),
                 club: document.getElementById('new-user-club').value.trim(),
                 password: document.getElementById('new-user-password').value
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '新增失敗');
-                setStatus('users-status', data.message || '人員已新增。', 'success');
-                e.target.reset();
-                loadUsers();
-            })
-            .catch(err => {
-                setStatus('users-status', err.message || '新增失敗。', 'error');
-            })
-            .finally(() => {
-                button.disabled = false;
-                button.innerText = '增加人員';
-            });
+            }, '正在註冊新帳號...')
+                .then(() => { alert('開通成功！'); e.target.reset(); toggleCollapseForm('user-collapse'); loadUsers(); })
+                .catch(err => alert(err.message));
         });
 
-        document.getElementById('users-list').addEventListener('click', function(e) {
-            const button = e.target.closest('.update-password');
-            if (!button) return;
-            updateUserPassword(button);
-        });
-
-        function updateUserPassword(button) {
-            if (button.disabled) return;
-            const input = button.closest('.password-tools').querySelector('.user-password');
-            const password = input.value;
-            if (!password) {
-                alert('請輸入新密碼。');
-                return;
-            }
-            if (!confirm(`確定要更新 ${button.dataset.id} 的密碼嗎？`)) return;
-
-            button.disabled = true;
-            button.innerText = '更新中...';
-            setStatus('users-status', '正在更新密碼...', '');
-
-            apiPost({
-                action: 'updateUserPassword',
-                targetStudentId: button.dataset.id,
-                password: password
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '密碼更新失敗');
-                input.value = '';
-                setStatus('users-status', data.message || '密碼已更新。', 'success');
-            })
-            .catch(err => {
-                setStatus('users-status', err.message || '密碼更新失敗。', 'error');
-            })
-            .finally(() => {
-                button.disabled = false;
-                button.innerText = '更新';
-            });
+        function updateUserPassword(button, studentId) {
+            const input = button.closest('div').querySelector('.user-password');
+            if (!input.value) { alert('請先輸入新密碼。'); return; }
+            if (!confirm(`確定要強制更改學生 ${studentId} 的密碼？`)) return;
+            apiPost({ action: 'updateUserPassword', targetStudentId: studentId, password: input.value }, '強制覆蓋密碼中...')
+                .then(() => { alert('密碼覆蓋成功。'); input.value = ''; }).catch(err => alert(err.message));
         }
     </script>
 </body>
+
 </html>

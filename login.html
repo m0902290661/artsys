@@ -224,9 +224,7 @@
     <script>
         let GAS_API_URL = "";
 
-        window.addEventListener('pageshow', function() {
-            sessionStorage.removeItem('user');
-        });
+        // 【核心修復點】移除原本隨意刪除整個 user 造成跳頁失敗的舊邏輯
 
         function postForm(payload) {
             const formData = new URLSearchParams();
@@ -244,7 +242,7 @@
 
         // 讀取設定
         document.addEventListener("DOMContentLoaded", function() {
-            sessionStorage.removeItem('user');
+            // 【核心修復點】不應在未登入時就主動移除現有的 Session，否則點擊上一頁或刷新的時候會壞掉
 
             fetch('api.json')
                 .then(response => {
@@ -302,8 +300,12 @@
                         sessionToken: data.sessionToken || data.user.sessionToken,
                         sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
                     };
-                    sessionStorage.removeItem('user');
+                    
+                    // 【核心修復點】同時儲存 'user' 和 'adminUser'，確保前台 index.html 與後台 manage.html 都能安全讀到 Session 資料
                     sessionStorage.setItem('user', JSON.stringify(user));
+                    sessionStorage.setItem('adminUser', JSON.stringify(user));
+                    
+                    // 若是管理員帳號，請記得手動將此處轉址導向到 'manage.html' 以方便測試
                     window.location.href = 'index.html'; 
                 } else {
                     alert(data.message);
