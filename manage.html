@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>115 私立弘明實驗高級中學 美術歷程管理後台</title>
+    <title>私立弘明實驗高級中學 美術歷程管理後台</title>
     <style>
         :root {
             --primary: rgb(140, 140, 255);
@@ -28,9 +28,8 @@
             box-sizing: border-box;
         }
 
-        /* 左側側邊欄 */
         .left {
-            width: 260px;
+            width: 240px;
             padding: 30px 20px;
             background: #fff;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
@@ -47,21 +46,22 @@
         }
 
         h1 {
-            margin: 0 0 10px;
-            font-size: 18px;
+            margin: 0 0 15px;
+            font-size: 16px;
             line-height: 1.4;
+            color: #333;
         }
 
         h2 {
-            margin: 0 0 8px;
-            font-size: 24px;
+            margin: 0 0 20px;
+            font-size: 22px;
             font-weight: 700;
         }
 
         .admin-info {
-            color: #777;
+            color: #666;
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.5;
             background: #f8f9fa;
             padding: 12px;
             border-radius: 6px;
@@ -75,7 +75,7 @@
             color: #555;
             text-decoration: none;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 14px;
             transition: all 0.2s;
         }
 
@@ -90,7 +90,6 @@
             box-shadow: 0 4px 10px rgba(161, 161, 255, 0.3);
         }
 
-        /* 面板面板 */
         .panel {
             display: none;
             background: white;
@@ -104,7 +103,6 @@
             display: block;
         }
 
-        /* 摺疊表單區塊 */
         .collapse-form {
             max-height: 0;
             overflow: hidden;
@@ -115,7 +113,7 @@
         }
 
         .collapse-form.open {
-            max-height: 400px;
+            max-height: 500px;
             padding: 20px;
             margin: 15px 0 20px;
             border: 1px solid #e5e8ef;
@@ -129,7 +127,6 @@
             margin: 20px 0;
         }
 
-        /* 輸入控制件 */
         input,
         textarea,
         select {
@@ -174,7 +171,6 @@
             grid-column: 1 / -1;
         }
 
-        /* 按鈕設計 */
         button {
             min-height: 38px;
             padding: 8px 20px;
@@ -209,7 +205,6 @@
             opacity: 0.5 !important;
         }
 
-        /* 表格排版 */
         .table-container {
             overflow-x: auto;
             margin-top: 15px;
@@ -237,12 +232,6 @@
 
         tr:hover td {
             background: #fafbfc;
-        }
-
-        .muted {
-            color: #888;
-            font-size: 14px;
-            margin: 4px 0 20px;
         }
 
         .empty {
@@ -298,7 +287,6 @@
             margin: 10px auto;
         }
 
-        /* 全域懸浮 Toast 讀取條 */
         .global-loader {
             position: fixed;
             right: 24px;
@@ -373,54 +361,49 @@
 </head>
 
 <body>
-    <div id="loading-screen"
-        style="position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;transition:opacity .3s;">
-        <div
-            style="width:45px;height:45px;border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;">
-        </div>
-        <div style="margin-top:16px;color:#666;font-weight:bold;font-size:15px;">安全加載中...</div>
+    <div id="loading-screen" style="position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;transition:opacity .3s;">
+        <div style="width:45px;height:45px;border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        <div style="margin-top:16px;color:#666;font-weight:bold;font-size:14px;">安全加載中...</div>
     </div>
 
     <div id="global-loader" class="global-loader">
         <div class="spinner"></div>
-        <span id="loader-text">雲端資料同步中...</span>
+        <span id="loader-text">讀取中...</span>
     </div>
 
     <aside class="left">
-        <h1>弘明實驗高級中學<br>美術歷程管理後台</h1>
-        <hr style="width:100%; border:0; border-top:1px solid #eee; margin:15px 0;">
+        <h1>美術歷程管理後台</h1>
         <div class="admin-info">
-            管理員：<span id="admin-name">讀取中...</span><br>
+            管理員：<span id="admin-name">..</span><br>
             帳號：<span id="admin-id">-</span>
         </div>
         <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程管理</a>
         <a href="#" class="menu-link" onclick="switchPanel('submissions-panel', this)">繳交紀錄</a>
-        <a href="#" class="menu-link" onclick="switchPanel('unlock-panel', this)">遲交解鎖管理</a>
+        <a href="#" class="menu-link" onclick="switchPanel('unlock-panel', this)">遲交解鎖</a>
         <a href="#" class="menu-link" onclick="switchPanel('reports-panel', this)">問題回報</a>
         <a href="#" class="menu-link" onclick="switchPanel('users-panel', this)">帳號清單</a>
-        <a href="#" class="menu-link" onclick="logout()" style="color:var(--danger); margin-top:auto;">登出後台</a>
+        <a href="#" class="menu-link" onclick="logout()" style="color:var(--danger); margin-top:auto;">登出系統</a>
     </aside>
 
     <main class="right">
         <section id="schedule-panel" class="panel active">
             <h2>時程管理</h2>
-            <p class="muted">設定與調整學生端顯示的美術歷程時程項目。</p>
-
-            <button type="button" id="schedule-toggle-btn" onclick="openScheduleForm('add')">➕ 新增時程項目</button>
-            <button type="button" class="secondary" onclick="loadSchedule()" style="margin-left: 8px;">🔄 重新整理</button>
+            <div class="toolbar" style="margin-top: 0;">
+                <button type="button" onclick="openScheduleForm('add')">➕ 新增項目</button>
+                <button type="button" class="secondary" onclick="loadSchedule()">🔄 重新整理</button>
+            </div>
 
             <div id="schedule-collapse" class="collapse-form">
                 <form id="schedule-form">
                     <input type="hidden" id="schedule-action-mode" value="add">
                     <input type="hidden" id="schedule-edit-id" value="">
-
-                    <h3 id="schedule-form-title" style="margin-top:0; font-size:16px; color:#333;">新增時程項目</h3>
+                    <h3 id="schedule-form-title" style="margin-top:0; font-size:15px; color:#333;">項目編輯</h3>
                     <div class="field-grid">
                         <label>項目名稱<input type="text" id="task" required></label>
                         <label>截止日期<input type="date" id="deadline" required></label>
                         <label class="wide">項目備註<textarea id="note"></textarea></label>
                     </div>
-                    <button type="submit" id="schedule-submit">確認儲存並發布</button>
+                    <button type="submit">儲存</button>
                     <button type="button" class="secondary" onclick="closeScheduleForm()">取消</button>
                 </form>
             </div>
@@ -432,13 +415,11 @@
                             <th>項目</th>
                             <th>截止日期</th>
                             <th>備註</th>
-                            <th style="width: 140px;">操作</th>
+                            <th style="width: 130px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="schedule-list">
-                        <tr>
-                            <td colspan="4" class="empty">點擊重新整理或等待資料載入...</td>
-                        </tr>
+                        <tr><td colspan="4" class="empty">資料載入中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -446,32 +427,23 @@
 
         <section id="submissions-panel" class="panel">
             <h2>繳交紀錄</h2>
-            <p class="muted">檢視全校學生美術歷程檔案繳交進度，支援 QR Code 快速審查。</p>
-
-            <div class="toolbar">
-                <select id="submission-task-filter">
-                    <option value="">全部項目</option>
-                </select>
-                <select id="submission-class-filter">
-                    <option value="">全部班級</option>
-                </select>
+            <div class="toolbar" style="margin-top: 0;">
+                <select id="submission-task-filter"><option value="">全部項目</option></select>
+                <select id="submission-class-filter"><option value="">全部班級</option></select>
                 <select id="submission-status-filter">
                     <option value="">全部狀態</option>
-                    <option value="active">有效繳交</option>
+                    <option value="active">有效</option>
                     <option value="revoked">已撤銷</option>
                 </select>
-                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、班級..."
-                    style="flex: 1; min-width: 200px;">
+                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名..." style="flex: 1; min-width: 150px;">
                 <button type="button" class="secondary" onclick="loadSubmissions()">🔄 重新整理</button>
-                <button type="button" class="danger" id="clear-submissions-btn" onclick="clearSubmissions(this)">⚠️
-                    清除紀錄</button>
+                <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除紀錄</button>
             </div>
 
             <div id="qr-box" class="qr-box">
-                <strong id="qr-title" style="font-size:14px; color:#333;">檔案 QR Code</strong>
-                <img id="qr-image" alt="QR Code">
-                <p style="margin: 8px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"
-                        style="color:var(--primary); font-weight:bold; text-decoration:none;">在新分頁開啟檔案 ↗</a></p>
+                <strong id="qr-title" style="font-size:13px; color:#333;">檔案 QR Code</strong>
+                <img id="qr-image" alt="QR">
+                <p style="margin: 6px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener" style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟 ↗</a></p>
             </div>
 
             <div class="table-container">
@@ -485,40 +457,36 @@
                             <th>檔案名稱</th>
                             <th>時間</th>
                             <th>狀態</th>
-                            <th style="width: 90px;">QR Code</th>
+                            <th style="width: 80px;">QR</th>
                         </tr>
                     </thead>
                     <tbody id="submissions-list">
-                        <tr>
-                            <td colspan="8" class="empty">點擊重新整理或等待資料載入...</td>
-                        </tr>
+                        <tr><td colspan="8" class="empty">資料載入中...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
+
         <section id="unlock-panel" class="panel">
-            <h2>遲交解鎖管理</h2>
-            <p class="muted">指定學生學號與美術歷程項目名稱，授予該生單次遲交繳交權限。</p>
-            <div class="field-grid" style="max-width: 600px;">
+            <h2>遲交解鎖</h2>
+            <div class="field-grid" style="max-width: 500px;">
                 <label>學號<input type="text" id="unlock-student-id"></label>
-                <label>任務名稱 (需與時程項目名稱完全一致)<input type="text" id="unlock-task-name"></label>
+                <label>項目名稱<input type="text" id="unlock-task-name"></label>
             </div>
-            <button type="button" onclick="performUnlock()">✅ 授予遲交權限</button>
+            <button type="button" onclick="performUnlock()">✅ 授予權限</button>
         </section>
+
         <section id="reports-panel" class="panel">
             <h2>問題回報</h2>
-            <p class="muted">處理學生端提交的系統異常或密碼重設申請。</p>
-            <div class="toolbar">
+            <div class="toolbar" style="margin-top: 0;">
                 <select id="report-status-filter">
                     <option value="">全部狀態</option>
                     <option value="pending">待處理</option>
                     <option value="processing">處理中</option>
                     <option value="done">已完成</option>
                 </select>
-                <select id="report-type-filter">
-                    <option value="">全部類型</option>
-                </select>
-                <input type="text" id="report-keyword" placeholder="搜尋姓名、學號、說明主旨..." style="flex: 1; min-width: 200px;">
+                <select id="report-type-filter"><option value="">全部類型</option></select>
+                <input type="text" id="report-keyword" placeholder="搜尋姓名、學號..." style="flex: 1; min-width: 150px;">
                 <button type="button" class="secondary" onclick="loadReports()">🔄 重新整理</button>
             </div>
             <div class="table-container">
@@ -527,17 +495,15 @@
                         <tr>
                             <th>時間</th>
                             <th>類型</th>
-                            <th>學號/姓名/班級</th>
+                            <th>填報人</th>
                             <th>聯絡方式</th>
-                            <th>主旨與說明內容</th>
-                            <th>當前狀態</th>
-                            <th style="width: 180px;">狀態變更操作</th>
+                            <th>內容</th>
+                            <th>狀態</th>
+                            <th style="width: 160px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="reports-list">
-                        <tr>
-                            <td colspan="7" class="empty">點擊重新整理或等待資料載入...</td>
-                        </tr>
+                        <tr><td colspan="7" class="empty">資料載入中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -545,28 +511,29 @@
 
         <section id="users-panel" class="panel">
             <h2>帳號清單</h2>
-            <p class="muted">建立新學生帳號或強制覆蓋學生登入密碼。</p>
-
-            <button type="button" onclick="toggleCollapseForm('user-collapse')">➕ 新增學生帳號</button>
+            <div class="toolbar" style="margin-top: 0;">
+                <button type="button" onclick="openUserForm('add')">➕ 新增學生</button>
+                <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、社團..." style="flex: 1;">
+                <button type="button" class="secondary" onclick="loadUsers()">🔄 重新整理</button>
+            </div>
 
             <div id="user-collapse" class="collapse-form">
                 <form id="user-form">
+                    <input type="hidden" id="user-action-mode" value="add">
+                    <input type="hidden" id="user-original-id" value="">
+                    <h3 id="user-form-title" style="margin-top:0; font-size:15px; color:#333;">學生帳號編輯</h3>
                     <div class="field-grid">
-                        <label>學號 (強制唯一)<input type="text" id="new-user-id" required></label>
+                        <label>學號<input type="text" id="new-user-id" required></label>
                         <label>姓名<input type="text" id="new-user-name" required></label>
-                        <label>班級<input type="text" id="new-user-class" required></label>
-                        <label>美術社團<input type="text" id="new-user-club"></label>
-                        <label>初始登入密碼<input type="password" id="new-user-password"></label>
+                        <label>班級<select id="new-user-class" required><option value="">載入中...</option></select></label>
+                        <label>美術社團<select id="new-user-club"><option value="">載入中...</option></select></label>
+                        <label id="user-password-label">密碼<input type="password" id="new-user-password" required></label>
                     </div>
-                    <button type="submit" id="user-submit">確認建立帳號</button>
-                    <button type="button" class="secondary" onclick="toggleCollapseForm('user-collapse')">取消</button>
+                    <button type="submit">儲存</button>
+                    <button type="button" class="secondary" onclick="closeUserForm()">取消</button>
                 </form>
             </div>
 
-            <div class="toolbar">
-                <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、班級、社團..." style="flex: 1;">
-                <button type="button" class="secondary" onclick="loadUsers()">🔄 重新整理</button>
-            </div>
             <div class="table-container">
                 <table>
                     <thead>
@@ -575,13 +542,11 @@
                             <th>姓名</th>
                             <th>班級</th>
                             <th>美術社團</th>
-                            <th style="width: 260px;">強制重設新密碼</th>
+                            <th style="width: 100px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="users-list">
-                        <tr>
-                            <td colspan="5" class="empty">點擊重新整理或等待資料載入...</td>
-                        </tr>
+                        <tr><td colspan="5" class="empty">資料載入中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -595,83 +560,43 @@
         let submissionRows = [];
         let reportRows = [];
         let userRows = [];
+        let globalOptions = { classes: [], clubs: [] };
 
-
-        function performUnlock() {
-            const studentId = document.getElementById('unlock-student-id').value.trim();
-            const task = document.getElementById('unlock-task-name').value.trim();
-
-            if (!studentId || !task) {
-                alert("請輸入學號與任務名稱。");
-                return;
-            }
-
-            if (!confirm(`確定要為學號 ${studentId} 開啟「${task}」項目的遲交權限嗎？`)) return;
-
-            apiPost({
-                action: 'addUnlock',
-                targetStudentId: studentId,
-                task: task
-            }, '正在處理授權...')
-                .then(data => {
-                    alert(data.message);
-                    if (data.success) {
-                        document.getElementById('unlock-student-id').value = '';
-                        document.getElementById('unlock-task-name').value = '';
-                    }
-                })
-                .catch(err => alert("授權失敗: " + err.message));
-        }
-        // 全面載入處理與欄位鎖定機制
-        function toggleGlobalLoader(show, text = "雲端資料同步中...") {
+        function toggleGlobalLoader(show, text = "同步中...") {
             const loader = document.getElementById('global-loader');
             document.getElementById('loader-text').innerText = text;
             show ? loader.classList.add('show') : loader.classList.remove('show');
-
             document.querySelectorAll('input, select, button, textarea').forEach(el => {
                 if (!el.classList.contains('menu-link')) el.disabled = show;
             });
         }
 
-        function toggleCollapseForm(id) {
-            document.getElementById(id).classList.toggle('open');
-        }
-
-        // 💡 控製時程表單模式（新增 或 編輯）
         function openScheduleForm(mode, index = null) {
             const formBox = document.getElementById('schedule-collapse');
             const titleEl = document.getElementById('schedule-form-title');
             const modeInput = document.getElementById('schedule-action-mode');
             const idInput = document.getElementById('schedule-edit-id');
-
             const taskInput = document.getElementById('task');
             const deadlineInput = document.getElementById('deadline');
             const noteInput = document.getElementById('note');
 
             if (mode === 'edit' && index !== null) {
                 const item = scheduleRows[index];
-                titleEl.innerText = "✏️ 編輯現有時程";
+                titleEl.innerText = "✏️ 編輯時程";
                 modeInput.value = "edit";
-                idInput.value = item.id || item.row || item.rowIndex || index;
-
-                taskInput.value = item.task || '';
-                // 格式化日期格式供 HTML Date Input 讀取 (YYYY-MM-DD)
+                idInput.value = item.id ?? index;
+                taskInput.value = item.task ?? '';
                 if (item.deadline) {
                     const d = new Date(item.deadline);
-                    if (!Number.isNaN(d.getTime())) {
-                        deadlineInput.value = d.toISOString().split('T')[0];
-                    } else {
-                        deadlineInput.value = '';
-                    }
+                    deadlineInput.value = !Number.isNaN(d.getTime()) ? d.toISOString().split('T')[0] : '';
                 } else {
                     deadlineInput.value = '';
                 }
-                noteInput.value = item.note || '';
-
+                noteInput.value = item.note ?? '';
                 formBox.classList.add('open');
                 formBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
-                titleEl.innerText = "➕ 新增時程項目";
+                titleEl.innerText = "➕ 新增時程";
                 modeInput.value = "add";
                 idInput.value = "";
                 document.getElementById('schedule-form').reset();
@@ -682,6 +607,53 @@
         function closeScheduleForm() {
             document.getElementById('schedule-collapse').classList.remove('open');
             document.getElementById('schedule-form').reset();
+        }
+
+        function openUserForm(mode, index = null) {
+            const formBox = document.getElementById('user-collapse');
+            const titleEl = document.getElementById('user-form-title');
+            const modeInput = document.getElementById('user-action-mode');
+            const originalIdInput = document.getElementById('user-original-id');
+            const passLabel = document.getElementById('user-password-label');
+            const idInput = document.getElementById('new-user-id');
+            const nameInput = document.getElementById('new-user-name');
+            const classSelect = document.getElementById('new-user-class');
+            const clubSelect = document.getElementById('new-user-club');
+
+            populateOptionsSelectors();
+
+            if (mode === 'edit' && index !== null) {
+                const user = userRows[index];
+                titleEl.innerText = "✏️ 修改學生資料";
+                modeInput.value = "edit";
+                originalIdInput.value = user.studentId;
+                idInput.value = user.studentId ?? '';
+                nameInput.value = user.name ?? '';
+                classSelect.value = user.className ?? '';
+                clubSelect.value = user.club ?? '';
+                passLabel.innerHTML = '變更密碼 (留空不修改)<input type="password" id="new-user-password">';
+                formBox.classList.add('open');
+                formBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                titleEl.innerText = "➕ 新增學生";
+                modeInput.value = "add";
+                originalIdInput.value = "";
+                document.getElementById('user-form').reset();
+                passLabel.innerHTML = '初始密碼<input type="password" id="new-user-password" required>';
+                formBox.classList.add('open');
+            }
+        }
+
+        function closeUserForm() {
+            document.getElementById('user-collapse').classList.remove('open');
+            document.getElementById('user-form').reset();
+        }
+
+        function populateOptionsSelectors() {
+            const classSel = document.getElementById('new-user-class');
+            const clubSel = document.getElementById('new-user-club');
+            classSel.innerHTML = '<option value="">-- 請選擇班級 --</option>' + globalOptions.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            clubSel.innerHTML = '<option value="">-- 請選擇社團 (可留空) --</option>' + globalOptions.clubs.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -699,17 +671,24 @@
                 .then(user => {
                     currentUser = user;
                     sessionStorage.setItem('user', JSON.stringify(user));
-                    document.getElementById('admin-name').innerText = currentUser.name || '管理員';
-                    document.getElementById('admin-id').innerText = currentUser.studentId || '-';
-
-                    Promise.all([loadSchedule(), loadSubmissions(), loadReports(), loadUsers()]).finally(() => {
-                        const loading = document.getElementById("loading-screen");
-                        if (loading) { loading.style.opacity = '0'; setTimeout(() => loading.remove(), 300); }
-                    });
+                    document.getElementById('admin-name').innerText = currentUser.name ?? '管理員';
+                    document.getElementById('admin-id').innerText = currentUser.studentId ?? '-';
+                    return apiGet('getOptions', '同步選單設定...');
+                })
+                .then(optionsData => {
+                    if (optionsData) {
+                        globalOptions.classes = optionsData.classes ?? [];
+                        globalOptions.clubs = optionsData.clubs ?? [];
+                    }
+                    return Promise.all([loadSchedule(), loadSubmissions(), loadReports(), loadUsers()]);
+                })
+                .then(() => {
+                    const loading = document.getElementById("loading-screen");
+                    if (loading) { loading.style.opacity = '0'; setTimeout(() => loading.remove(), 300); }
                 })
                 .catch(err => {
-                    if (err && err.redirect) return;
-                    forceLogout(err.message || '初始化失敗，引導回登入頁。');
+                    if (err?.redirect) return;
+                    forceLogout(err.message ?? '初始化驗證失敗。');
                 });
 
             document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
@@ -749,7 +728,6 @@
             const formData = new URLSearchParams();
             formData.append('action', 'logout');
             formData.append('studentId', currentUser.studentId);
-            formData.append('adminId', currentUser.studentId);
             formData.append('sessionToken', currentUser.sessionToken);
             return fetch(GAS_API_URL, { method: 'POST', body: formData.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(() => { });
         }
@@ -766,12 +744,12 @@
 
         function normalizeRows(data) {
             if (Array.isArray(data)) return data;
-            if (Array.isArray(data.rows || data.data || data.submissions || data.reports || data.users)) return data.rows || data.data || data.submissions || data.reports || data.users;
+            if (Array.isArray(data.rows ?? data.data ?? data.submissions ?? data.reports ?? data.users)) return data.rows ?? data.data ?? data.submissions ?? data.reports ?? data.users;
             return [];
         }
 
         function getAuthParams() {
-            return { adminId: currentUser?.studentId || '', studentId: currentUser?.studentId || '', sessionToken: currentUser?.sessionToken || '' };
+            return { adminId: currentUser?.studentId ?? '', studentId: currentUser?.studentId ?? '', sessionToken: currentUser?.sessionToken ?? '' };
         }
 
         function appendAuth(url) { return `${url}&${new URLSearchParams(getAuthParams()).toString()}`; }
@@ -787,18 +765,18 @@
                 });
         }
 
-        function apiGet(action, loaderText = "正在讀取雲端資料...") {
+        function apiGet(action, loaderText = "讀取中...") {
             toggleGlobalLoader(true, loaderText);
             return fetch(appendAuth(`${GAS_API_URL}?action=${encodeURIComponent(action)}`))
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.success === false) throw new Error(data.message);
+                    if (data?.success === false) throw new Error(data.message);
                     return data;
                 })
                 .finally(() => toggleGlobalLoader(false));
         }
 
-        function apiPost(payload, loaderText = "正將資料寫入雲端庫...") {
+        function apiPost(payload, loaderText = "儲存中...") {
             toggleGlobalLoader(true, loaderText);
             const formData = new URLSearchParams();
             const authedPayload = { ...getAuthParams(), ...payload };
@@ -806,7 +784,7 @@
             return fetch(GAS_API_URL, { method: 'POST', body: formData.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.success === false && /登入|密鑰|逾時|權限/.test(data.message || '')) {
+                    if (data?.success === false && /登入|密鑰|逾時|權限/.test(data.message ?? '')) {
                         forceLogout(data.message);
                         throw new Error(data.message);
                     }
@@ -816,63 +794,56 @@
         }
 
         function loadSchedule() {
-            return apiGet('getSchedule', '正在整理時程表...')
+            return apiGet('getSchedule', '讀取時程表...')
                 .then(data => { scheduleRows = normalizeRows(data); renderSchedule(); })
                 .catch(() => { scheduleRows = []; renderSchedule(); });
         }
 
         function renderSchedule() {
             const tbody = document.getElementById('schedule-list');
-            if (scheduleRows.length === 0) { tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前尚無安排時程。</div></td></tr>"; return; }
+            if (scheduleRows.length === 0) { tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前無排定時程。</div></td></tr>"; return; }
             tbody.innerHTML = scheduleRows.map((item, index) => {
-                const id = item.id || item.row || item.rowIndex || index;
-                return `
-                    <tr>
-                        <td style="font-weight:600;">${escapeHtml(item.task)}</td>
-                        <td>${formatDate(item.deadline)}</td>
-                        <td style="color:#666;">${escapeHtml(item.note || '-')}</td>
-                        <td>
-                            <div style="display:flex; gap:6px;">
-                                <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button>
-                                <button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button>
-                            </div>
-                        </td>
-                    </tr>`;
+                const id = item.id ?? index;
+                return `<tr>
+                    <td style="font-weight:600;">${escapeHtml(item.task)}</td>
+                    <td>${formatDate(item.deadline)}</td>
+                    <td style="color:#666;">${escapeHtml(item.note ?? '-')}</td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button>
+                            <button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button>
+                        </div>
+                    </td>
+                </tr>`;
             }).join('');
         }
 
         document.getElementById('schedule-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const mode = document.getElementById('schedule-action-mode').value;
-            const targetId = document.getElementById('schedule-edit-id').value;
-
-            // ⚡ 根據模式決定 action 分支 (不更動後端，若要變更既有資料，若 GAS 僅支援 addSchedule，此處維持發送，或對應你的後端分支)
-            const actionName = (mode === 'edit') ? 'editSchedule' : 'addSchedule';
-            const loaderString = (mode === 'edit') ? '正在儲存變更內容...' : '正在發布新項目...';
-
             apiPost({
-                action: actionName,
-                id: targetId, // 編輯模式下會傳送目標 ID 供 GAS 識別
+                action: mode === 'edit' ? 'editSchedule' : 'addSchedule',
+                id: document.getElementById('schedule-edit-id').value,
                 task: document.getElementById('task').value.trim(),
                 deadline: document.getElementById('deadline').value,
                 note: document.getElementById('note').value.trim()
-            }, loaderString)
-                .then(data => {
-                    alert(data.message || '資料已儲存。');
-                    closeScheduleForm();
-                    loadSchedule();
-                }).catch(err => alert(err.message || '操作失敗。'));
+            })
+            .then(data => {
+                alert(data.message ?? '儲存成功');
+                closeScheduleForm();
+                loadSchedule();
+            }).catch(err => alert(err.message));
         });
 
         function deleteSchedule(id) {
-            if (!confirm('確定要刪除此時程嗎？')) return;
-            apiPost({ action: 'deleteSchedule', id: id }, '正在刪除項目...')
-                .then(data => { alert(data.message || '已刪除。'); loadSchedule(); })
-                .catch(err => alert(err.message || '刪除失敗。'));
+            if (!confirm('確定刪除此項目嗎？')) return;
+            apiPost({ action: 'deleteSchedule', id: id }, '刪除中...')
+                .then(data => { alert(data.message ?? '已刪除'); loadSchedule(); })
+                .catch(err => alert(err.message));
         }
 
         function loadSubmissions() {
-            return apiGet('getSubmissions', '正在彙整學生繳交紀錄...')
+            return apiGet('getSubmissions', '讀取繳交紀錄...')
                 .then(data => { submissionRows = normalizeRows(data); populateSubmissionFilters(); renderSubmissions(); })
                 .catch(() => { submissionRows = []; renderSubmissions(); });
         }
@@ -885,16 +856,25 @@
             const statusFilter = document.getElementById('submission-status-filter').value;
 
             const rows = submissionRows.filter(item => {
-                const text = `${item.task || item.scheduleTask || ''} ${item.studentId || ''} ${item.studentName || item.name || ''} ${item.className || ''}`.toLowerCase();
-                return (!taskFilter || (item.task || item.scheduleTask || '') === taskFilter) && (!classFilter || (item.className || '') === classFilter) && (!statusFilter || (item.status === 'revoked' ? 'revoked' : 'active') === statusFilter) && text.includes(keyword);
+                const text = `${item.task ?? ''} ${item.studentId ?? ''} ${item.studentName ?? ''} ${item.className ?? ''}`.toLowerCase();
+                return (!taskFilter || (item.task ?? '') === taskFilter) && (!classFilter || (item.className ?? '') === classFilter) && (!statusFilter || (item.status === 'revoked' ? 'revoked' : 'active') === statusFilter) && text.includes(keyword);
             });
 
-            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>沒有符合條件的紀錄。</div></td></tr>"; return; }
+            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>無符合條件的紀錄。</div></td></tr>"; return; }
             tbody.innerHTML = rows.map(item => {
-                const fileUrl = item.url || item.fileUrl || item.link || '';
-                const filename = item.filename || item.fileName || '查看檔案';
+                const fileUrl = item.url ?? '';
+                const filename = item.filename ?? '查看檔案';
                 const fileCell = fileUrl ? `<a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(filename)}</a>` : escapeHtml(filename);
-                return `<tr><td>${escapeHtml(item.task || item.scheduleTask || '')}</td><td>${escapeHtml(item.studentId || '')}</td><td>${escapeHtml(item.studentName || item.name || '')}</td><td>${escapeHtml(item.className || '')}</td><td>${fileCell}</td><td>${escapeHtml(item.createdAt || item.timestamp || '')}</td><td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : '<span class="status-active">有效繳交</span>'}</td><td>${fileUrl ? `<button type="button" class="secondary" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="showQrCode('${escapeHtml(fileUrl)}', '${escapeHtml(filename)}')">產生</button>` : '-'}</td></tr>`;
+                return `<tr>
+                    <td>${escapeHtml(item.task ?? '')}</td>
+                    <td>${escapeHtml(item.studentId ?? '')}</td>
+                    <td>${escapeHtml(item.studentName ?? '')}</td>
+                    <td>${escapeHtml(item.className ?? '')}</td>
+                    <td>${fileCell}</td>
+                    <td>${escapeHtml(item.createdAt ?? '')}</td>
+                    <td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : '<span class="status-active">有效</span>'}</td>
+                    <td>${fileUrl ? `<button type="button" class="secondary" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="showQrCode('${escapeHtml(fileUrl)}', '${escapeHtml(filename)}')">產生</button>` : '-'}</td>
+                </tr>`;
             }).join('');
         }
 
@@ -902,29 +882,45 @@
             const taskSelect = document.getElementById('submission-task-filter');
             const classSelect = document.getElementById('submission-class-filter');
             const currentTask = taskSelect.value, currentClass = classSelect.value;
-            const tasks = [...new Set(submissionRows.map(item => item.task || item.scheduleTask || '').filter(Boolean))].sort();
-            const classes = [...new Set(submissionRows.map(item => item.className || '').filter(Boolean))].sort();
+            const tasks = [...new Set(submissionRows.map(item => item.task ?? '').filter(Boolean))].sort();
+            const classes = [...new Set(submissionRows.map(item => item.className ?? '').filter(Boolean))].sort();
             taskSelect.innerHTML = '<option value="">全部項目</option>' + tasks.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
             classSelect.innerHTML = '<option value="">全部班級</option>' + classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-            taskSelect.value = tasks.includes(currentTask) ? currentTask : ''; classSelect.value = classes.includes(currentClass) ? currentClass : '';
+            taskSelect.value = tasks.includes(currentTask) ? currentTask : '';
+            classSelect.value = classes.includes(currentClass) ? currentClass : '';
         }
 
         function showQrCode(url, title) {
             const box = document.getElementById('qr-box');
             document.getElementById('qr-title').innerText = title;
             document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
-            document.getElementById('qr-link').href = url; box.classList.add('active');
+            document.getElementById('qr-link').href = url;
+            box.classList.add('active');
         }
 
         function clearSubmissions() {
-            const password = prompt('清除所有紀錄請輸入管理確認碼：');
-            if (!password || !confirm('確定要清空全校紀錄嗎？')) return;
-            apiPost({ action: 'clearSubmissions', password: password }, '正在清除數據庫...')
+            const password = prompt('請輸入管理確認碼以清空全校紀錄：');
+            if (!password || !confirm('確定要清空嗎？此操作不可逆。')) return;
+            apiPost({ action: 'clearSubmissions', password: password }, '清除中...')
                 .then(() => { alert('已成功清空。'); loadSubmissions(); }).catch(err => alert(err.message));
         }
 
+        function performUnlock() {
+            const studentId = document.getElementById('unlock-student-id').value.trim();
+            const task = document.getElementById('unlock-task-name').value.trim();
+            if (!studentId || !task) { alert("請輸入學號與項目名稱。"); return; }
+            apiPost({ action: 'addUnlock', targetStudentId: studentId, task: task })
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        document.getElementById('unlock-student-id').value = '';
+                        document.getElementById('unlock-task-name').value = '';
+                    }
+                }).catch(err => alert(err.message));
+        }
+
         function loadReports() {
-            return apiGet('getReports', '正在載入問題回報清單...')
+            return apiGet('getReports', '讀取回報清單...')
                 .then(data => { reportRows = normalizeRows(data); populateReportFilters(); renderReports(); })
                 .catch(() => { reportRows = []; renderReports(); });
         }
@@ -936,37 +932,55 @@
             const typeFilter = document.getElementById('report-type-filter').value;
 
             const rows = reportRows.filter(item => {
-                const text = `${item.studentId || ''} ${item.studentName || ''} ${item.subject || ''}`.toLowerCase();
-                return (!statusFilter || (item.status || 'pending') === statusFilter) && (!typeFilter || (item.reportType || '') === typeFilter) && text.includes(keyword);
+                const text = `${item.studentId ?? ''} ${item.studentName ?? ''} ${item.subject ?? ''}`.toLowerCase();
+                return (!statusFilter || (item.status || 'pending') === statusFilter) && (!typeFilter || (item.reportType ?? '') === typeFilter) && text.includes(keyword);
             });
 
             if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='7'><div class='empty'>目前沒有問題回報。</div></td></tr>"; return; }
             tbody.innerHTML = rows.map(item => {
                 const status = item.status || 'pending';
                 const statusLabel = status === 'done' ? '<span class="status-active">● 已完成</span>' : status === 'processing' ? '<span class="status-processing">● 處理中</span>' : '<span style="color:var(--danger);font-weight:bold;">● 待處理</span>';
-                return `<tr><td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td><td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td><td>${escapeHtml(item.studentId || '')}<br>${escapeHtml(item.studentName || '')} (${escapeHtml(item.className || '')})</td><td>${escapeHtml(item.contact || '-')}</td><td><strong>${escapeHtml(item.subject || '')}</strong><div class="report-description">${escapeHtml(item.description || '')}</div></td><td>${statusLabel}</td><td><div style="display:flex; gap:6px;"><select class="report-status-select" style="min-height:30px; padding:4px;"><option value="pending" ${status === 'pending' ? 'selected' : ''}>待處理</option><option value="processing" ${status === 'processing' ? 'selected' : ''}>處理中</option><option value="done" ${status === 'done' ? 'selected' : ''}>已完成</option></select><button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button></div></td></tr>`;
+                return `<tr>
+                    <td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td>
+                    <td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td>
+                    <td>${escapeHtml(item.studentId ?? '')}<br>${escapeHtml(item.studentName ?? '')} (${escapeHtml(item.className ?? '')})</td>
+                    <td>${escapeHtml(item.contact ?? '-')}</td>
+                    <td><strong>${escapeHtml(item.subject ?? '')}</strong><div class="report-description">${escapeHtml(item.description ?? '')}</div></td>
+                    <td>${statusLabel}</td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <select class="report-status-select" style="min-height:30px; padding:4px;">
+                                <option value="pending" ${status === 'pending' ? 'selected' : ''}>待處理</option>
+                                <option value="processing" ${status === 'processing' ? 'selected' : ''}>處理中</option>
+                                <option value="done" ${status === 'done' ? 'selected' : ''}>已完成</option>
+                            </select>
+                            <button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button>
+                        </div>
+                    </td>
+                </tr>`;
             }).join('');
         }
 
         function populateReportFilters() {
-            const typeSelect = document.getElementById('report-type-filter'); const currentType = typeSelect.value;
-            const types = [...new Set(reportRows.map(item => item.reportType || '').filter(Boolean))].sort();
+            const typeSelect = document.getElementById('report-type-filter');
+            const currentType = typeSelect.value;
+            const types = [...new Set(reportRows.map(item => item.reportType ?? '').filter(Boolean))].sort();
             typeSelect.innerHTML = '<option value="">全部類型</option>' + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(getReportTypeLabel(t))}</option>`).join('');
             typeSelect.value = types.includes(currentType) ? currentType : '';
         }
 
         function getReportTypeLabel(type) {
-            return { 'password-reset': '密碼重設', login: '無法登入', upload: '檔案繳交問題', profile: '資更正', system: '系統異常' }[type] || '其他問題';
+            return { 'password-reset': '密碼重設', login: '無法登入', upload: '檔案繳交', profile: '資料更正', system: '系統異常' }[type] || '其他';
         }
 
         function updateReportStatus(button, id) {
             const select = button.closest('div').querySelector('.report-status-select');
-            apiPost({ action: 'updateReportStatus', id: id, status: select.value }, '正在變更單據狀態...')
+            apiPost({ action: 'updateReportStatus', id: id, status: select.value })
                 .then(() => { loadReports(); }).catch(err => alert(err.message));
         }
 
         function loadUsers() {
-            return apiGet('getUsers', '正在讀取學生名冊...')
+            return apiGet('getUsers', '讀取名冊...')
                 .then(data => { userRows = normalizeRows(data); renderUsers(); })
                 .catch(() => { userRows = []; renderUsers(); });
         }
@@ -974,32 +988,41 @@
         function renderUsers() {
             const tbody = document.getElementById('users-list');
             const keyword = document.getElementById('user-keyword').value.trim().toLowerCase();
-            const rows = userRows.filter(item => `${item.studentId || ''} ${item.name || ''} ${item.className || ''}`.toLowerCase().includes(keyword));
-            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>無符合的帳號。</div></td></tr>"; return; }
-            tbody.innerHTML = rows.map(item => `<tr><td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId || '')}</td><td>${escapeHtml(item.name || '')}</td><td>${escapeHtml(item.className || '')}</td><td>${escapeHtml(item.club || '-')}</td><td><div style="display:flex; gap:6px;"><input type="password" class="user-password" placeholder="輸入新密碼" style="min-height:30px; font-size:12px; padding:4px 8px; width:130px;"><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="updateUserPassword(this, '${escapeHtml(item.studentId || '')}')">覆蓋密碼</button></div></td></tr>`).join('');
+            const rows = userRows.filter(item => `${item.studentId ?? ''} ${item.name ?? ''} ${item.className ?? ''} ${item.club ?? ''}`.toLowerCase().includes(keyword));
+            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>無符合帳號。</div></td></tr>"; return; }
+            tbody.innerHTML = rows.map((item, index) => {
+                return `<tr>
+                    <td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId ?? '')}</td>
+                    <td>${escapeHtml(item.name ?? '')}</td>
+                    <td>${escapeHtml(item.className ?? '')}</td>
+                    <td>${escapeHtml(item.club ?? '-')}</td>
+                    <td>
+                        <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openUserForm('edit', ${index})">修改</button>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
         document.getElementById('user-form').addEventListener('submit', function (e) {
             e.preventDefault();
+            const mode = document.getElementById('user-action-mode').value;
+            const passInput = document.getElementById('new-user-password');
+            
             apiPost({
-                action: 'addUser',
+                action: mode === 'edit' ? 'editUser' : 'addUser',
+                id: document.getElementById('user-original-id').value,
                 newStudentId: document.getElementById('new-user-id').value.trim(),
                 name: document.getElementById('new-user-name').value.trim(),
-                className: document.getElementById('new-user-class').value.trim(),
-                club: document.getElementById('new-user-club').value.trim(),
-                password: document.getElementById('new-user-password').value
-            }, '正在註冊新帳號...')
-                .then(() => { alert('開通成功！'); e.target.reset(); toggleCollapseForm('user-collapse'); loadUsers(); })
-                .catch(err => alert(err.message));
+                className: document.getElementById('new-user-class').value,
+                club: document.getElementById('new-user-club').value,
+                password: passInput ? passInput.value : ''
+            })
+            .then((data) => {
+                alert(data.message ?? '儲存成功');
+                closeUserForm();
+                loadUsers();
+            }).catch(err => alert(err.message));
         });
-
-        function updateUserPassword(button, studentId) {
-            const input = button.closest('div').querySelector('.user-password');
-            if (!input.value) { alert('請先輸入新密碼。'); return; }
-            if (!confirm(`確定要強制更改學生 ${studentId} 的密碼？`)) return;
-            apiPost({ action: 'updateUserPassword', targetStudentId: studentId, password: input.value }, '強制覆蓋密碼中...')
-                .then(() => { alert('密碼覆蓋成功。'); input.value = ''; }).catch(err => alert(err.message));
-        }
     </script>
 </body>
 

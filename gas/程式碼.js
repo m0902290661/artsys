@@ -1,9 +1,9 @@
 /**
  * ==========================================
- * 弘明實驗高級中學 - 美術歷程管理系統核心後端
+ * 弘明實驗高級中學 - 美術歷程管理系統核心後端 (升級版)
  * ==========================================
  * 建立日期：2026
- * 功能：支援管理員後台時程、解鎖、問題回報、學生帳號管理，以及學生端登入、PDF上傳、撤銷。
+ * 功能：支援管理員後台時程、解鎖、問題回報、學生帳號管理(全資料修改+動態選單)，以及學生端功能。
  */
 
 // 1. 全域環境變數配置 (請根據你的雲端硬碟實際 ID 調整)
@@ -27,6 +27,9 @@ const UNLOCK_HEADERS = [
 const SCHEDULE_HEADERS = [
   "task", "deadline", "note"
 ];
+const OPTION_HEADERS = [
+  "type", "value" // type: 'class' 或 'club'
+];
 
 /**
  * ==========================================
@@ -46,6 +49,10 @@ function doGet(e) {
   // 路由分流
   if (action === "getSchedule") {
     return jsonOutput(getScheduleRows_(ss));
+  }
+
+  if (action === "getOptions") {
+    return jsonOutput(getOptionRows_(ss));
   }
 
   if (action === "getSubmissions") {
@@ -68,8 +75,9 @@ function doGet(e) {
   if (action === "getUsers") {
     var usersSession = requireSession_(ss, params, true);
     if (!usersSession.success) return jsonOutput(usersSession);
+    
+    // 管理員需要讀取密碼來做編輯時的預填，安全起見 sessionToken 不洩漏
     return jsonOutput(getSheetObjects_(ss, "users", USER_HEADERS).map(function (user) {
-      delete user.password;
       delete user.sessionToken;
       delete user.sessionExpiresAt;
       return user;
@@ -159,6 +167,12 @@ function doPost(e) {
     return addUser_(userSheet, userData, params);
   }
 
+  if (action === "editUser") {
+    var editUserSession = requireSession_(ss, params, true);
+    if (!editUserSession.success) return jsonOutput(editUserSession);
+    return editUser_(userSheet, userData, params);
+  }
+
   if (action === "updateUserPassword") {
     var passwordSession = requireSession_(ss, params, true);
     if (!passwordSession.success) return jsonOutput(passwordSession);
@@ -207,6 +221,33 @@ function doPost(e) {
  * 功能函數實作分區
  * ==========================================
  */
+
+// 讀取班級與美術社團選單設定值
+function getOptionRows_(ss) {
+  var sheet = getSheet_(ss, "options", OPTION_HEADERS);
+  var data = sheet.getDataRange().getValues();
+  var classes = [];
+  var clubs = [];
+  
+  // 如果是全新表格，預填預設資料防呆
+  if (data.length <= 1) {
+    var defaultOptions = [
+      ["class", "高一智"], ["class", "高一仁"], ["class", "高一勇"],
+      ["club", "素描社"], ["club", "水彩社"], ["club", "油畫社"], ["club", "水墨社"],
+      ["club", "書法社"], ["club", "雕塑社"], ["club", "漫畫社"], ["club", "設計社"]
+    ];
+    defaultOptions.forEach(function(opt) { sheet.appendRow(opt); });
+    data = sheet.getDataRange().getValues();
+  }
+
+  for (var i = 1; i < data.length; i++) {
+    var type = data[i][0].toString().trim();
+    var val = data[i][1].toString().trim();
+    if (type === "class") classes.push(val);
+    if (type === "club") clubs.push(val);
+  }
+  return { classes: classes, clubs: clubs };
+}
 
 // 學生與管理員登入
 function login_(userSheet, userData, params) {
@@ -557,7 +598,48 @@ function addUser_(userSheet, userData, params) {
   return jsonOutput({ success: true, message: "人員帳號建立完畢。" });
 }
 
-// 強制蓋寫、覆蓋特定帳號密碼
+// 管理員變更、覆蓋用戶所有欄位資料
+function editUser_(userSheet, userData, params) {
+  var originalStudentId = (params.id || "").toString().trim(); // 原本的學號 (識別行用)
+  var newStudentId = (params.newStudentId || "").toString().trim();
+  var name = (params.name || "").toString().trim();
+  var className = (params.className || "").toString().trim();
+  var club = (params.club || "").toString().trim();
+  var password = (params.password || "").toString();
+
+  if (!originalStudentId || !newStudentId || !name || !className) {
+    return jsonOutput({ success: false, message: "學號、姓名與班級皆為必填欄位。" });
+  }
+
+  // 檢查是否將學號改成與他人重複
+  if (originalStudentId !== newStudentId) {
+    for (var i = 1; i < userData.length; i++) {
+      if (userData[i][0].toString() === newStudentId) {
+        return jsonOutput({ success: false, message: "新的學號已被其他學生使用，未變更。" });
+      }
+    }
+  }
+
+  for (var i = 1; i < userData.length; i++) {
+    if (userData[i][0].toString() === originalStudentId) {
+      userSheet.getRange(i + 1, 1).setValue(newStudentId);
+      userSheet.getRange(i + 1, 2).setValue(name);
+      userSheet.getRange(i + 1, 3).setValue(className);
+      userSheet.getRange(i + 1, 4).setValue(club);
+      if (password) {
+        userSheet.getRange(i + 1, 5).setValue(password);
+        // 密碼有改則強制把舊的登入 Session 清空
+        userSheet.getRange(i + 1, 6).setValue("");
+        userSheet.getRange(i + 1, 7).setValue("");
+      }
+      SpreadsheetApp.flush();
+      return jsonOutput({ success: true, message: "學生資料已完全更新。" });
+    }
+  }
+  return jsonOutput({ success: false, message: "找不到指定的學生帳號。" });
+}
+
+// 強制蓋寫、覆蓋特定帳號密碼 (保留舊有的獨立接口，供防呆調配)
 function updateUserPassword_(userSheet, userData, params) {
   var studentId = (params.targetStudentId || "").toString().trim();
   var password = (params.password || "").toString();
@@ -816,10 +898,4 @@ function authCheck_() {
       message: "權限檢查時發生錯誤: " + err.toString()
     });
   }
-}
-
-function authorizeDriveAndSheet() {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var folder = DriveApp.getFolderById(MAIN_FOLDER_ID);
-  return "點選此處完成綁定與授權成功。連接目標：" + ss.getName() + " 以及資料夾 " + folder.getName();
 }
