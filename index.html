@@ -404,7 +404,7 @@
                 <div id="revocation-box" class="form-group" style="display: none;">
                     <label style="color: var(--text-main);">已繳交檔案</label>
                     <div style="margin-bottom: 15px; background: #f1f2f6; padding: 12px; border-radius: 8px;">
-                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener" style="font-weight: bold; color: var(--primary-color); text-decoration: none;">查看已上傳 PDF</a>
+                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener" style="font-weight: bold; color: var(--primary-bg); text-decoration: none;">查看已上傳 PDF</a>
                         <span id="submitted-time" style="color: var(--text-muted); font-size: 13px; margin-left: 15px;"></span>
                     </div>
                     <button type="button" id="revoke-btn" class="danger-btn" onclick="revokeSubmission()">撤銷當前繳交</button>
@@ -445,19 +445,22 @@
                 return;
             }
 
+            // 先渲染本地已有資料，降低使用者體感等待時間
+            renderCurrentUser();
+
             fetch('api.json')
                 .then(res => res.json())
                 .then(config => {
                     GAS_API_URL = config.gasUrl;
-                    return validateSession();
+                    // 將 session 驗證與資料載入改為【併發執行】，顯著縮短載入時間
+                    return Promise.all([validateSession(), loadSchedule(), loadMySubmissions()]);
                 })
-                .then(user => {
-                    currentUser = user;
-                    sessionStorage.setItem('user', JSON.stringify(user));
-                    renderCurrentUser();
-                    return Promise.all([loadSchedule(), loadMySubmissions()]);
-                })
-                .then(() => {
+                .then(([user]) => {
+                    if (user) {
+                        currentUser = user;
+                        sessionStorage.setItem('user', JSON.stringify(user));
+                        renderCurrentUser();
+                    }
                     buildTaskSelect();
                     hideLoading();
                 })
@@ -491,7 +494,7 @@
 
             refreshBtn.disabled = true;
             select.disabled = true;
-            showLoading('正在重新同步最新雲端資料庫...');
+            showLoading('正在同步最新雲端資料...');
 
             Promise.all([loadSchedule(), loadMySubmissions()])
                 .then(() => {
@@ -567,9 +570,9 @@
         }
 
         function renderCurrentUser() {
-            document.getElementById('u-name').innerText = currentUser.name;
-            document.getElementById('u-id').innerText = currentUser.studentId;
-            document.getElementById('u-class').innerText = currentUser.className;
+            document.getElementById('u-name').innerText = currentUser.name || '';
+            document.getElementById('u-id').innerText = currentUser.studentId || '-';
+            document.getElementById('u-class').innerText = currentUser.className || '-';
             document.getElementById('u-club').innerText = currentUser.club || '無';
         }
 
@@ -657,55 +660,51 @@
                 return;
             }
 
-            toggleSkeleton(true);
+            const item = scheduleItems[select.value];
+            const deadline = new Date(item.deadline);
+            const now = new Date();
+            const isOverdue = now > deadline;
 
-            setTimeout(() => {
-                const item = scheduleItems[select.value];
-                const deadline = new Date(item.deadline);
-                const now = new Date();
-                const isOverdue = now > deadline;
+            document.getElementById('task-deadline').innerText = deadline.toLocaleString('zh-TW');
+            document.getElementById('task-note').innerText = item.note || '無';
 
-                document.getElementById('task-deadline').innerText = deadline.toLocaleString('zh-TW');
-                document.getElementById('task-note').innerText = item.note || '無';
+            if (!submissionsLoaded) {
+                document.getElementById('task-status').innerHTML = '<span>紀錄載入異常</span>';
+                actionSection.style.display = 'block';
+                return;
+            }
 
-                if (!submissionsLoaded) {
-                    document.getElementById('task-status').innerHTML = '<span>紀錄載入異常</span>';
-                    toggleSkeleton(false);
-                    return;
+            const submitted = getActiveSubmission(item.task);
+
+            if (submitted) {
+                document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
+                document.getElementById('submitted-file-link').href = submitted.url || '#';
+                document.getElementById('submitted-time').innerText = `繳交時間：${formatDateTime(submitted.createdAt)}`;
+                uploadBox.style.display = 'none';
+                revocationBox.style.display = 'block';
+                revokeBtn.dataset.id = submitted.id;
+
+                if (isOverdue) {
+                    revokeBtn.disabled = true;
+                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期，系統已關閉撤銷修改權限。</span>';
+                } else {
+                    revokeBtn.disabled = false;
+                    message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先撤銷原繳交內容再重新提交。</span>';
                 }
+            }
+            else if (isOverdue) {
+                document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（補繳開放）</span>';
+                message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期！若已獲管理員解鎖，請直接上傳；未解鎖者送出將被阻斷。</span>';
+                uploadBox.style.display = 'block';
+                revocationBox.style.display = 'none';
+            }
+            else {
+                document.getElementById('task-status').innerHTML = '<span class="status-badge none">未繳交</span>';
+                uploadBox.style.display = 'block';
+                revocationBox.style.display = 'none';
+            }
 
-                const submitted = getActiveSubmission(item.task);
-
-                if (submitted) {
-                    document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
-                    document.getElementById('submitted-file-link').href = submitted.url || '#';
-                    document.getElementById('submitted-time').innerText = `繳交時間：${formatDateTime(submitted.createdAt)}`;
-                    uploadBox.style.display = 'none';
-                    revocationBox.style.display = 'block';
-                    revokeBtn.dataset.id = submitted.id;
-
-                    if (isOverdue) {
-                        revokeBtn.disabled = true;
-                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期，系統已關閉撤銷修改權限。</span>';
-                    } else {
-                        revokeBtn.disabled = false;
-                        message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先撤銷原繳交內容再重新提交。</span>';
-                    }
-                }
-                else if (isOverdue) {
-                    document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（補繳開放）</span>';
-                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期！若已獲管理員解鎖，請直接上傳；未解鎖者送出將被阻斷。</span>';
-                    uploadBox.style.display = 'block';
-                    revocationBox.style.display = 'none';
-                }
-                else {
-                    document.getElementById('task-status').innerHTML = '<span class="status-badge none">未繳交</span>';
-                    uploadBox.style.display = 'block';
-                    revocationBox.style.display = 'none';
-                }
-
-                toggleSkeleton(false);
-            }, 250);
+            actionSection.style.display = 'block';
         }
 
         function simulateProgress(fileSize) {
@@ -758,7 +757,7 @@
             button.disabled = true;
             fileInput.disabled = true;
             select.disabled = true;
-            message.innerHTML = '<span style="color:var(--primary-color); font-weight:bold;">⏳ 正在處理檔案...</span>';
+            message.innerHTML = '<span style="color:var(--primary-bg); font-weight:bold;">⏳ 正在處理檔案...</span>';
 
             const reader = new FileReader();
             

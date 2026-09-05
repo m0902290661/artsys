@@ -7,358 +7,74 @@
     <title>私立弘明實驗高級中學 美術歷程管理後台</title>
     <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
     <style>
-        :root {
-            --primary: rgb(140, 140, 255);
-            --primary-hover: rgb(110, 110, 255);
-            --danger: #e05252;
-            --success: #2b8a3e;
-            --bg: #f7f9fc;
-            --text: #2f343b;
+        :root { --primary: #8c8cff; --primary-h: #6e6eff; --danger: #e05252; --success: #2b8a3e; --bg: #f7f9fc; --text: #2f343b; }
+        * { box-sizing: border-box; }
+        body { display: flex; min-height: 100vh; margin: 0; font-family: 'PingFang TC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: var(--text); background: var(--bg); }
+        .left { width: 240px; padding: 30px 20px; background: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; flex-shrink: 0; }
+        .right { flex: 1; min-width: 0; padding: 40px; overflow-y: auto; }
+        h1 { margin: 0 0 15px; font-size: 16px; line-height: 1.4; }
+        h2 { margin: 0 0 20px; font-size: 22px; font-weight: 700; }
+        .admin-info { color: #666; font-size: 13px; line-height: 1.5; background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
+        .menu-link { display: block; padding: 12px 16px; margin: 4px 0; color: #555; text-decoration: none; border-radius: 8px; font-size: 14px; transition: 0.2s; }
+        .menu-link:hover { background: #f1f3f9; }
+        .menu-link.active { background: var(--primary); color: #fff; font-weight: bold; box-shadow: 0 4px 10px rgba(161,161,255,0.3); }
+        .panel { display: none; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); animation: fadeIn 0.3s ease; }
+        .panel.active { display: block; }
+        .collapse-form { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s; background: #f8f9fa; border-radius: 8px; padding: 0 20px; }
+        .collapse-form.open { max-height: 800px; padding: 20px; margin: 15px 0 20px; border: 1px solid #e5e8ef; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 20px 0; }
+        input, select, textarea { min-height: 38px; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 6px; font-size: 14px; background: #fff; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        textarea { min-height: 80px; resize: vertical; }
+        .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .field-grid label { display: flex; flex-direction: column; gap: 6px; color: #555; font-size: 13px; font-weight: 600; }
+        .field-grid .wide { grid-column: 1 / -1; }
+        button { min-height: 38px; padding: 8px 20px; border: 0; border-radius: 6px; color: #fff; background: var(--primary); cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        button:hover { opacity: 0.9; }
+        button.secondary { color: #4c535d; background: #f1f3f9; }
+        button.danger { background: var(--danger); }
+        button:disabled { cursor: not-allowed; opacity: 0.5 !important; }
+        .batch-bar { display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px 16px; border-radius: 8px; margin-bottom: 15px; align-items: center; justify-content: space-between; animation: fadeIn 0.2s ease; }
+        .batch-bar.active { display: flex; }
+        .batch-info { font-size: 13.5px; font-weight: 600; color: #3730a3; }
+        .batch-btns { display: flex; gap: 8px; }
+        .table-container { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
+        th, td { border-bottom: 1px solid #edf0f5; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; color: #606266; font-weight: 600; }
+        tr:hover td { background: #fafbfc; }
+        .checkbox-cell { width: 40px; text-align: center; }
+        .empty { padding: 30px; text-align: center; color: #909399; background: #f8f9fa; border-radius: 8px; }
+        .status-active { color: var(--success); font-weight: bold; }
+        .status-processing { color: #1864ab; font-weight: bold; }
+        .status-revoked { color: #909399; }
+        .report-description { max-width: 320px; white-space: pre-wrap; color: #666; font-size: 13px; margin-top: 4px; }
+        .qr-box { display: none; margin: 15px 0; padding: 16px; border: 1px solid #e5e8ef; border-radius: 8px; background: #f8f9fa; max-width: 240px; text-align: center; }
+        .qr-box.active { display: block; animation: fadeIn 0.3s; }
+        .qr-box img { width: 160px; height: 160px; display: block; margin: 10px auto; }
+        .global-loader { position: fixed; right: 24px; bottom: 24px; background: rgba(0,0,0,0.85); color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        .global-loader.show { opacity: 1; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+
+        /* 隱藏的 PDF 繪圖容器，避免中文字型缺乏導致的亂碼 */
+        #pdf-render-card {
+            position: absolute; left: -9999px; top: -9999px; width: 220px; height: 240px;
+            background: #ffffff; border: 1px dashed #999; padding: 10px; box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: #000; text-align: center;
         }
+        #pdf-render-card .qr-img { width: 110px; height: 110px; }
+        #pdf-render-card .fname { font-size: 11px; font-weight: bold; word-break: break-all; margin: 4px 0; max-height: 28px; overflow: hidden; line-height: 1.2; }
+        #pdf-render-card .meta { font-size: 10px; color: #333; line-height: 1.3; }
 
-        body {
-            display: flex;
-            min-height: 100vh;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            color: var(--text);
-            background-color: var(--bg);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        .left {
-            width: 240px;
-            padding: 30px 20px;
-            background: #fff;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .right {
-            flex: 1;
-            min-width: 0;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        h1 {
-            margin: 0 0 15px;
-            font-size: 16px;
-            line-height: 1.4;
-            color: #333;
-        }
-
-        h2 {
-            margin: 0 0 20px;
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .admin-info {
-            color: #666;
-            font-size: 13px;
-            line-height: 1.5;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-
-        .menu-link {
-            display: block;
-            padding: 12px 16px;
-            margin: 4px 0;
-            color: #555;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .menu-link:hover {
-            background: #f1f3f9;
-        }
-
-        .menu-link.active {
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(161, 161, 255, 0.3);
-        }
-
-        .panel {
-            display: none;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .panel.active {
-            display: block;
-        }
-
-        .collapse-form {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s;
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 0 20px;
-        }
-
-        .collapse-form.open {
-            max-height: 500px;
-            padding: 20px;
-            margin: 15px 0 20px;
-            border: 1px solid #e5e8ef;
-        }
-
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        input,
-        textarea,
-        select {
-            min-height: 38px;
-            padding: 8px 12px;
-            border: 1px solid #dcdfe6;
-            border-radius: 6px;
-            font-size: 14px;
-            background: #fff;
-            transition: border-color 0.2s;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
-
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .field-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .field-grid label {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            color: #555;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .field-grid .wide {
-            grid-column: 1 / -1;
-        }
-
-        button {
-            min-height: 38px;
-            padding: 8px 20px;
-            border: 0;
-            border-radius: 6px;
-            color: white;
-            background: var(--primary);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        button.secondary {
-            color: #4c535d;
-            background: #f1f3f9;
-        }
-
-        button.danger {
-            background: var(--danger);
-        }
-
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.5 !important;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            margin-top: 15px;
-        }
-
-        table {
-            width: 100%;
-            min-width: 760px;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th,
-        td {
-            border-bottom: 1px solid #edf0f5;
-            padding: 14px 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #f8f9fa;
-            color: #606266;
-            font-weight: 600;
-        }
-
-        tr:hover td {
-            background: #fafbfc;
-        }
-
-        .empty {
-            padding: 30px;
-            text-align: center;
-            color: #909399;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .status-active {
-            color: var(--success);
-            font-weight: bold;
-        }
-
-        .status-processing {
-            color: #1864ab;
-            font-weight: bold;
-        }
-
-        .status-revoked {
-            color: #909399;
-        }
-
-        .report-description {
-            max-width: 320px;
-            white-space: pre-wrap;
-            color: #666;
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .qr-box {
-            display: none;
-            margin: 15px 0;
-            padding: 16px;
-            border: 1px solid #e5e8ef;
-            border-radius: 8px;
-            background: #f8f9fa;
-            max-width: 240px;
-            text-align: center;
-        }
-
-        .qr-box.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        .qr-box img {
-            width: 160px;
-            height: 160px;
-            display: block;
-            margin: 10px auto;
-        }
-
-        .global-loader {
-            position: fixed;
-            right: 24px;
-            bottom: 24px;
-            background: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-        }
-
-        .global-loader.show {
-            opacity: 1;
-        }
-
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #fff;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 900px) {
-            body {
-                display: block;
-            }
-
-            .left {
-                width: 100%;
-                padding: 20px;
-            }
-
-            .right {
-                padding: 20px;
-            }
-
-            .toolbar {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-            }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 900px) { body { display: block; } .left, .right { width: 100%; padding: 20px; } .toolbar { display: grid; grid-template-columns: 1fr 1fr; } }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 
 <body>
@@ -367,17 +83,23 @@
         <div style="margin-top:16px;color:#666;font-weight:bold;font-size:14px;">安全加載中...</div>
     </div>
 
-    <div id="global-loader" class="global-loader">
-        <div class="spinner"></div>
-        <span id="loader-text">讀取中...</span>
+    <div id="global-loader" class="global-loader"><div class="spinner"></div><span id="loader-text">讀取中...</span></div>
+    <div id="qrcode-hidden-container" style="display:none;"></div>
+
+    <!-- 隱藏之渲染 DOM，轉成 Canvas 貼入 PDF 消除亂碼 -->
+    <div id="pdf-render-card">
+        <div id="card-qr-box"></div>
+        <div id="card-filename" class="fname">檔名載入中</div>
+        <div class="meta">
+            <div id="card-task" style="font-weight: bold;"></div>
+            <div id="card-user"></div>
+            <div id="card-club"></div>
+        </div>
     </div>
 
     <aside class="left">
         <h1>美術歷程管理後台</h1>
-        <div class="admin-info">
-            管理員：<span id="admin-name">..</span><br>
-            帳號：<span id="admin-id">-</span>
-        </div>
+        <div class="admin-info">管理員：<span id="admin-name">..</span><br>帳號：<span id="admin-id">-</span></div>
         <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程管理</a>
         <a href="#" class="menu-link" onclick="switchPanel('submissions-panel', this)">繳交紀錄</a>
         <a href="#" class="menu-link" onclick="switchPanel('unlock-panel', this)">遲交解鎖</a>
@@ -387,18 +109,22 @@
     </aside>
 
     <main class="right">
+        <!-- 1. 時程管理 -->
         <section id="schedule-panel" class="panel active">
             <h2>時程管理</h2>
             <div class="toolbar" style="margin-top: 0;">
                 <button type="button" onclick="openScheduleForm('add')">➕ 新增項目</button>
                 <button type="button" class="secondary" onclick="loadSchedule()">🔄 重新整理</button>
             </div>
-
+            <div id="schedule-batch-bar" class="batch-bar">
+                <span class="batch-info">已選取 <span id="schedule-selected-count">0</span> 項</span>
+                <div class="batch-btns"><button type="button" class="danger" style="min-height:32px; font-size:13px;" onclick="batchDeleteSchedules()">🗑️ 批量刪除</button></div>
+            </div>
             <div id="schedule-collapse" class="collapse-form">
                 <form id="schedule-form">
                     <input type="hidden" id="schedule-action-mode" value="add">
                     <input type="hidden" id="schedule-edit-id" value="">
-                    <h3 id="schedule-form-title" style="margin-top:0; font-size:15px; color:#333;">項目編輯</h3>
+                    <h3 id="schedule-form-title" style="margin-top:0; font-size:15px;">項目編輯</h3>
                     <div class="field-grid">
                         <label>項目名稱<input type="text" id="task" required></label>
                         <label>截止日期<input type="date" id="deadline" required></label>
@@ -408,66 +134,60 @@
                     <button type="button" class="secondary" onclick="closeScheduleForm()">取消</button>
                 </form>
             </div>
-
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>項目</th>
-                            <th>截止日期</th>
-                            <th>備註</th>
-                            <th style="width: 130px;">操作</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="schedule-check-all" onclick="toggleCheckAll('schedule')"></th>
+                            <th>項目</th><th>截止日期</th><th>備註</th><th style="width: 130px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="schedule-list">
-                        <tr><td colspan="4" class="empty">資料載入中...</td></tr>
-                    </tbody>
+                    <tbody id="schedule-list"><tr><td colspan="5" class="empty">資料載入中...</td></tr></tbody>
                 </table>
             </div>
         </section>
 
+        <!-- 2. 繳交紀錄 (包含全功能選取刪除與對應檔案同步刪除) -->
         <section id="submissions-panel" class="panel">
             <h2>繳交紀錄</h2>
             <div class="toolbar" style="margin-top: 0;">
                 <select id="submission-task-filter"><option value="">全部項目</option></select>
                 <select id="submission-class-filter"><option value="">全部班級</option></select>
+                <select id="submission-club-filter"><option value="">全部社團</option></select>
                 <select id="submission-status-filter">
-                    <option value="">全部狀態</option>
-                    <option value="active">有效</option>
-                    <option value="revoked">已撤銷</option>
+                    <option value="active">僅顯示有效</option><option value="">全部狀態</option><option value="revoked">已撤銷</option>
                 </select>
-                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名..." style="flex: 1; min-width: 150px;">
+                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、檔名..." style="flex: 1; min-width: 150px;">
                 <button type="button" class="secondary" onclick="loadSubmissions()">🔄 重新整理</button>
-                <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除紀錄</button>
+                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出 A4 QR (符合當前篩選)</button>
+                <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除全校紀錄</button>
             </div>
-
+            <div id="submission-batch-bar" class="batch-bar">
+                <span class="batch-info">已選取 <span id="submission-selected-count">0</span> 項紀錄</span>
+                <div class="batch-btns">
+                    <button type="button" style="background:#2b8a3e; min-height:32px; font-size:13px;" onclick="exportBatchQrA4(true)">🖨️ 僅匯出選取的 QR Code</button>
+                    <button type="button" class="danger" style="min-height:32px; font-size:13px;" onclick="batchDeleteSubmissions()">🗑️ 批量刪除紀錄與對應檔案</button>
+                </div>
+            </div>
             <div id="qr-box" class="qr-box">
-                <strong id="qr-title" style="font-size:13px; color:#333;">檔案 QR Code</strong>
+                <strong id="qr-title" style="font-size:13px;">檔案 QR Code</strong>
                 <img id="qr-image" alt="QR">
                 <p style="margin: 6px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener" style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟 ↗</a></p>
             </div>
-
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>項目</th>
-                            <th>學號</th>
-                            <th>姓名</th>
-                            <th>班級</th>
-                            <th>檔案名稱</th>
-                            <th>時間</th>
-                            <th>狀態</th>
-                            <th style="width: 80px;">QR</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="submission-check-all" onclick="toggleCheckAll('submission')"></th>
+                            <th>項目</th><th>學號</th><th>姓名</th><th>班級</th><th>社團</th><th>檔案名稱</th><th>時間</th><th>狀態</th><th style="width: 80px;">QR</th>
                         </tr>
                     </thead>
-                    <tbody id="submissions-list">
-                        <tr><td colspan="8" class="empty">資料載入中...</td></tr>
-                    </tbody>
+                    <tbody id="submissions-list"><tr><td colspan="10" class="empty">資料載入中...</td></tr></tbody>
                 </table>
             </div>
         </section>
 
+        <!-- 3. 遲交解鎖 -->
         <section id="unlock-panel" class="panel">
             <h2>遲交解鎖</h2>
             <div class="field-grid" style="max-width: 500px;">
@@ -477,52 +197,77 @@
             <button type="button" onclick="performUnlock()">✅ 授予權限</button>
         </section>
 
+        <!-- 4. 問題回報 -->
         <section id="reports-panel" class="panel">
             <h2>問題回報</h2>
             <div class="toolbar" style="margin-top: 0;">
                 <select id="report-status-filter">
-                    <option value="">全部狀態</option>
-                    <option value="pending">待處理</option>
-                    <option value="processing">處理中</option>
-                    <option value="done">已完成</option>
+                    <option value="">全部狀態</option><option value="pending">待處理</option><option value="processing">處理中</option><option value="done">已完成</option>
                 </select>
                 <select id="report-type-filter"><option value="">全部類型</option></select>
                 <input type="text" id="report-keyword" placeholder="搜尋姓名、學號..." style="flex: 1; min-width: 150px;">
                 <button type="button" class="secondary" onclick="loadReports()">🔄 重新整理</button>
             </div>
+            <div id="report-batch-bar" class="batch-bar">
+                <span class="batch-info">已選取 <span id="report-selected-count">0</span> 單</span>
+                <div class="batch-btns">
+                    <select id="batch-report-status" style="min-height:32px; padding:2px 8px; font-size:13px;">
+                        <option value="pending">設為：待處理</option><option value="processing">設為：處理中</option><option value="done">設為：已完成</option>
+                    </select>
+                    <button type="button" style="min-height:32px; font-size:13px;" onclick="batchUpdateReportStatus()">更新狀態</button>
+                </div>
+            </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>時間</th>
-                            <th>類型</th>
-                            <th>填報人</th>
-                            <th>聯絡方式</th>
-                            <th>內容</th>
-                            <th>狀態</th>
-                            <th style="width: 160px;">操作</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="report-check-all" onclick="toggleCheckAll('report')"></th>
+                            <th>時間</th><th>類型</th><th>填報人</th><th>聯絡方式</th><th>內容</th><th>狀態</th><th style="width: 160px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="reports-list">
-                        <tr><td colspan="7" class="empty">資料載入中...</td></tr>
-                    </tbody>
+                    <tbody id="reports-list"><tr><td colspan="8" class="empty">資料載入中...</td></tr></tbody>
                 </table>
             </div>
         </section>
 
+        <!-- 5. 帳號清單 -->
         <section id="users-panel" class="panel">
             <h2>帳號清單</h2>
             <div class="toolbar" style="margin-top: 0;">
-                <button type="button" onclick="openUserForm('add')">➕ 新增學生</button>
+                <button type="button" onclick="openUserForm('add')">➕ 新增單筆學生</button>
+                <button type="button" style="background:#2b8a3e;" onclick="triggerCsvImport()">📁 批量 CSV 匯入帳號</button>
+                <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCsvFile(this)">
                 <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、社團..." style="flex: 1;">
                 <button type="button" class="secondary" onclick="loadUsers()">🔄 重新整理</button>
+            </div>
+
+            <div id="user-batch-bar" class="batch-bar">
+                <span class="batch-info">已選取 <span id="user-selected-count">0</span> 個帳號</span>
+                <div class="batch-btns">
+                    <button type="button" class="danger" style="min-height:32px; font-size:13px;" onclick="batchDeleteUsers()">🗑️ 批量刪除帳號</button>
+                </div>
+            </div>
+
+            <div id="csv-preview-collapse" class="collapse-form">
+                <h3 style="margin-top:0; font-size:15px; color:#2b8a3e;">📁 CSV 匯入預覽 (確認後將同步至雲端)</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:10px;">請確保 CSV 表頭包含：<code>學號</code>、<code>姓名</code>、<code>班級</code>、<code>社團</code> (可選)、<code>密碼</code> (可選)。若學號重複將直接更新資料。</p>
+                <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                    <table>
+                        <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>社團</th><th>密碼</th></tr></thead>
+                        <tbody id="csv-preview-list"></tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 15px; display:flex; gap:10px;">
+                    <button type="button" style="background:#2b8a3e;" onclick="submitCsvImport()">🚀 開始同步匯入雲端</button>
+                    <button type="button" class="secondary" onclick="closeCsvPreview()">取消</button>
+                </div>
             </div>
 
             <div id="user-collapse" class="collapse-form">
                 <form id="user-form">
                     <input type="hidden" id="user-action-mode" value="add">
                     <input type="hidden" id="user-original-id" value="">
-                    <h3 id="user-form-title" style="margin-top:0; font-size:15px; color:#333;">學生帳號編輯</h3>
+                    <h3 id="user-form-title" style="margin-top:0; font-size:15px;">學生帳號編輯</h3>
                     <div class="field-grid">
                         <label>學號<input type="text" id="new-user-id" required></label>
                         <label>姓名<input type="text" id="new-user-name" required></label>
@@ -539,490 +284,408 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>學號</th>
-                            <th>姓名</th>
-                            <th>班級</th>
-                            <th>美術社團</th>
-                            <th style="width: 100px;">操作</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="user-check-all" onclick="toggleCheckAll('user')"></th>
+                            <th>學號</th><th>姓名</th><th>班級</th><th>美術社團</th><th style="width: 100px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="users-list">
-                        <tr><td colspan="5" class="empty">資料載入中...</td></tr>
-                    </tbody>
+                    <tbody id="users-list"><tr><td colspan="6" class="empty">資料載入中...</td></tr></tbody>
                 </table>
             </div>
         </section>
     </main>
 
     <script>
-        let GAS_API_URL = "";
-        let currentUser = null;
-        let scheduleRows = [];
-        let submissionRows = [];
-        let reportRows = [];
-        let userRows = [];
-        let globalOptions = { classes: [], clubs: [] };
+        let GAS_API_URL = "", currentUser = null, scheduleRows = [], submissionRows = [], reportRows = [], userRows = [], parsedCsvData = [], globalOptions = { classes: [], clubs: [] };
 
-        function toggleGlobalLoader(show, text = "同步中...") {
+        function toggleGlobalLoader(show, text) {
             const loader = document.getElementById('global-loader');
-            document.getElementById('loader-text').innerText = text;
-            show ? loader.classList.add('show') : loader.classList.remove('show');
-            document.querySelectorAll('input, select, button, textarea').forEach(el => {
-                if (!el.classList.contains('menu-link')) el.disabled = show;
-            });
+            document.getElementById('loader-text').innerText = text || "同步中...";
+            loader.classList.toggle('show', show);
+            document.querySelectorAll('input, select, button, textarea').forEach(el => { if (!el.classList.contains('menu-link')) el.disabled = show; });
         }
 
-        function openScheduleForm(mode, index = null) {
-            const formBox = document.getElementById('schedule-collapse');
-            const titleEl = document.getElementById('schedule-form-title');
-            const modeInput = document.getElementById('schedule-action-mode');
-            const idInput = document.getElementById('schedule-edit-id');
-            const taskInput = document.getElementById('task');
-            const deadlineInput = document.getElementById('deadline');
-            const noteInput = document.getElementById('note');
+        function toggleCheckAll(type) {
+            const master = document.getElementById(type + '-check-all');
+            document.querySelectorAll('.' + type + '-checkbox').forEach(cb => cb.checked = master.checked);
+            updateBatchBar(type);
+        }
 
-            if (mode === 'edit' && index !== null) {
-                const item = scheduleRows[index];
-                titleEl.innerText = "✏️ 編輯時程";
-                modeInput.value = "edit";
-                idInput.value = item.id ?? index;
-                taskInput.value = item.task ?? '';
-                if (item.deadline) {
-                    const d = new Date(item.deadline);
-                    deadlineInput.value = !Number.isNaN(d.getTime()) ? d.toISOString().split('T')[0] : '';
-                } else {
-                    deadlineInput.value = '';
+        function updateBatchBar(type) {
+            const selected = document.querySelectorAll('.' + type + '-checkbox:checked');
+            const countSpan = document.getElementById(type + '-selected-count');
+            const batchBar = document.getElementById(type + '-batch-bar');
+            if (countSpan) countSpan.innerText = selected.length;
+            if (batchBar) batchBar.classList.toggle('active', selected.length > 0);
+            const master = document.getElementById(type + '-check-all');
+            const total = document.querySelectorAll('.' + type + '-checkbox');
+            if (master && total.length > 0) master.checked = (selected.length === total.length);
+        }
+
+        async function batchDeleteSchedules() {
+            const selected = Array.from(document.querySelectorAll('.schedule-checkbox:checked')).map(cb => cb.value);
+            if (!selected.length || !confirm(`確定刪除選取的 ${selected.length} 項時程嗎？`)) return;
+            toggleGlobalLoader(true, "批量刪除中...");
+            for (let id of selected) { try { await apiPost({ action: 'deleteSchedule', id }); } catch (e) {} }
+            toggleGlobalLoader(false); loadSchedule();
+        }
+
+        // 批量刪除選取的繳交紀錄（同步把 Google Drive 上對應的實體 PDF 檔移至垃圾桶）
+        async function batchDeleteSubmissions() {
+            const selected = Array.from(document.querySelectorAll('.submission-checkbox:checked')).map(cb => cb.value);
+            if (!selected.length || !confirm(`確定要刪除選取的 ${selected.length} 筆紀錄嗎？\n（注意：雲端硬碟中的對應實體 PDF 檔案將會被同步移至垃圾桶）`)) return;
+
+            toggleGlobalLoader(true, "正在同步刪除紀錄與對應雲端檔案...");
+            for (let id of selected) {
+                try {
+                    await apiPost({ action: 'deleteSubmission', id });
+                } catch (e) {
+                    console.error("刪除失敗 ID:", id, e);
                 }
-                noteInput.value = item.note ?? '';
-                formBox.classList.add('open');
-                formBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            } else {
-                titleEl.innerText = "➕ 新增時程";
-                modeInput.value = "add";
-                idInput.value = "";
-                document.getElementById('schedule-form').reset();
-                formBox.classList.toggle('open');
             }
+            toggleGlobalLoader(false);
+            loadSubmissions();
         }
 
-        function closeScheduleForm() {
-            document.getElementById('schedule-collapse').classList.remove('open');
-            document.getElementById('schedule-form').reset();
+        async function batchUpdateReportStatus() {
+            const selected = Array.from(document.querySelectorAll('.report-checkbox:checked')).map(cb => cb.value);
+            const status = document.getElementById('batch-report-status').value;
+            if (!selected.length) return;
+            toggleGlobalLoader(true, "批量更新中...");
+            for (let id of selected) { try { await apiPost({ action: 'updateReportStatus', id, status }); } catch (e) {} }
+            toggleGlobalLoader(false); loadReports();
         }
 
-        function openUserForm(mode, index = null) {
-            const formBox = document.getElementById('user-collapse');
-            const titleEl = document.getElementById('user-form-title');
-            const modeInput = document.getElementById('user-action-mode');
-            const originalIdInput = document.getElementById('user-original-id');
-            const passLabel = document.getElementById('user-password-label');
-            const idInput = document.getElementById('new-user-id');
-            const nameInput = document.getElementById('new-user-name');
-            const classSelect = document.getElementById('new-user-class');
-            const clubSelect = document.getElementById('new-user-club');
+        async function batchDeleteUsers() {
+            const selected = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+            if (!selected.length || !confirm(`確定刪除選取的 ${selected.length} 個帳號嗎？此操作無法恢復！`)) return;
+            toggleGlobalLoader(true, "批量刪除帳號中...");
+            for (let id of selected) { try { await apiPost({ action: 'deleteUser', id }); } catch (e) {} }
+            toggleGlobalLoader(false); loadUsers();
+        }
 
+        function triggerCsvImport() { document.getElementById('csv-file-input').click(); }
+        function handleCsvFile(input) {
+            if (!input.files?.length) return;
+            Papa.parse(input.files[0], {
+                header: true, skipEmptyLines: true, encoding: "UTF-8",
+                complete: res => processParsedCsv(res.data)
+            });
+            input.value = '';
+        }
+
+        function processParsedCsv(data) {
+            parsedCsvData = data.map(r => ({
+                studentId: String(r['學號'] || r['studentId'] || '').trim(),
+                name: String(r['姓名'] || r['name'] || '').trim(),
+                className: String(r['班級'] || r['className'] || '').trim(),
+                club: String(r['社團'] || r['club'] || '').trim(),
+                password: String(r['密碼'] || r['password'] || '').trim()
+            })).filter(u => u.studentId && u.name);
+
+            if (!parsedCsvData.length) return alert("未找到有效數據，請確認 CSV 包含『學號』與『姓名』。");
+
+            document.getElementById('csv-preview-list').innerHTML = parsedCsvData.map(i => `
+                <tr><b>${escapeHtml(i.studentId)}</b><td>${escapeHtml(i.name)}</td><td>${escapeHtml(i.className)}</td><td>${escapeHtml(i.club || '-')}</td><td>${i.password ? '******' : '(預設學號)'}</td></tr>
+            `).join('');
+            document.getElementById('csv-preview-collapse').classList.add('open');
+        }
+
+        function closeCsvPreview() { document.getElementById('csv-preview-collapse').classList.remove('open'); parsedCsvData = []; }
+
+        async function submitCsvImport() {
+            if (!parsedCsvData.length || !confirm(`確定同步 ${parsedCsvData.length} 筆帳號至雲端嗎？`)) return;
+            toggleGlobalLoader(true, "寫入名冊中...");
+            for (let u of parsedCsvData) {
+                try {
+                    await apiPost({ action: 'addUser', newStudentId: u.studentId, name: u.name, className: u.className, club: u.club, password: u.password || u.studentId });
+                } catch (e) {
+                    try { await apiPost({ action: 'editUser', id: u.studentId, newStudentId: u.studentId, name: u.name, className: u.className, club: u.club, password: u.password }); } catch (err) {}
+                }
+            }
+            toggleGlobalLoader(false); closeCsvPreview(); loadUsers();
+        }
+
+        function openScheduleForm(mode, index) {
+            const f = document.getElementById('schedule-collapse');
+            document.getElementById('schedule-form-title').innerText = mode === 'edit' ? "✏️ 編輯時程" : "➕ 新增時程";
+            document.getElementById('schedule-action-mode').value = mode;
+            if (mode === 'edit' && index !== undefined) {
+                const item = scheduleRows[index];
+                document.getElementById('schedule-edit-id').value = item.id ?? index;
+                document.getElementById('task').value = item.task ?? '';
+                document.getElementById('deadline').value = item.deadline ? new Date(item.deadline).toISOString().split('T')[0] : '';
+                document.getElementById('note').value = item.note ?? '';
+            } else { document.getElementById('schedule-form').reset(); }
+            f.classList.add('open');
+        }
+        function closeScheduleForm() { document.getElementById('schedule-collapse').classList.remove('open'); }
+
+        function openUserForm(mode, index) {
             populateOptionsSelectors();
-
-            if (mode === 'edit' && index !== null) {
-                const user = userRows[index];
-                titleEl.innerText = "✏️ 修改學生資料";
-                modeInput.value = "edit";
-                originalIdInput.value = user.studentId;
-                idInput.value = user.studentId ?? '';
-                nameInput.value = user.name ?? '';
-                classSelect.value = user.className ?? '';
-                clubSelect.value = user.club ?? '';
-                passLabel.innerHTML = '變更密碼 (留空不修改)<input type="password" id="new-user-password">';
-                formBox.classList.add('open');
-                formBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const f = document.getElementById('user-collapse');
+            document.getElementById('user-form-title').innerText = mode === 'edit' ? "✏️ 修改學生資料" : "➕ 新增學生";
+            document.getElementById('user-action-mode').value = mode;
+            if (mode === 'edit' && index !== undefined) {
+                const u = userRows[index];
+                document.getElementById('user-original-id').value = u.studentId;
+                document.getElementById('new-user-id').value = u.studentId ?? '';
+                document.getElementById('new-user-name').value = u.name ?? '';
+                document.getElementById('new-user-class').value = u.className ?? '';
+                document.getElementById('new-user-club').value = u.club ?? '';
+                document.getElementById('user-password-label').innerHTML = '變更密碼 (留空不修改)<input type="password" id="new-user-password">';
             } else {
-                titleEl.innerText = "➕ 新增學生";
-                modeInput.value = "add";
-                originalIdInput.value = "";
                 document.getElementById('user-form').reset();
-                passLabel.innerHTML = '初始密碼<input type="password" id="new-user-password" required>';
-                formBox.classList.add('open');
+                document.getElementById('user-password-label').innerHTML = '初始密碼<input type="password" id="new-user-password" required>';
             }
+            f.classList.add('open');
         }
-
-        function closeUserForm() {
-            document.getElementById('user-collapse').classList.remove('open');
-            document.getElementById('user-form').reset();
-        }
+        function closeUserForm() { document.getElementById('user-collapse').classList.remove('open'); }
 
         function populateOptionsSelectors() {
-            const classSel = document.getElementById('new-user-class');
-            const clubSel = document.getElementById('new-user-club');
-            classSel.innerHTML = '<option value="">-- 請選擇班級 --</option>' + globalOptions.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-            clubSel.innerHTML = '<option value="">-- 請選擇社團 (可留空) --</option>' + globalOptions.clubs.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            document.getElementById('new-user-class').innerHTML = '<option value="">-- 請選擇班級 --</option>' + globalOptions.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            document.getElementById('new-user-club').innerHTML = '<option value="">-- 請選擇社團 --</option>' + globalOptions.clubs.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", () => {
             const userData = sessionStorage.getItem('user');
-            if (!userData) { window.location.href = 'login.html'; return; }
-            try { currentUser = JSON.parse(userData); } catch (err) { window.location.href = 'login.html'; return; }
-            if (currentUser.className !== "管理員") { window.location.href = "index.html"; return; }
+            if (!userData) return window.location.href = 'login.html';
+            try { currentUser = JSON.parse(userData); } catch (e) { return window.location.href = 'login.html'; }
+            if (currentUser.className !== "管理員") return window.location.href = "index.html";
 
-            fetch('api.json')
-                .then(res => res.json())
-                .then(config => {
-                    GAS_API_URL = config.gasUrl;
-                    return validateSession();
-                })
-                .then(user => {
-                    currentUser = user;
-                    sessionStorage.setItem('user', JSON.stringify(user));
-                    document.getElementById('admin-name').innerText = currentUser.name ?? '管理員';
-                    document.getElementById('admin-id').innerText = currentUser.studentId ?? '-';
-                    return apiGet('getOptions', '同步選單設定...');
-                })
-                .then(optionsData => {
-                    if (optionsData) {
-                        globalOptions.classes = optionsData.classes ?? [];
-                        globalOptions.clubs = optionsData.clubs ?? [];
-                    }
-                    return Promise.all([loadSchedule(), loadSubmissions(), loadReports(), loadUsers()]);
-                })
-                .then(() => {
-                    const loading = document.getElementById("loading-screen");
-                    if (loading) { loading.style.opacity = '0'; setTimeout(() => loading.remove(), 300); }
-                })
-                .catch(err => {
-                    if (err?.redirect) return;
-                    forceLogout(err.message ?? '初始化驗證失敗。');
-                });
+            fetch('api.json').then(r => r.json()).then(config => {
+                GAS_API_URL = config.gasUrl;
+                return validateSession();
+            }).then(user => {
+                currentUser = user;
+                document.getElementById('admin-name').innerText = user.name ?? '管理員';
+                document.getElementById('admin-id').innerText = user.studentId ?? '-';
+                
+                return Promise.all([
+                    apiGet('getOptions', '讀取選項...'),
+                    loadSchedule(),
+                    loadUsers(),
+                    loadSubmissions(),
+                    loadReports()
+                ]);
+            }).then(([opts]) => {
+                if (opts) { globalOptions.classes = opts.classes || []; globalOptions.clubs = opts.clubs || []; }
+                const loading = document.getElementById("loading-screen");
+                if (loading) { loading.style.opacity = '0'; setTimeout(() => loading.remove(), 300); }
+            }).catch(err => !err?.redirect && forceLogout(err?.message || '驗證失敗'));
 
             document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
-            document.getElementById('submission-task-filter').addEventListener('change', renderSubmissions);
-            document.getElementById('submission-class-filter').addEventListener('change', renderSubmissions);
-            document.getElementById('submission-status-filter').addEventListener('change', renderSubmissions);
+            ['submission-task-filter','submission-class-filter','submission-club-filter','submission-status-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderSubmissions));
             document.getElementById('report-keyword').addEventListener('input', renderReports);
-            document.getElementById('report-status-filter').addEventListener('change', renderReports);
-            document.getElementById('report-type-filter').addEventListener('change', renderReports);
+            ['report-status-filter','report-type-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderReports));
             document.getElementById('user-keyword').addEventListener('input', renderUsers);
         });
 
-        function switchPanel(panelId, element) {
-            document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
-            document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+        function switchPanel(panelId, el) {
+            document.querySelectorAll('.panel, .menu-link').forEach(x => x.classList.remove('active'));
             document.getElementById(panelId).classList.add('active');
-            element.classList.add('active');
-            document.querySelectorAll('.collapse-form').forEach(form => form.classList.remove('open'));
+            el.classList.add('active');
+            document.querySelectorAll('.collapse-form').forEach(f => f.classList.remove('open'));
         }
 
-        function logout() {
-            toggleGlobalLoader(true, "安全登出中...");
-            clearServerSession().finally(() => {
-                sessionStorage.removeItem('user');
-                window.location.href = 'login.html';
+        function logout() { toggleGlobalLoader(true, "登出中..."); clearServerSession().finally(() => { sessionStorage.removeItem('user'); window.location.href = 'login.html'; }); }
+        function forceLogout(m) { sessionStorage.removeItem('user'); if (m) alert(m); window.location.href = 'login.html'; }
+        function clearServerSession() { if (!GAS_API_URL || !currentUser?.sessionToken) return Promise.resolve(); return fetch(GAS_API_URL, { method: 'POST', body: new URLSearchParams({ action: 'logout', studentId: currentUser.studentId, sessionToken: currentUser.sessionToken }) }); }
+        function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c])); }
+        function formatDate(v) { if (!v) return '-'; const d = new Date(v); return isNaN(d.getTime()) ? escapeHtml(v) : d.toLocaleDateString('zh-TW'); }
+        function normalizeRows(d) { return Array.isArray(d) ? d : (d?.rows || d?.data || d?.submissions || d?.reports || d?.users || []); }
+        function getAuthParams() { return { adminId: currentUser?.studentId || '', studentId: currentUser?.studentId || '', sessionToken: currentUser?.sessionToken || '' }; }
+        function appendAuth(url) { return url + '&' + new URLSearchParams(getAuthParams()).toString(); }
+
+        function validateSession() {
+            return fetch(appendAuth(GAS_API_URL + '?action=validateSession')).then(r => r.json()).then(d => {
+                if (!d.success) throw new Error(d.message);
+                if (d.user.className !== "管理員") { window.location.href = "index.html"; throw { redirect: true }; }
+                return d.user;
             });
         }
 
-        function forceLogout(message) {
-            sessionStorage.removeItem('user');
-            if (message) alert(message);
-            window.location.href = 'login.html';
+        function apiGet(action, text) {
+            toggleGlobalLoader(true, text);
+            return fetch(appendAuth(GAS_API_URL + '?action=' + encodeURIComponent(action))).then(r => r.json()).then(d => { if (d?.success === false) throw new Error(d.message); return d; }).finally(() => toggleGlobalLoader(false));
         }
 
-        function clearServerSession() {
-            if (!GAS_API_URL || !currentUser?.studentId || !currentUser?.sessionToken) return Promise.resolve();
-            const formData = new URLSearchParams();
-            formData.append('action', 'logout');
-            formData.append('studentId', currentUser.studentId);
-            formData.append('sessionToken', currentUser.sessionToken);
-            return fetch(GAS_API_URL, { method: 'POST', body: formData.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(() => { });
+        function apiPost(payload, text) {
+            toggleGlobalLoader(true, text);
+            const body = new URLSearchParams(Object.assign({}, getAuthParams(), payload));
+            return fetch(GAS_API_URL, { method: 'POST', body: body.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).then(r => r.json()).then(d => {
+                if (d?.success === false && /登入|密鑰|逾時|權限/.test(d.message || '')) { forceLogout(d.message); throw new Error(d.message); }
+                return d;
+            }).finally(() => toggleGlobalLoader(false));
         }
 
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
-        }
-
-        function formatDate(value) {
-            if (!value) return '-';
-            const date = new Date(value);
-            return Number.isNaN(date.getTime()) ? escapeHtml(value) : date.toLocaleDateString('zh-TW');
-        }
-
-        function normalizeRows(data) {
-            if (Array.isArray(data)) return data;
-            if (Array.isArray(data.rows ?? data.data ?? data.submissions ?? data.reports ?? data.users)) return data.rows ?? data.data ?? data.submissions ?? data.reports ?? data.users;
-            return [];
-        }
-
-        function getAuthParams() {
-            return { adminId: currentUser?.studentId ?? '', studentId: currentUser?.studentId ?? '', sessionToken: currentUser?.sessionToken ?? '' };
-        }
-
-        function appendAuth(url) { return `${url}&${new URLSearchParams(getAuthParams()).toString()}`; }
-
-        function validateSession() {
-            if (!currentUser?.studentId || !currentUser?.sessionToken) return Promise.reject(new Error('登入失效'));
-            return fetch(appendAuth(`${GAS_API_URL}?action=validateSession`))
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) throw new Error(data.message);
-                    if (data.user.className !== "管理員") { window.location.href = "index.html"; throw { redirect: true }; }
-                    return data.user;
-                });
-        }
-
-        function apiGet(action, loaderText = "讀取中...") {
-            toggleGlobalLoader(true, loaderText);
-            return fetch(appendAuth(`${GAS_API_URL}?action=${encodeURIComponent(action)}`))
-                .then(res => res.json())
-                .then(data => {
-                    if (data?.success === false) throw new Error(data.message);
-                    return data;
-                })
-                .finally(() => toggleGlobalLoader(false));
-        }
-
-        function apiPost(payload, loaderText = "儲存中...") {
-            toggleGlobalLoader(true, loaderText);
-            const formData = new URLSearchParams();
-            const authedPayload = { ...getAuthParams(), ...payload };
-            Object.keys(authedPayload).forEach(key => formData.append(key, authedPayload[key] ?? ''));
-            return fetch(GAS_API_URL, { method: 'POST', body: formData.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
-                .then(res => res.json())
-                .then(data => {
-                    if (data?.success === false && /登入|密鑰|逾時|權限/.test(data.message ?? '')) {
-                        forceLogout(data.message);
-                        throw new Error(data.message);
-                    }
-                    return data;
-                })
-                .finally(() => toggleGlobalLoader(false));
-        }
-
-        function loadSchedule() {
-            return apiGet('getSchedule', '讀取時程表...')
-                .then(data => { scheduleRows = normalizeRows(data); renderSchedule(); })
-                .catch(() => { scheduleRows = []; renderSchedule(); });
-        }
-
+        function loadSchedule() { return apiGet('getSchedule', '讀取時程...').then(d => { scheduleRows = normalizeRows(d); renderSchedule(); }).catch(() => { scheduleRows = []; renderSchedule(); }); }
         function renderSchedule() {
             const tbody = document.getElementById('schedule-list');
-            if (scheduleRows.length === 0) { tbody.innerHTML = "<tr><td colspan='4'><div class='empty'>目前無排定時程。</div></td></tr>"; return; }
+            if (!scheduleRows.length) return tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>目前無排定時程。</div></td></tr>";
             tbody.innerHTML = scheduleRows.map((item, index) => {
                 const id = item.id ?? index;
-                return `<tr>
-                    <td style="font-weight:600;">${escapeHtml(item.task)}</td>
-                    <td>${formatDate(item.deadline)}</td>
-                    <td style="color:#666;">${escapeHtml(item.note ?? '-')}</td>
-                    <td>
-                        <div style="display:flex; gap:6px;">
-                            <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button>
-                            <button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button>
-                        </div>
-                    </td>
-                </tr>`;
+                return `<tr><td class="checkbox-cell"><input type="checkbox" class="schedule-checkbox" value="${escapeHtml(id)}" onclick="updateBatchBar('schedule')"></td><td style="font-weight:600;">${escapeHtml(item.task)}</td><td>${formatDate(item.deadline)}</td><td style="color:#666;">${escapeHtml(item.note ?? '-')}</td><td><div style="display:flex; gap:6px;"><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button><button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button></div></td></tr>`;
             }).join('');
+            updateBatchBar('schedule');
         }
 
         document.getElementById('schedule-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const mode = document.getElementById('schedule-action-mode').value;
-            apiPost({
-                action: mode === 'edit' ? 'editSchedule' : 'addSchedule',
-                id: document.getElementById('schedule-edit-id').value,
-                task: document.getElementById('task').value.trim(),
-                deadline: document.getElementById('deadline').value,
-                note: document.getElementById('note').value.trim()
-            })
-            .then(data => {
-                alert(data.message ?? '儲存成功');
-                closeScheduleForm();
-                loadSchedule();
-            }).catch(err => alert(err.message));
+            apiPost({ action: mode === 'edit' ? 'editSchedule' : 'addSchedule', id: document.getElementById('schedule-edit-id').value, task: document.getElementById('task').value.trim(), deadline: document.getElementById('deadline').value, note: document.getElementById('note').value.trim() }).then(d => { alert(d?.message || '儲存成功'); closeScheduleForm(); loadSchedule(); }).catch(e => alert(e.message));
         });
 
-        function deleteSchedule(id) {
-            if (!confirm('確定刪除此項目嗎？')) return;
-            apiPost({ action: 'deleteSchedule', id: id }, '刪除中...')
-                .then(data => { alert(data.message ?? '已刪除'); loadSchedule(); })
-                .catch(err => alert(err.message));
-        }
+        function deleteSchedule(id) { if (confirm('確定刪除此項目嗎？')) apiPost({ action: 'deleteSchedule', id }).then(() => loadSchedule()).catch(e => alert(e.message)); }
 
         function loadSubmissions() {
-            return apiGet('getSubmissions', '讀取繳交紀錄...')
-                .then(data => { submissionRows = normalizeRows(data); populateSubmissionFilters(); renderSubmissions(); })
-                .catch(() => { submissionRows = []; renderSubmissions(); });
+            return apiGet('getSubmissions', '讀取紀錄...').then(d => {
+                submissionRows = normalizeRows(d);
+                const map = {}; userRows.forEach(u => { if (u.studentId) map[u.studentId.toString()] = u.club || ''; });
+                submissionRows.forEach(s => { if (s.studentId && map[s.studentId.toString()]) s.club = map[s.studentId.toString()]; });
+                populateSubmissionFilters(); renderSubmissions();
+            }).catch(() => { submissionRows = []; renderSubmissions(); });
+        }
+
+        function getFilteredSubmissions() {
+            const kw = document.getElementById('submission-keyword').value.trim().toLowerCase();
+            const t = document.getElementById('submission-task-filter').value, c = document.getElementById('submission-class-filter').value, cl = document.getElementById('submission-club-filter').value, st = document.getElementById('submission-status-filter').value;
+            return submissionRows.filter(i => {
+                const text = `${i.task||''} ${i.studentId||''} ${i.studentName||''} ${i.className||''} ${i.club||''} ${i.filename||''}`.toLowerCase();
+                return (!t || i.task === t) && (!c || i.className === c) && (!cl || i.club === cl) && (!st || (i.status === 'revoked' ? 'revoked' : 'active') === st) && text.includes(kw);
+            });
         }
 
         function renderSubmissions() {
-            const tbody = document.getElementById('submissions-list');
-            const keyword = document.getElementById('submission-keyword').value.trim().toLowerCase();
-            const taskFilter = document.getElementById('submission-task-filter').value;
-            const classFilter = document.getElementById('submission-class-filter').value;
-            const statusFilter = document.getElementById('submission-status-filter').value;
-
-            const rows = submissionRows.filter(item => {
-                const text = `${item.task ?? ''} ${item.studentId ?? ''} ${item.studentName ?? ''} ${item.className ?? ''}`.toLowerCase();
-                return (!taskFilter || (item.task ?? '') === taskFilter) && (!classFilter || (item.className ?? '') === classFilter) && (!statusFilter || (item.status === 'revoked' ? 'revoked' : 'active') === statusFilter) && text.includes(keyword);
-            });
-
-            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>無符合條件的紀錄。</div></td></tr>"; return; }
-            tbody.innerHTML = rows.map(item => {
-                const fileUrl = item.url ?? '';
-                const filename = item.filename ?? '查看檔案';
-                const fileCell = fileUrl ? `<a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(filename)}</a>` : escapeHtml(filename);
-                return `<tr>
-                    <td>${escapeHtml(item.task ?? '')}</td>
-                    <td>${escapeHtml(item.studentId ?? '')}</td>
-                    <td>${escapeHtml(item.studentName ?? '')}</td>
-                    <td>${escapeHtml(item.className ?? '')}</td>
-                    <td>${fileCell}</td>
-                    <td>${escapeHtml(item.createdAt ?? '')}</td>
-                    <td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : '<span class="status-active">有效</span>'}</td>
-                    <td>${fileUrl ? `<button type="button" class="secondary" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="showQrCode('${escapeHtml(fileUrl)}', '${escapeHtml(filename)}')">產生</button>` : '-'}</td>
-                </tr>`;
-            }).join('');
+            const tbody = document.getElementById('submissions-list'), rows = getFilteredSubmissions();
+            if (!rows.length) return tbody.innerHTML = "<tr><td colspan='10'><div class='empty'>無符合條件紀錄。</div></td></tr>";
+            tbody.innerHTML = rows.map(item => `
+                <tr><td class="checkbox-cell"><input type="checkbox" class="submission-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('submission')"></td><td>${escapeHtml(item.task||'')}</td><td>${escapeHtml(item.studentId||'')}</td><td>${escapeHtml(item.studentName||'')}</td><td>${escapeHtml(item.className||'')}</td><td>${escapeHtml(item.club||'-')}</td><td>${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(item.filename||'查看')}</a>` : escapeHtml(item.filename||'')}</td><td>${escapeHtml(item.createdAt||'')}</td><td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : '<span class="status-active">有效</span>'}</td><td>${item.url ? `<button type="button" class="secondary" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="showQrCode('${escapeHtml(item.url)}', '${escapeHtml(item.filename||'')}')">產生</button>` : '-'}</td></tr>
+            `).join('');
+            updateBatchBar('submission');
         }
 
         function populateSubmissionFilters() {
-            const taskSelect = document.getElementById('submission-task-filter');
-            const classSelect = document.getElementById('submission-class-filter');
-            const currentTask = taskSelect.value, currentClass = classSelect.value;
-            const tasks = [...new Set(submissionRows.map(item => item.task ?? '').filter(Boolean))].sort();
-            const classes = [...new Set(submissionRows.map(item => item.className ?? '').filter(Boolean))].sort();
-            taskSelect.innerHTML = '<option value="">全部項目</option>' + tasks.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-            classSelect.innerHTML = '<option value="">全部班級</option>' + classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-            taskSelect.value = tasks.includes(currentTask) ? currentTask : '';
-            classSelect.value = classes.includes(currentClass) ? currentClass : '';
+            ['task','class','club'].forEach(key => {
+                const select = document.getElementById(`submission-${key}-filter`), val = select.value;
+                const opts = [...new Set(submissionRows.map(i => (key === 'class' ? i.className : i[key]) || '').filter(Boolean))].sort();
+                select.innerHTML = `<option value="">全部${key === 'task' ? '項目' : key === 'class' ? '班級' : '社團'}</option>` + opts.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+                select.value = opts.includes(val) ? val : '';
+            });
         }
 
         function showQrCode(url, title) {
             const box = document.getElementById('qr-box');
             document.getElementById('qr-title').innerText = title;
-            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
-            document.getElementById('qr-link').href = url;
-            box.classList.add('active');
+            document.getElementById('qr-image').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
+            document.getElementById('qr-link').href = url; box.classList.add('active');
+        }
+
+        function generateCardCanvasBase64(item) {
+            return new Promise(resolve => {
+                const qrBox = document.getElementById('card-qr-box');
+                qrBox.innerHTML = '';
+                
+                new QRCode(qrBox, {
+                    text: item.url,
+                    width: 110,
+                    height: 110,
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+
+                document.getElementById('card-filename').innerText = item.filename || '';
+                document.getElementById('card-task').innerText = `【${item.task || '美術歷程'}】`;
+                document.getElementById('card-user').innerText = `${item.className || ''} ${item.studentName || ''} (${item.studentId || ''})`;
+                document.getElementById('card-club').innerText = item.club ? `社團：${item.club}` : '';
+
+                setTimeout(() => {
+                    const cardDom = document.getElementById('pdf-render-card');
+                    html2canvas(cardDom, { scale: 2, useCORS: true }).then(canvas => {
+                        resolve(canvas.toDataURL('image/png'));
+                    }).catch(() => resolve(''));
+                }, 100);
+            });
+        }
+
+        async function exportBatchQrA4(selectedOnly) {
+            let list = getFilteredSubmissions().filter(i => i.url && i.status !== 'revoked');
+            if (selectedOnly) {
+                const ids = Array.from(document.querySelectorAll('.submission-checkbox:checked')).map(cb => String(cb.value));
+                list = list.filter(i => ids.includes(String(i.id)));
+            }
+            if (!list.length) return alert("無符合篩選條件的有效檔案可匯出！");
+            if (!window.jspdf || !window.html2canvas || !window.QRCode) return alert("PDF 與繪圖套件未完成載入，請重新整理頁面。");
+
+            toggleGlobalLoader(true, "排版與繪製中文 QR 卡片中...");
+            try {
+                const doc = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const cardW = 60, cardH = 65, cols = 3, rows = 4, perPage = 12;
+
+                for (let i = 0; i < list.length; i++) {
+                    if (i > 0 && i % perPage === 0) doc.addPage();
+                    const item = list[i], col = (i % perPage) % cols, row = Math.floor((i % perPage) / cols);
+                    const x = 10 + col * (cardW + 5), y = 12 + row * (cardH + 5);
+
+                    const imgData = await generateCardCanvasBase64(item);
+                    if (imgData) {
+                        doc.addImage(imgData, 'PNG', x, y, cardW, cardH);
+                    }
+                }
+                toggleGlobalLoader(false); 
+                
+                const taskFilter = document.getElementById('submission-task-filter').value || '全部項目';
+                const classFilter = document.getElementById('submission-class-filter').value || '全部班級';
+                doc.save(`美術歷程_QR碼_${classFilter}_${taskFilter}.pdf`);
+            } catch (e) { toggleGlobalLoader(false); alert("PDF 生成過程發生錯誤: " + e.message); }
         }
 
         function clearSubmissions() {
-            const password = prompt('請輸入管理確認碼以清空全校紀錄：');
-            if (!password || !confirm('確定要清空嗎？此操作不可逆。')) return;
-            apiPost({ action: 'clearSubmissions', password: password }, '清除中...')
-                .then(() => { alert('已成功清空。'); loadSubmissions(); }).catch(err => alert(err.message));
+            const pass = prompt('輸入管理碼清空紀錄：');
+            if (pass && confirm('確定清空？操作不可逆！')) apiPost({ action: 'clearSubmissions', password: pass }).then(() => loadSubmissions()).catch(e => alert(e.message));
         }
 
         function performUnlock() {
-            const studentId = document.getElementById('unlock-student-id').value.trim();
-            const task = document.getElementById('unlock-task-name').value.trim();
-            if (!studentId || !task) { alert("請輸入學號與項目名稱。"); return; }
-            apiPost({ action: 'addUnlock', targetStudentId: studentId, task: task })
-                .then(data => {
-                    alert(data.message);
-                    if (data.success) {
-                        document.getElementById('unlock-student-id').value = '';
-                        document.getElementById('unlock-task-name').value = '';
-                    }
-                }).catch(err => alert(err.message));
+            const studentId = document.getElementById('unlock-student-id').value.trim(), task = document.getElementById('unlock-task-name').value.trim();
+            if (!studentId || !task) return alert("請輸入學號與項目。");
+            apiPost({ action: 'addUnlock', targetStudentId: studentId, task }).then(d => { alert(d?.message || '授權完成'); if (d?.success) { document.getElementById('unlock-student-id').value = ''; document.getElementById('unlock-task-name').value = ''; } }).catch(e => alert(e.message));
         }
 
-        function loadReports() {
-            return apiGet('getReports', '讀取回報清單...')
-                .then(data => { reportRows = normalizeRows(data); populateReportFilters(); renderReports(); })
-                .catch(() => { reportRows = []; renderReports(); });
-        }
-
+        function loadReports() { return apiGet('getReports', '讀取回報...').then(d => { reportRows = normalizeRows(d); populateReportFilters(); renderReports(); }).catch(() => { reportRows = []; renderReports(); }); }
         function renderReports() {
-            const tbody = document.getElementById('reports-list');
-            const keyword = document.getElementById('report-keyword').value.trim().toLowerCase();
-            const statusFilter = document.getElementById('report-status-filter').value;
-            const typeFilter = document.getElementById('report-type-filter').value;
-
-            const rows = reportRows.filter(item => {
-                const text = `${item.studentId ?? ''} ${item.studentName ?? ''} ${item.subject ?? ''}`.toLowerCase();
-                return (!statusFilter || (item.status || 'pending') === statusFilter) && (!typeFilter || (item.reportType ?? '') === typeFilter) && text.includes(keyword);
-            });
-
-            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='7'><div class='empty'>目前沒有問題回報。</div></td></tr>"; return; }
+            const tbody = document.getElementById('reports-list'), kw = document.getElementById('report-keyword').value.trim().toLowerCase();
+            const st = document.getElementById('report-status-filter').value, tp = document.getElementById('report-type-filter').value;
+            const rows = reportRows.filter(i => (`${i.studentId||''} ${i.studentName||''} ${i.subject||''}`.toLowerCase().includes(kw)) && (!st || (i.status||'pending') === st) && (!tp || (i.reportType||'') === tp));
+            if (!rows.length) return tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>目前無回報。</div></td></tr>";
             tbody.innerHTML = rows.map(item => {
-                const status = item.status || 'pending';
-                const statusLabel = status === 'done' ? '<span class="status-active">● 已完成</span>' : status === 'processing' ? '<span class="status-processing">● 處理中</span>' : '<span style="color:var(--danger);font-weight:bold;">● 待處理</span>';
-                return `<tr>
-                    <td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td>
-                    <td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td>
-                    <td>${escapeHtml(item.studentId ?? '')}<br>${escapeHtml(item.studentName ?? '')} (${escapeHtml(item.className ?? '')})</td>
-                    <td>${escapeHtml(item.contact ?? '-')}</td>
-                    <td><strong>${escapeHtml(item.subject ?? '')}</strong><div class="report-description">${escapeHtml(item.description ?? '')}</div></td>
-                    <td>${statusLabel}</td>
-                    <td>
-                        <div style="display:flex; gap:6px;">
-                            <select class="report-status-select" style="min-height:30px; padding:4px;">
-                                <option value="pending" ${status === 'pending' ? 'selected' : ''}>待處理</option>
-                                <option value="processing" ${status === 'processing' ? 'selected' : ''}>處理中</option>
-                                <option value="done" ${status === 'done' ? 'selected' : ''}>已完成</option>
-                            </select>
-                            <button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button>
-                        </div>
-                    </td>
-                </tr>`;
+                const s = item.status || 'pending';
+                return `<tr><td class="checkbox-cell"><input type="checkbox" class="report-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('report')"></td><td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td><td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td><td>${escapeHtml(item.studentId||'')}<br>${escapeHtml(item.studentName||'')} (${escapeHtml(item.className||'')})</td><td>${escapeHtml(item.contact||'-')}</td><td><strong>${escapeHtml(item.subject||'')}</strong><div class="report-description">${escapeHtml(item.description||'')}</div></td><td>${s === 'done' ? '<span class="status-active">● 已完成</span>' : s === 'processing' ? '<span class="status-processing">● 處理中</span>' : '<span style="color:var(--danger);font-weight:bold;">● 待處理</span>'}</td><td><div style="display:flex; gap:6px;"><select class="report-status-select" style="min-height:30px; padding:4px;"><option value="pending" ${s==='pending'?'selected':''}>待處理</option><option value="processing" ${s==='processing'?'selected':''}>處理中</option><option value="done" ${s==='done'?'selected':''}>已完成</option></select><button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button></div></td></tr>`;
             }).join('');
+            updateBatchBar('report');
         }
 
         function populateReportFilters() {
-            const typeSelect = document.getElementById('report-type-filter');
-            const currentType = typeSelect.value;
-            const types = [...new Set(reportRows.map(item => item.reportType ?? '').filter(Boolean))].sort();
-            typeSelect.innerHTML = '<option value="">全部類型</option>' + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(getReportTypeLabel(t))}</option>`).join('');
-            typeSelect.value = types.includes(currentType) ? currentType : '';
+            const select = document.getElementById('report-type-filter'), val = select.value;
+            const types = [...new Set(reportRows.map(i => i.reportType || '').filter(Boolean))].sort();
+            select.innerHTML = '<option value="">全部類型</option>' + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(getReportTypeLabel(t))}</option>`).join('');
+            select.value = types.includes(val) ? val : '';
         }
+        function getReportTypeLabel(t) { return { 'password-reset': '密碼重設', login: '無法登入', upload: '檔案繳交', profile: '資料更正', system: '系統異常' }[t] || '其他'; }
+        function updateReportStatus(btn, id) { apiPost({ action: 'updateReportStatus', id, status: btn.closest('div').querySelector('.report-status-select').value }).then(() => loadReports()).catch(e => alert(e.message)); }
 
-        function getReportTypeLabel(type) {
-            return { 'password-reset': '密碼重設', login: '無法登入', upload: '檔案繳交', profile: '資料更正', system: '系統異常' }[type] || '其他';
-        }
-
-        function updateReportStatus(button, id) {
-            const select = button.closest('div').querySelector('.report-status-select');
-            apiPost({ action: 'updateReportStatus', id: id, status: select.value })
-                .then(() => { loadReports(); }).catch(err => alert(err.message));
-        }
-
-        function loadUsers() {
-            return apiGet('getUsers', '讀取名冊...')
-                .then(data => { userRows = normalizeRows(data); renderUsers(); })
-                .catch(() => { userRows = []; renderUsers(); });
-        }
-
+        function loadUsers() { return apiGet('getUsers', '讀取名冊...').then(d => { userRows = normalizeRows(d); renderUsers(); }).catch(() => { userRows = []; renderUsers(); }); }
         function renderUsers() {
-            const tbody = document.getElementById('users-list');
-            const keyword = document.getElementById('user-keyword').value.trim().toLowerCase();
-            const rows = userRows.filter(item => `${item.studentId ?? ''} ${item.name ?? ''} ${item.className ?? ''} ${item.club ?? ''}`.toLowerCase().includes(keyword));
-            if (rows.length === 0) { tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>無符合帳號。</div></td></tr>"; return; }
-            tbody.innerHTML = rows.map((item, index) => {
-                return `<tr>
-                    <td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId ?? '')}</td>
-                    <td>${escapeHtml(item.name ?? '')}</td>
-                    <td>${escapeHtml(item.className ?? '')}</td>
-                    <td>${escapeHtml(item.club ?? '-')}</td>
-                    <td>
-                        <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openUserForm('edit', ${index})">修改</button>
-                    </td>
-                </tr>`;
-            }).join('');
+            const tbody = document.getElementById('users-list'), kw = document.getElementById('user-keyword').value.trim().toLowerCase();
+            const rows = userRows.filter(i => `${i.studentId||''} ${i.name||''} ${i.className||''} ${i.club||''}`.toLowerCase().includes(kw));
+            if (!rows.length) return tbody.innerHTML = "<tr><td colspan='6'><div class='empty'>無符合帳號。</div></td></tr>";
+            tbody.innerHTML = rows.map((item, index) => `
+                <tr><td class="checkbox-cell"><input type="checkbox" class="user-checkbox" value="${escapeHtml(item.studentId)}" onclick="updateBatchBar('user')"></td><td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId||'')}</td><td>${escapeHtml(item.name||'')}</td><td>${escapeHtml(item.className||'')}</td><td>${escapeHtml(item.club||'-')}</td><td><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openUserForm('edit', ${index})">修改</button></td></tr>
+            `).join('');
+            updateBatchBar('user');
         }
 
         document.getElementById('user-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const mode = document.getElementById('user-action-mode').value;
-            const passInput = document.getElementById('new-user-password');
-            
-            apiPost({
-                action: mode === 'edit' ? 'editUser' : 'addUser',
-                id: document.getElementById('user-original-id').value,
-                newStudentId: document.getElementById('new-user-id').value.trim(),
-                name: document.getElementById('new-user-name').value.trim(),
-                className: document.getElementById('new-user-class').value,
-                club: document.getElementById('new-user-club').value,
-                password: passInput ? passInput.value : ''
-            })
-            .then((data) => {
-                alert(data.message ?? '儲存成功');
-                closeUserForm();
-                loadUsers();
-            }).catch(err => alert(err.message));
+            apiPost({ action: mode === 'edit' ? 'editUser' : 'addUser', id: document.getElementById('user-original-id').value, newStudentId: document.getElementById('new-user-id').value.trim(), name: document.getElementById('new-user-name').value.trim(), className: document.getElementById('new-user-class').value, club: document.getElementById('new-user-club').value, password: document.getElementById('new-user-password')?.value || '' }).then(d => { alert(d?.message || '儲存成功'); closeUserForm(); loadUsers(); }).catch(e => alert(e.message));
         });
     </script>
 </body>

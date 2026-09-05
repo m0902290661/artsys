@@ -16,14 +16,8 @@
             font-family: Arial, sans-serif;
             min-height: 100vh;
         }
-        * {
-            box-sizing: border-box;
-        }
-        main {
-            display: flex;
-            min-height: 100vh;
-        }
-        
+        * { box-sizing: border-box; }
+        main { display: flex; min-height: 100vh; }
         .left, .right {
             flex: 1 1 auto;
             display: flex;
@@ -31,20 +25,13 @@
             justify-content: center;
             padding: 40px;
         }
-        
-        /* 左側文字淡入動畫 */
         .left h1 { 
             color: #333; 
             max-width: 400px; 
             line-height: 1.4;
             animation: fadeInUp 0.8s ease forwards;
         }
-        
-        .r-m {
-            margin-bottom: 10px;
-        }
-
-        /* 頁籤按鈕動畫過渡 */
+        .r-m { margin-bottom: 10px; }
         .r-m button {
             cursor: pointer; 
             background-color: transparent; 
@@ -54,25 +41,18 @@
             font-size: 16px; 
             margin-right: 10px;
             color: #666;
-            transition: all 0.4s ease; /* 平滑過渡 */
+            transition: all 0.4s ease;
         }
         .r-m button.active { 
             border-bottom-color: rgb(161, 161, 255); 
             color: rgb(161, 161, 255); 
             font-weight: bold;
         }
-        
-        /* 表單區塊與淡入動畫 */
-        #login, #signup { 
-            padding: 15px 0; 
-        }
-        
-        /* 預設隱藏註冊表單，並準備好動畫類別 */
+        #login, #signup { padding: 15px 0; }
         .form-container {
             display: none;
             animation: fadeIn 0.5s ease forwards;
         }
-        
         #login input, #signup input {
             background-color: transparent; 
             border: 0; 
@@ -83,15 +63,13 @@
             font-size: 14px; 
             width: 250px;
             max-width: 100%;
-            transition: all 0.3s ease; /* 輸入框聚焦動畫 */
+            transition: all 0.3s ease;
         }
         #login input:focus, #signup input:focus { 
             outline: none; 
             border-bottom-color: rgb(161, 161, 255); 
-            padding-left: 10px; /* 聚焦時文字微微右移 */
+            padding-left: 10px;
         }
-        
-        /* 送出按鈕懸停動畫 */
         #login input[type="submit"], #signup input[type="submit"] {
             background-color: rgb(161, 161, 255); 
             color: white; 
@@ -103,85 +81,39 @@
         }
         #login input[type="submit"]:hover, #signup input[type="submit"]:hover {
             background-color: rgb(120, 120, 255);
-            transform: translateY(-2px); /* 懸停時微微浮起 */
+            transform: translateY(-2px);
         }
         #login input[type="submit"]:active, #signup input[type="submit"]:active {
-            transform: translateY(0); /* 點擊時壓回 */
+            transform: translateY(0);
         }
         #login input[type="submit"]:disabled, #signup input[type="submit"]:disabled {
             cursor: not-allowed;
             opacity: 0.65;
             transform: none;
         }
-
-        /* ─── 核心定義的動畫效果 (Keyframes) ─── */
         @keyframes fadeIn {
             from { opacity: 0; transform: cubic-bezier(0.4, 0, 0.2, 1); }
             to { opacity: 1; }
         }
-        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         @media (max-width: 760px) {
-            body {
-                background-position: center top;
-            }
-            main {
-                flex-direction: column;
-                justify-content: center;
-                padding: 28px 18px;
-                background: rgba(255,255,255,0.78);
-            }
-            .left, .right {
-                flex: none;
-                width: 100%;
-                padding: 0;
-            }
-            .left {
-                justify-content: flex-end;
-                margin-bottom: 24px;
-            }
-            .left h1 {
-                max-width: none;
-                margin: 0 0 12px;
-                font-size: clamp(24px, 7vw, 34px);
-            }
-            .left p {
-                margin: 0;
-                line-height: 1.6;
-                color: #555;
-            }
-            .right {
-                justify-content: flex-start;
-            }
-            .r-m {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 12px;
-            }
-            .r-m button {
-                flex: 1;
-                min-height: 42px;
-                margin-right: 0;
-                padding: 8px 10px;
-            }
-            #login input, #signup input {
-                width: 100%;
-                height: 44px;
-                font-size: 16px;
-            }
+            body { background-position: center top; }
+            main { flex-direction: column; justify-content: center; padding: 28px 18px; background: rgba(255,255,255,0.78); }
+            .left, .right { flex: none; width: 100%; padding: 0; }
+            .left { justify-content: flex-end; margin-bottom: 24px; }
+            .left h1 { max-width: none; margin: 0 0 12px; font-size: clamp(24px, 7vw, 34px); }
+            .left p { margin: 0; line-height: 1.6; color: #555; }
+            .right { justify-content: flex-start; }
+            .r-m { display: flex; gap: 8px; margin-bottom: 12px; }
+            .r-m button { flex: 1; min-height: 42px; margin-right: 0; padding: 8px 10px; }
+            #login input, #signup input { width: 100%; height: 44px; font-size: 16px; }
         }
-
         @media (max-width: 420px) {
-            main {
-                padding: 22px 14px;
-            }
-            .r-m {
-                flex-direction: column;
-            }
+            main { padding: 22px 14px; }
+            .r-m { flex-direction: column; }
         }
     </style>
 </head>
@@ -200,9 +132,9 @@
             
             <div id="login" class="form-container" style="display: block;">
                 <form id="form-login">
-                    <input type="text" id="login-id" placeholder="學號" required>
+                    <input type="text" id="login-id" placeholder="學號" required autocomplete="username">
                     <br>
-                    <input type="password" id="login-pw" placeholder="密碼" required>
+                    <input type="password" id="login-pw" placeholder="密碼" required autocomplete="current-password">
                     <br>
                     <input type="submit" value="送出">
                 </form>
@@ -210,11 +142,11 @@
             
             <div id="signup" class="form-container">
                 <form id="form-signup">
-                    <input type="text" id="signup-id" placeholder="學號" required>
+                    <input type="text" id="signup-id" placeholder="學號" required autocomplete="username">
                     <br>
-                    <input type="password" id="signup-pw" placeholder="設定密碼" required>
+                    <input type="password" id="signup-pw" placeholder="設定密碼" required autocomplete="new-password">
                     <br>
-                    <input type="password" id="signup-pw2" placeholder="確認密碼" required>
+                    <input type="password" id="signup-pw2" placeholder="確認密碼" required autocomplete="new-password">
                     <br>
                     <input type="submit" value="送出">
                 </form>
@@ -224,8 +156,6 @@
 
     <script>
         let GAS_API_URL = "";
-
-        // 【核心修復點】移除原本隨意刪除整個 user 造成跳頁失敗的舊邏輯
 
         function postForm(payload) {
             const formData = new URLSearchParams();
@@ -241,10 +171,7 @@
             });
         }
 
-        // 讀取設定
         document.addEventListener("DOMContentLoaded", function() {
-            // 【核心修復點】不應在未登入時就主動移除現有的 Session，否則點擊上一頁或刷新的時候會壞掉
-
             fetch('api.json')
                 .then(response => {
                     if (!response.ok) throw new Error('無法讀取設定檔');
@@ -259,7 +186,6 @@
                 });
         });
 
-        // 表單切換邏輯（帶有動畫觸發）
         function toggleForm(type) {
             const loginForm = document.getElementById('login');
             const signupForm = document.getElementById('signup');
@@ -268,18 +194,17 @@
 
             if (type === 'login') {
                 signupForm.style.display = 'none';
-                loginForm.style.display = 'block'; // 觸發 CSS fadeIn 動畫
+                loginForm.style.display = 'block';
                 btnLogin.classList.add('active'); 
                 btnSignup.classList.remove('active');
             } else {
                 loginForm.style.display = 'none';
-                signupForm.style.display = 'block'; // 觸發 CSS fadeIn 動畫
+                signupForm.style.display = 'block';
                 btnLogin.classList.remove('active'); 
                 btnSignup.classList.add('active');
             }
         }
 
-        // 處理【登入】提交
         document.getElementById('form-login').addEventListener('submit', function(e) {
             e.preventDefault();
             if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
@@ -302,12 +227,14 @@
                         sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
                     };
                     
-                    // 【核心修復點】同時儲存 'user' 和 'adminUser'，確保前台 index.html 與後台 manage.html 都能安全讀到 Session 資料
                     sessionStorage.setItem('user', JSON.stringify(user));
-                    sessionStorage.setItem('adminUser', JSON.stringify(user));
                     
-                    // 若是管理員帳號，請記得手動將此處轉址導向到 'manage.html' 以方便測試
-                    window.location.href = 'index.html'; 
+                    // 正確根據身份跳轉
+                    if (user.className === "管理員") {
+                        window.location.href = 'manage.html';
+                    } else {
+                        window.location.href = 'index.html'; 
+                    }
                 } else {
                     alert(data.message);
                 }
@@ -319,7 +246,6 @@
             });
         });
 
-        // 處理【帳號開通】提交
         document.getElementById('form-signup').addEventListener('submit', function(e) {
             e.preventDefault();
             if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
