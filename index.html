@@ -18,6 +18,8 @@
             --danger-hover: #b83232;
             --success-bg: #e6f4ea;
             --success-text: #137333;
+            --warning-bg: #fef7e0;
+            --warning-text: #b06000;
         }
 
         body {
@@ -244,6 +246,21 @@
             color: var(--danger-color);
         }
 
+        .status-badge.rejected {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .message-box {
+            background: #fff8e1;
+            border: 1px solid #ffe0b2;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #8d6e63;
+        }
+
         .assignment-message {
             display: block;
             margin-top: 15px;
@@ -259,7 +276,7 @@
             border-radius: 10px;
             overflow: hidden;
             display: none;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .progress-bar {
@@ -277,23 +294,6 @@
             margin-top: 6px;
             display: block;
             text-align: right;
-        }
-
-        .skeleton-loader {
-            display: none;
-        }
-
-        .skeleton-loader .sk-item {
-            background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
-            background-size: 400% 100%;
-            animation: skeleton-loading 1.4s ease infinite;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        @keyframes skeleton-loading {
-            0% { background-position: 100% 0; }
-            100% { background-position: 0 0; }
         }
 
         .loading-overlay {
@@ -326,16 +326,41 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @media (max-width: 900px) {
-            body { display: block; }
-            .left { width: 100%; padding: 22px 18px; }
-            .right { width: 100%; padding: 18px; }
-            .left h1 { font-size: 18px; margin-bottom: 14px; }
-            .panel { padding: 20px 16px; }
-            .form-control, .info-card, .progress-container, .select-container { max-width: 100%; }
+            body {
+                display: block;
+            }
+
+            .left {
+                width: 100%;
+                padding: 22px 18px;
+            }
+
+            .right {
+                width: 100%;
+                padding: 18px;
+            }
+
+            .left h1 {
+                font-size: 18px;
+                margin-bottom: 14px;
+            }
+
+            .panel {
+                padding: 20px 16px;
+            }
+
+            .form-control,
+            .info-card,
+            .progress-container,
+            .select-container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -371,16 +396,11 @@
                     <select id="task-select" class="form-control" onchange="handleTaskChange()">
                         <option value="">-- 請選擇項目 --</option>
                     </select>
-                    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()" title="重新整理最新繳交與時程狀態">
+                    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()"
+                        title="重新整理最新繳交與時程狀態">
                         重新整理
                     </button>
                 </div>
-            </div>
-
-            <div id="panel-skeleton" class="skeleton-loader">
-                <div class="sk-item" style="width: 150px; height: 20px;"></div>
-                <div class="sk-item" style="width: 100%; height: 120px; border-radius: 8px;"></div>
-                <div class="sk-item" style="width: 200px; height: 40px; border-radius: 8px;"></div>
             </div>
 
             <div id="action-section" style="display: none;">
@@ -388,13 +408,19 @@
                     <div class="info-item"><span class="info-label">截止日期：</span><span id="task-deadline">-</span></div>
                     <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note">-</span></div>
                     <div class="info-item"><span class="info-label">目前狀態：</span><span id="task-status">-</span></div>
+                    <div id="reject-message-box" class="message-box" style="display: none;">
+                        <strong>退件訊息 / 評語：</strong>
+                        <p id="reject-reason-text" style="margin: 5px 0 0;"></p>
+                    </div>
                 </div>
 
                 <div id="upload-box" class="form-group" style="display: none;">
                     <label for="task-file">選擇 PDF 檔案上傳</label>
-                    <input type="file" id="task-file" class="form-control" accept="application/pdf" style="margin-bottom: 15px;">
-                    <button type="button" id="submit-btn" class="upload-btn" onclick="submitScheduleTask()">送出上傳</button>
-                    
+                    <input type="file" id="task-file" class="form-control" accept="application/pdf"
+                        style="margin-bottom: 15px;">
+                    <button type="button" id="submit-btn" class="upload-btn"
+                        onclick="submitScheduleTask()">送出上傳</button>
+
                     <div id="upload-progress-container" class="progress-container">
                         <div id="upload-progress-bar" class="progress-bar"></div>
                         <span id="upload-progress-text" class="progress-text">0%</span>
@@ -404,10 +430,13 @@
                 <div id="revocation-box" class="form-group" style="display: none;">
                     <label style="color: var(--text-main);">已繳交檔案</label>
                     <div style="margin-bottom: 15px; background: #f1f2f6; padding: 12px; border-radius: 8px;">
-                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener" style="font-weight: bold; color: var(--primary-bg); text-decoration: none;">查看已上傳 PDF</a>
-                        <span id="submitted-time" style="color: var(--text-muted); font-size: 13px; margin-left: 15px;"></span>
+                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener"
+                            style="font-weight: bold; color: var(--primary-bg); text-decoration: none;">查看已上傳 PDF</a>
+                        <span id="submitted-time"
+                            style="color: var(--text-muted); font-size: 13px; margin-left: 15px;"></span>
                     </div>
-                    <button type="button" id="revoke-btn" class="danger-btn" onclick="revokeSubmission()">撤銷當前繳交</button>
+                    <button type="button" id="revoke-btn" class="danger-btn"
+                        onclick="revokeSubmission()">撤銷當前繳交</button>
                 </div>
 
                 <span id="action-message" class="assignment-message"></span>
@@ -445,14 +474,12 @@
                 return;
             }
 
-            // 先渲染本地已有資料，降低使用者體感等待時間
             renderCurrentUser();
 
             fetch('api.json')
                 .then(res => res.json())
                 .then(config => {
                     GAS_API_URL = config.gasUrl;
-                    // 將 session 驗證與資料載入改為【併發執行】，顯著縮短載入時間
                     return Promise.all([validateSession(), loadSchedule(), loadMySubmissions()]);
                 })
                 .then(([user]) => {
@@ -480,17 +507,10 @@
             document.getElementById('loading-overlay').classList.add('hidden');
         }
 
-        function toggleSkeleton(show) {
-            const skeleton = document.getElementById('panel-skeleton');
-            const section = document.getElementById('action-section');
-            skeleton.style.display = show ? 'block' : 'none';
-            section.style.display = show ? 'none' : 'block';
-        }
-
         function refreshData() {
             const refreshBtn = document.getElementById('refresh-btn');
             const select = document.getElementById('task-select');
-            const previousSelectedIndex = select.value; 
+            const previousSelectedIndex = select.value;
 
             refreshBtn.disabled = true;
             select.disabled = true;
@@ -650,10 +670,13 @@
             const revocationBox = document.getElementById('revocation-box');
             const revokeBtn = document.getElementById('revoke-btn');
             const message = document.getElementById('action-message');
-            
+            const rejectBox = document.getElementById('reject-message-box');
+            const rejectReasonText = document.getElementById('reject-reason-text');
+
             document.getElementById('upload-progress-container').style.display = 'none';
             document.getElementById('upload-progress-bar').style.width = '0%';
             message.innerText = '';
+            rejectBox.style.display = 'none';
 
             if (!select.value) {
                 actionSection.style.display = 'none';
@@ -662,6 +685,7 @@
 
             const item = scheduleItems[select.value];
             const deadline = new Date(item.deadline);
+            if (deadline.getHours() === 0 && deadline.getMinutes() === 0) deadline.setHours(23, 59, 59, 999);
             const now = new Date();
             const isOverdue = now > deadline;
 
@@ -677,28 +701,36 @@
             const submitted = getActiveSubmission(item.task);
 
             if (submitted) {
-                document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
                 document.getElementById('submitted-file-link').href = submitted.url || '#';
                 document.getElementById('submitted-time').innerText = `繳交時間：${formatDateTime(submitted.createdAt)}`;
                 uploadBox.style.display = 'none';
                 revocationBox.style.display = 'block';
                 revokeBtn.dataset.id = submitted.id;
 
-                if (isOverdue) {
-                    revokeBtn.disabled = true;
-                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期，系統已關閉撤銷修改權限。</span>';
-                } else {
+                if (submitted.status === 'rejected') {
+                    document.getElementById('task-status').innerHTML = '<span class="status-badge rejected">已被退件</span>';
+                    if (submitted.rejectReason) {
+                        rejectBox.style.display = 'block';
+                        rejectReasonText.innerText = submitted.rejectReason;
+                    }
                     revokeBtn.disabled = false;
-                    message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先撤銷原繳交內容再重新提交。</span>';
+                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 您的作業已被退件，請先點擊上方「撤銷當前繳交」按鈕刪除舊檔後重新上傳。</span>';
+                } else {
+                    document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
+                    if (isOverdue) {
+                        revokeBtn.disabled = true;
+                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期，系統已關閉撤銷修改權限。</span>';
+                    } else {
+                        revokeBtn.disabled = false;
+                        message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先點擊撤銷原繳交內容再重新提交。</span>';
+                    }
                 }
-            }
-            else if (isOverdue) {
+            } else if (isOverdue) {
                 document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（補繳開放）</span>';
                 message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期！若已獲管理員解鎖，請直接上傳；未解鎖者送出將被阻斷。</span>';
                 uploadBox.style.display = 'block';
                 revocationBox.style.display = 'none';
-            }
-            else {
+            } else {
                 document.getElementById('task-status').innerHTML = '<span class="status-badge none">未繳交</span>';
                 uploadBox.style.display = 'block';
                 revocationBox.style.display = 'none';
@@ -711,7 +743,7 @@
             const progressBar = document.getElementById('upload-progress-bar');
             const progressText = document.getElementById('upload-progress-text');
             const container = document.getElementById('upload-progress-container');
-            
+
             container.style.display = 'block';
             let currentProgress = 0;
             const fileSizeMB = fileSize / (1024 * 1024);
@@ -723,9 +755,9 @@
                 if (currentProgress < 75) currentProgress += Math.random() * speedFactor;
                 else if (currentProgress < 93) currentProgress += Math.random() * 0.5;
                 else if (currentProgress < 97) currentProgress += 0.05;
-                
+
                 if (currentProgress > 97) currentProgress = 97;
-                
+
                 progressBar.style.width = currentProgress + '%';
                 progressText.innerText = `檔案傳輸中... ${Math.floor(currentProgress)}%`;
             }, 150);
@@ -760,11 +792,11 @@
             message.innerHTML = '<span style="color:var(--primary-bg); font-weight:bold;">⏳ 正在處理檔案...</span>';
 
             const reader = new FileReader();
-            
-            reader.onprogress = function(data) {
+
+            reader.onprogress = function (data) {
                 if (data.lengthComputable) {
                     let readPercent = Math.floor((data.loaded / data.total) * 100);
-                    if(readPercent < 100) {
+                    if (readPercent < 100) {
                         document.getElementById('upload-progress-container').style.display = 'block';
                         progressBar.style.width = (readPercent * 0.1) + '%';
                         progressText.innerText = `本地打包中... ${Math.floor(readPercent)}%`;
@@ -812,7 +844,7 @@
                             progressBar.style.width = '100%';
                             progressText.innerText = `🎉 上傳成功！`;
                             message.innerHTML = '<span style="color:var(--success-text); font-weight:bold;">作業提交成功。</span>';
-                            
+
                             setTimeout(() => {
                                 alert(data.message || "上傳成功！");
                                 loadMySubmissions().then(() => { handleTaskChange(); });

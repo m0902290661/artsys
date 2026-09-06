@@ -7,69 +7,429 @@
     <title>私立弘明實驗高級中學 美術歷程管理後台</title>
     <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
     <style>
-        :root { --primary: #8c8cff; --primary-h: #6e6eff; --danger: #e05252; --success: #2b8a3e; --bg: #f7f9fc; --text: #2f343b; }
-        * { box-sizing: border-box; }
-        body { display: flex; min-height: 100vh; margin: 0; font-family: 'PingFang TC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: var(--text); background: var(--bg); }
-        .left { width: 240px; padding: 30px 20px; background: #fff; box-shadow: 2px 0 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; flex-shrink: 0; }
-        .right { flex: 1; min-width: 0; padding: 40px; overflow-y: auto; }
-        h1 { margin: 0 0 15px; font-size: 16px; line-height: 1.4; }
-        h2 { margin: 0 0 20px; font-size: 22px; font-weight: 700; }
-        .admin-info { color: #666; font-size: 13px; line-height: 1.5; background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
-        .menu-link { display: block; padding: 12px 16px; margin: 4px 0; color: #555; text-decoration: none; border-radius: 8px; font-size: 14px; transition: 0.2s; }
-        .menu-link:hover { background: #f1f3f9; }
-        .menu-link.active { background: var(--primary); color: #fff; font-weight: bold; box-shadow: 0 4px 10px rgba(161,161,255,0.3); }
-        .panel { display: none; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); animation: fadeIn 0.3s ease; }
-        .panel.active { display: block; }
-        .collapse-form { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s; background: #f8f9fa; border-radius: 8px; padding: 0 20px; }
-        .collapse-form.open { max-height: 800px; padding: 20px; margin: 15px 0 20px; border: 1px solid #e5e8ef; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 20px 0; }
-        input, select, textarea { min-height: 38px; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 6px; font-size: 14px; background: #fff; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
-        textarea { min-height: 80px; resize: vertical; }
-        .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .field-grid label { display: flex; flex-direction: column; gap: 6px; color: #555; font-size: 13px; font-weight: 600; }
-        .field-grid .wide { grid-column: 1 / -1; }
-        button { min-height: 38px; padding: 8px 20px; border: 0; border-radius: 6px; color: #fff; background: var(--primary); cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-        button:hover { opacity: 0.9; }
-        button.secondary { color: #4c535d; background: #f1f3f9; }
-        button.danger { background: var(--danger); }
-        button:disabled { cursor: not-allowed; opacity: 0.5 !important; }
-        .batch-bar { display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px 16px; border-radius: 8px; margin-bottom: 15px; align-items: center; justify-content: space-between; animation: fadeIn 0.2s ease; }
-        .batch-bar.active { display: flex; }
-        .batch-info { font-size: 13.5px; font-weight: 600; color: #3730a3; }
-        .batch-btns { display: flex; gap: 8px; }
-        .table-container { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
-        th, td { border-bottom: 1px solid #edf0f5; padding: 12px; text-align: left; }
-        th { background: #f8f9fa; color: #606266; font-weight: 600; }
-        tr:hover td { background: #fafbfc; }
-        .checkbox-cell { width: 40px; text-align: center; }
-        .empty { padding: 30px; text-align: center; color: #909399; background: #f8f9fa; border-radius: 8px; }
-        .status-active { color: var(--success); font-weight: bold; }
-        .status-processing { color: #1864ab; font-weight: bold; }
-        .status-revoked { color: #909399; }
-        .report-description { max-width: 320px; white-space: pre-wrap; color: #666; font-size: 13px; margin-top: 4px; }
-        .qr-box { display: none; margin: 15px 0; padding: 16px; border: 1px solid #e5e8ef; border-radius: 8px; background: #f8f9fa; max-width: 240px; text-align: center; }
-        .qr-box.active { display: block; animation: fadeIn 0.3s; }
-        .qr-box img { width: 160px; height: 160px; display: block; margin: 10px auto; }
-        .global-loader { position: fixed; right: 24px; bottom: 24px; background: rgba(0,0,0,0.85); color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
-        .global-loader.show { opacity: 1; }
-        .spinner { width: 18px; height: 18px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
-
-        /* 隱藏的 PDF 繪圖容器，避免中文字型缺乏導致的亂碼 */
-        #pdf-render-card {
-            position: absolute; left: -9999px; top: -9999px; width: 220px; height: 240px;
-            background: #ffffff; border: 1px dashed #999; padding: 10px; box-sizing: border-box;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: #000; text-align: center;
+        :root {
+            --primary: #8c8cff;
+            --primary-h: #6e6eff;
+            --danger: #e05252;
+            --success: #2b8a3e;
+            --warning: #d97706;
+            --bg: #f7f9fc;
+            --text: #2f343b;
         }
-        #pdf-render-card .qr-img { width: 110px; height: 110px; }
-        #pdf-render-card .fname { font-size: 11px; font-weight: bold; word-break: break-all; margin: 4px 0; max-height: 28px; overflow: hidden; line-height: 1.2; }
-        #pdf-render-card .meta { font-size: 10px; color: #333; line-height: 1.3; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 900px) { body { display: block; } .left, .right { width: 100%; padding: 20px; } .toolbar { display: grid; grid-template-columns: 1fr 1fr; } }
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .left {
+            width: 240px;
+            padding: 30px 20px;
+            background: #fff;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .right {
+            flex: 1;
+            min-width: 0;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin: 0 0 15px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .admin-info {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .menu-link {
+            display: block;
+            padding: 12px 16px;
+            margin: 4px 0;
+            color: #555;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .menu-link:hover {
+            background: #f1f3f9;
+        }
+
+        .menu-link.active {
+            background: var(--primary);
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(161, 161, 255, 0.3);
+        }
+
+        .panel {
+            display: none;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .collapse-form {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0 20px;
+        }
+
+        .collapse-form.open {
+            max-height: 800px;
+            padding: 20px;
+            margin: 15px 0 20px;
+            border: 1px solid #e5e8ef;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        input,
+        select,
+        textarea {
+            min-height: 38px;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .field-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .field-grid .wide {
+            grid-column: 1 / -1;
+        }
+
+        button {
+            min-height: 38px;
+            padding: 8px 20px;
+            border: 0;
+            border-radius: 6px;
+            color: #fff;
+            background: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary {
+            color: #4c535d;
+            background: #f1f3f9;
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button.warning {
+            background: var(--warning);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5 !important;
+        }
+
+        .batch-bar {
+            display: none;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .batch-bar.active {
+            display: flex;
+        }
+
+        .batch-info {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #3730a3;
+        }
+
+        .batch-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1000px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #edf0f5;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #606266;
+            font-weight: 600;
+        }
+
+        tr:hover td {
+            background: #fafbfc;
+        }
+
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            color: #909399;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .status-active {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .status-rejected {
+            color: var(--warning);
+            font-weight: bold;
+        }
+
+        .status-revoked {
+            color: #909399;
+        }
+
+        .report-description {
+            max-width: 320px;
+            white-space: pre-wrap;
+            color: #666;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .qr-box {
+            display: none;
+            margin: 15px 0;
+            padding: 16px;
+            border: 1px solid #e5e8ef;
+            border-radius: 8px;
+            background: #f8f9fa;
+            max-width: 240px;
+            text-align: center;
+        }
+
+        .qr-box.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .qr-box img {
+            width: 160px;
+            height: 160px;
+            display: block;
+            margin: 10px auto;
+        }
+
+        .global-loader {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .global-loader.show {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        #pdf-render-card {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 220px;
+            height: 240px;
+            background: #ffffff;
+            border: 1px dashed #999;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            color: #000;
+            text-align: center;
+        }
+
+        #pdf-render-card .qr-img {
+            width: 110px;
+            height: 110px;
+        }
+
+        #pdf-render-card .fname {
+            font-size: 11px;
+            font-weight: bold;
+            word-break: break-all;
+            margin: 4px 0;
+            max-height: 28px;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        #pdf-render-card .meta {
+            font-size: 10px;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                display: block;
+            }
+
+            .left,
+            .right {
+                width: 100%;
+                padding: 20px;
+            }
+
+            .toolbar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -78,15 +438,19 @@
 </head>
 
 <body>
-    <div id="loading-screen" style="position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;transition:opacity .3s;">
-        <div style="width:45px;height:45px;border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+    <div id="loading-screen"
+        style="position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;transition:opacity .3s;">
+        <div
+            style="width:45px;height:45px;border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;">
+        </div>
         <div style="margin-top:16px;color:#666;font-weight:bold;font-size:14px;">安全加載中...</div>
     </div>
 
-    <div id="global-loader" class="global-loader"><div class="spinner"></div><span id="loader-text">讀取中...</span></div>
+    <div id="global-loader" class="global-loader">
+        <div class="spinner"></div><span id="loader-text">讀取中...</span>
+    </div>
     <div id="qrcode-hidden-container" style="display:none;"></div>
 
-    <!-- 隱藏之渲染 DOM，轉成 Canvas 貼入 PDF 消除亂碼 -->
     <div id="pdf-render-card">
         <div id="card-qr-box"></div>
         <div id="card-filename" class="fname">檔名載入中</div>
@@ -118,7 +482,8 @@
             </div>
             <div id="schedule-batch-bar" class="batch-bar">
                 <span class="batch-info">已選取 <span id="schedule-selected-count">0</span> 項</span>
-                <div class="batch-btns"><button type="button" class="danger" style="min-height:32px; font-size:13px;" onclick="batchDeleteSchedules()">🗑️ 批量刪除</button></div>
+                <div class="batch-btns"><button type="button" class="danger" style="min-height:32px; font-size:13px;"
+                        onclick="batchDeleteSchedules()">🗑️ 批量刪除</button></div>
             </div>
             <div id="schedule-collapse" class="collapse-form">
                 <form id="schedule-form">
@@ -138,51 +503,88 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"><input type="checkbox" id="schedule-check-all" onclick="toggleCheckAll('schedule')"></th>
-                            <th>項目</th><th>截止日期</th><th>備註</th><th style="width: 130px;">操作</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="schedule-check-all"
+                                    onclick="toggleCheckAll('schedule')"></th>
+                            <th>項目</th>
+                            <th>截止日期</th>
+                            <th>備註</th>
+                            <th style="width: 130px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="schedule-list"><tr><td colspan="5" class="empty">資料載入中...</td></tr></tbody>
+                    <tbody id="schedule-list">
+                        <tr>
+                            <td colspan="5" class="empty">資料載入中...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- 2. 繳交紀錄 (包含全功能選取刪除與對應檔案同步刪除) -->
+        <!-- 2. 繳交紀錄 (含退件與對應檔案管理) -->
         <section id="submissions-panel" class="panel">
             <h2>繳交紀錄</h2>
             <div class="toolbar" style="margin-top: 0;">
-                <select id="submission-task-filter"><option value="">全部項目</option></select>
-                <select id="submission-class-filter"><option value="">全部班級</option></select>
-                <select id="submission-club-filter"><option value="">全部社團</option></select>
-                <select id="submission-status-filter">
-                    <option value="active">僅顯示有效</option><option value="">全部狀態</option><option value="revoked">已撤銷</option>
+                <select id="submission-task-filter">
+                    <option value="">全部項目</option>
                 </select>
-                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、檔名..." style="flex: 1; min-width: 150px;">
+                <select id="submission-class-filter">
+                    <option value="">全部班級</option>
+                </select>
+                <select id="submission-club-filter">
+                    <option value="">全部社團</option>
+                </select>
+                <select id="submission-status-filter">
+                    <option value="active">僅顯示有效</option>
+                    <option value="">全部狀態</option>
+                    <option value="rejected">已退件</option>
+                    <option value="revoked">已撤銷</option>
+                </select>
+                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、檔名..."
+                    style="flex: 1; min-width: 150px;">
                 <button type="button" class="secondary" onclick="loadSubmissions()">🔄 重新整理</button>
-                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出 A4 QR (符合當前篩選)</button>
+                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出 A4 QR
+                    (符合當前篩選)</button>
                 <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除全校紀錄</button>
             </div>
             <div id="submission-batch-bar" class="batch-bar">
                 <span class="batch-info">已選取 <span id="submission-selected-count">0</span> 項紀錄</span>
                 <div class="batch-btns">
-                    <button type="button" style="background:#2b8a3e; min-height:32px; font-size:13px;" onclick="exportBatchQrA4(true)">🖨️ 僅匯出選取的 QR Code</button>
-                    <button type="button" class="danger" style="min-height:32px; font-size:13px;" onclick="batchDeleteSubmissions()">🗑️ 批量刪除紀錄與對應檔案</button>
+                    <button type="button" style="background:#2b8a3e; min-height:32px; font-size:13px;"
+                        onclick="exportBatchQrA4(true)">🖨️ 僅匯出選取的 QR Code</button>
+                    <button type="button" class="danger" style="min-height:32px; font-size:13px;"
+                        onclick="batchDeleteSubmissions()">🗑️ 批量刪除紀錄與對應檔案</button>
                 </div>
             </div>
             <div id="qr-box" class="qr-box">
                 <strong id="qr-title" style="font-size:13px;">檔案 QR Code</strong>
                 <img id="qr-image" alt="QR">
-                <p style="margin: 6px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener" style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟 ↗</a></p>
+                <p style="margin: 6px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"
+                        style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟
+                        ↗</a></p>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"><input type="checkbox" id="submission-check-all" onclick="toggleCheckAll('submission')"></th>
-                            <th>項目</th><th>學號</th><th>姓名</th><th>班級</th><th>社團</th><th>檔案名稱</th><th>時間</th><th>狀態</th><th style="width: 80px;">QR</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="submission-check-all"
+                                    onclick="toggleCheckAll('submission')"></th>
+                            <th>項目</th>
+                            <th>學號</th>
+                            <th>姓名</th>
+                            <th>班級</th>
+                            <th>社團</th>
+                            <th>檔案名稱</th>
+                            <th>時間</th>
+                            <th>狀態</th>
+                            <th>退件私人訊息</th>
+                            <th style="width: 160px; min-width: 160px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="submissions-list"><tr><td colspan="10" class="empty">資料載入中...</td></tr></tbody>
+                    <tbody id="submissions-list">
+                        <tr>
+                            <td colspan="11" class="empty">資料載入中...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -202,9 +604,14 @@
             <h2>問題回報</h2>
             <div class="toolbar" style="margin-top: 0;">
                 <select id="report-status-filter">
-                    <option value="">全部狀態</option><option value="pending">待處理</option><option value="processing">處理中</option><option value="done">已完成</option>
+                    <option value="">全部狀態</option>
+                    <option value="pending">待處理</option>
+                    <option value="processing">處理中</option>
+                    <option value="done">已完成</option>
                 </select>
-                <select id="report-type-filter"><option value="">全部類型</option></select>
+                <select id="report-type-filter">
+                    <option value="">全部類型</option>
+                </select>
                 <input type="text" id="report-keyword" placeholder="搜尋姓名、學號..." style="flex: 1; min-width: 150px;">
                 <button type="button" class="secondary" onclick="loadReports()">🔄 重新整理</button>
             </div>
@@ -212,20 +619,34 @@
                 <span class="batch-info">已選取 <span id="report-selected-count">0</span> 單</span>
                 <div class="batch-btns">
                     <select id="batch-report-status" style="min-height:32px; padding:2px 8px; font-size:13px;">
-                        <option value="pending">設為：待處理</option><option value="processing">設為：處理中</option><option value="done">設為：已完成</option>
+                        <option value="pending">設為：待處理</option>
+                        <option value="processing">設為：處理中</option>
+                        <option value="done">設為：已完成</option>
                     </select>
-                    <button type="button" style="min-height:32px; font-size:13px;" onclick="batchUpdateReportStatus()">更新狀態</button>
+                    <button type="button" style="min-height:32px; font-size:13px;"
+                        onclick="batchUpdateReportStatus()">更新狀態</button>
                 </div>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"><input type="checkbox" id="report-check-all" onclick="toggleCheckAll('report')"></th>
-                            <th>時間</th><th>類型</th><th>填報人</th><th>聯絡方式</th><th>內容</th><th>狀態</th><th style="width: 160px;">操作</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="report-check-all"
+                                    onclick="toggleCheckAll('report')"></th>
+                            <th>時間</th>
+                            <th>類型</th>
+                            <th>填報人</th>
+                            <th>聯絡方式</th>
+                            <th>內容</th>
+                            <th>狀態</th>
+                            <th style="width: 160px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="reports-list"><tr><td colspan="8" class="empty">資料載入中...</td></tr></tbody>
+                    <tbody id="reports-list">
+                        <tr>
+                            <td colspan="8" class="empty">資料載入中...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -236,7 +657,8 @@
             <div class="toolbar" style="margin-top: 0;">
                 <button type="button" onclick="openUserForm('add')">➕ 新增單筆學生</button>
                 <button type="button" style="background:#2b8a3e;" onclick="triggerCsvImport()">📁 批量 CSV 匯入帳號</button>
-                <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCsvFile(this)">
+                <input type="file" id="csv-file-input" accept=".csv" style="display:none;"
+                    onchange="handleCsvFile(this)">
                 <input type="text" id="user-keyword" placeholder="搜尋學號、姓名、社團..." style="flex: 1;">
                 <button type="button" class="secondary" onclick="loadUsers()">🔄 重新整理</button>
             </div>
@@ -244,16 +666,27 @@
             <div id="user-batch-bar" class="batch-bar">
                 <span class="batch-info">已選取 <span id="user-selected-count">0</span> 個帳號</span>
                 <div class="batch-btns">
-                    <button type="button" class="danger" style="min-height:32px; font-size:13px;" onclick="batchDeleteUsers()">🗑️ 批量刪除帳號</button>
+                    <button type="button" class="danger" style="min-height:32px; font-size:13px;"
+                        onclick="batchDeleteUsers()">🗑️ 批量刪除帳號</button>
                 </div>
             </div>
 
             <div id="csv-preview-collapse" class="collapse-form">
                 <h3 style="margin-top:0; font-size:15px; color:#2b8a3e;">📁 CSV 匯入預覽 (確認後將同步至雲端)</h3>
-                <p style="font-size:13px; color:#666; margin-bottom:10px;">請確保 CSV 表頭包含：<code>學號</code>、<code>姓名</code>、<code>班級</code>、<code>社團</code> (可選)、<code>密碼</code> (可選)。若學號重複將直接更新資料。</p>
+                <p style="font-size:13px; color:#666; margin-bottom:10px;">請確保 CSV
+                    表頭包含：<code>學號</code>、<code>姓名</code>、<code>班級</code>、<code>社團</code> (可選)、<code>密碼</code>
+                    (可選)。若學號重複將直接更新資料。</p>
                 <div class="table-container" style="max-height: 250px; overflow-y: auto;">
                     <table>
-                        <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>社團</th><th>密碼</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>學號</th>
+                                <th>姓名</th>
+                                <th>班級</th>
+                                <th>社團</th>
+                                <th>密碼</th>
+                            </tr>
+                        </thead>
                         <tbody id="csv-preview-list"></tbody>
                     </table>
                 </div>
@@ -271,9 +704,14 @@
                     <div class="field-grid">
                         <label>學號<input type="text" id="new-user-id" required></label>
                         <label>姓名<input type="text" id="new-user-name" required></label>
-                        <label>班級<select id="new-user-class" required><option value="">載入中...</option></select></label>
-                        <label>美術社團<select id="new-user-club"><option value="">載入中...</option></select></label>
-                        <label id="user-password-label">密碼<input type="password" id="new-user-password" required></label>
+                        <label>班級<select id="new-user-class" required>
+                                <option value="">載入中...</option>
+                            </select></label>
+                        <label>美術社團<select id="new-user-club">
+                                <option value="">載入中...</option>
+                            </select></label>
+                        <label id="user-password-label">密碼<input type="password" id="new-user-password"
+                                required></label>
                     </div>
                     <button type="submit">儲存</button>
                     <button type="button" class="secondary" onclick="closeUserForm()">取消</button>
@@ -284,11 +722,20 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"><input type="checkbox" id="user-check-all" onclick="toggleCheckAll('user')"></th>
-                            <th>學號</th><th>姓名</th><th>班級</th><th>美術社團</th><th style="width: 100px;">操作</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="user-check-all"
+                                    onclick="toggleCheckAll('user')"></th>
+                            <th>學號</th>
+                            <th>姓名</th>
+                            <th>班級</th>
+                            <th>美術社團</th>
+                            <th style="width: 100px;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="users-list"><tr><td colspan="6" class="empty">資料載入中...</td></tr></tbody>
+                    <tbody id="users-list">
+                        <tr>
+                            <td colspan="6" class="empty">資料載入中...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -325,11 +772,10 @@
             const selected = Array.from(document.querySelectorAll('.schedule-checkbox:checked')).map(cb => cb.value);
             if (!selected.length || !confirm(`確定刪除選取的 ${selected.length} 項時程嗎？`)) return;
             toggleGlobalLoader(true, "批量刪除中...");
-            for (let id of selected) { try { await apiPost({ action: 'deleteSchedule', id }); } catch (e) {} }
+            for (let id of selected) { try { await apiPost({ action: 'deleteSchedule', id }); } catch (e) { } }
             toggleGlobalLoader(false); loadSchedule();
         }
 
-        // 批量刪除選取的繳交紀錄（同步把 Google Drive 上對應的實體 PDF 檔移至垃圾桶）
         async function batchDeleteSubmissions() {
             const selected = Array.from(document.querySelectorAll('.submission-checkbox:checked')).map(cb => cb.value);
             if (!selected.length || !confirm(`確定要刪除選取的 ${selected.length} 筆紀錄嗎？\n（注意：雲端硬碟中的對應實體 PDF 檔案將會被同步移至垃圾桶）`)) return;
@@ -351,7 +797,7 @@
             const status = document.getElementById('batch-report-status').value;
             if (!selected.length) return;
             toggleGlobalLoader(true, "批量更新中...");
-            for (let id of selected) { try { await apiPost({ action: 'updateReportStatus', id, status }); } catch (e) {} }
+            for (let id of selected) { try { await apiPost({ action: 'updateReportStatus', id, status }); } catch (e) { } }
             toggleGlobalLoader(false); loadReports();
         }
 
@@ -359,7 +805,7 @@
             const selected = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
             if (!selected.length || !confirm(`確定刪除選取的 ${selected.length} 個帳號嗎？此操作無法恢復！`)) return;
             toggleGlobalLoader(true, "批量刪除帳號中...");
-            for (let id of selected) { try { await apiPost({ action: 'deleteUser', id }); } catch (e) {} }
+            for (let id of selected) { try { await apiPost({ action: 'deleteUser', id }); } catch (e) { } }
             toggleGlobalLoader(false); loadUsers();
         }
 
@@ -399,7 +845,7 @@
                 try {
                     await apiPost({ action: 'addUser', newStudentId: u.studentId, name: u.name, className: u.className, club: u.club, password: u.password || u.studentId });
                 } catch (e) {
-                    try { await apiPost({ action: 'editUser', id: u.studentId, newStudentId: u.studentId, name: u.name, className: u.className, club: u.club, password: u.password }); } catch (err) {}
+                    try { await apiPost({ action: 'editUser', id: u.studentId, newStudentId: u.studentId, name: u.name, className: u.className, club: u.club, password: u.password }); } catch (err) { }
                 }
             }
             toggleGlobalLoader(false); closeCsvPreview(); loadUsers();
@@ -459,7 +905,7 @@
                 currentUser = user;
                 document.getElementById('admin-name').innerText = user.name ?? '管理員';
                 document.getElementById('admin-id').innerText = user.studentId ?? '-';
-                
+
                 return Promise.all([
                     apiGet('getOptions', '讀取選項...'),
                     loadSchedule(),
@@ -474,9 +920,9 @@
             }).catch(err => !err?.redirect && forceLogout(err?.message || '驗證失敗'));
 
             document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
-            ['submission-task-filter','submission-class-filter','submission-club-filter','submission-status-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderSubmissions));
+            ['submission-task-filter', 'submission-class-filter', 'submission-club-filter', 'submission-status-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderSubmissions));
             document.getElementById('report-keyword').addEventListener('input', renderReports);
-            ['report-status-filter','report-type-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderReports));
+            ['report-status-filter', 'report-type-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderReports));
             document.getElementById('user-keyword').addEventListener('input', renderUsers);
         });
 
@@ -550,22 +996,39 @@
             const kw = document.getElementById('submission-keyword').value.trim().toLowerCase();
             const t = document.getElementById('submission-task-filter').value, c = document.getElementById('submission-class-filter').value, cl = document.getElementById('submission-club-filter').value, st = document.getElementById('submission-status-filter').value;
             return submissionRows.filter(i => {
-                const text = `${i.task||''} ${i.studentId||''} ${i.studentName||''} ${i.className||''} ${i.club||''} ${i.filename||''}`.toLowerCase();
-                return (!t || i.task === t) && (!c || i.className === c) && (!cl || i.club === cl) && (!st || (i.status === 'revoked' ? 'revoked' : 'active') === st) && text.includes(kw);
+                const text = `${i.task || ''} ${i.studentId || ''} ${i.studentName || ''} ${i.className || ''} ${i.club || ''} ${i.filename || ''}`.toLowerCase();
+                return (!t || i.task === t) && (!c || i.className === c) && (!cl || i.club === cl) && (!st || (i.status === 'revoked' ? 'revoked' : i.status === 'rejected' ? 'rejected' : 'active') === st) && text.includes(kw);
             });
         }
 
         function renderSubmissions() {
             const tbody = document.getElementById('submissions-list'), rows = getFilteredSubmissions();
-            if (!rows.length) return tbody.innerHTML = "<tr><td colspan='10'><div class='empty'>無符合條件紀錄。</div></td></tr>";
+            if (!rows.length) return tbody.innerHTML = "<tr><td colspan='11'><div class='empty'>無符合條件紀錄。</div></td></tr>";
             tbody.innerHTML = rows.map(item => `
-                <tr><td class="checkbox-cell"><input type="checkbox" class="submission-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('submission')"></td><td>${escapeHtml(item.task||'')}</td><td>${escapeHtml(item.studentId||'')}</td><td>${escapeHtml(item.studentName||'')}</td><td>${escapeHtml(item.className||'')}</td><td>${escapeHtml(item.club||'-')}</td><td>${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(item.filename||'查看')}</a>` : escapeHtml(item.filename||'')}</td><td>${escapeHtml(item.createdAt||'')}</td><td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : '<span class="status-active">有效</span>'}</td><td>${item.url ? `<button type="button" class="secondary" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="showQrCode('${escapeHtml(item.url)}', '${escapeHtml(item.filename||'')}')">產生</button>` : '-'}</td></tr>
+                <tr>
+                    <td class="checkbox-cell"><input type="checkbox" class="submission-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('submission')"></td>
+                    <td>${escapeHtml(item.task || '')}</td>
+                    <td>${escapeHtml(item.studentId || '')}</td>
+                    <td>${escapeHtml(item.studentName || '')}</td>
+                    <td>${escapeHtml(item.className || '')}</td>
+                    <td>${escapeHtml(item.club || '-')}</td>
+                    <td>${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(item.filename || '查看')}</a>` : escapeHtml(item.filename || '')}</td>
+                    <td>${escapeHtml(item.createdAt || '')}</td>
+                    <td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : item.status === 'rejected' ? '<span class="status-rejected">已退件</span>' : '<span class="status-active">有效</span>'}</td>
+                    <td style="font-size:13px; color:#555;">${escapeHtml(item.rejectReason || '-')}</td>
+                    <td>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; min-width:130px;">
+                            ${item.url ? `<button type="button" class="secondary" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2;" onclick="showQrCode('${escapeHtml(item.url)}', '${escapeHtml(item.filename || '')}')">QR</button>` : ''}
+                            <button type="button" class="warning" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2; background-color:#d97706; color:#fff;" onclick="promptReject('${escapeHtml(item.id)}')">退件/評語</button>
+                        </div>
+                    </td>
+                </tr>
             `).join('');
             updateBatchBar('submission');
         }
 
         function populateSubmissionFilters() {
-            ['task','class','club'].forEach(key => {
+            ['task', 'class', 'club'].forEach(key => {
                 const select = document.getElementById(`submission-${key}-filter`), val = select.value;
                 const opts = [...new Set(submissionRows.map(i => (key === 'class' ? i.className : i[key]) || '').filter(Boolean))].sort();
                 select.innerHTML = `<option value="">全部${key === 'task' ? '項目' : key === 'class' ? '班級' : '社團'}</option>` + opts.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
@@ -580,11 +1043,21 @@
             document.getElementById('qr-link').href = url; box.classList.add('active');
         }
 
+        function promptReject(id) {
+            const reason = prompt("請輸入退件原因或私人訊息（學生可在前端頁面即時查看）：");
+            if (reason === null) return;
+
+            apiPost({ action: 'rejectSubmission', id: id, rejectReason: reason }, '處理退件中...').then(d => {
+                alert(d?.message || '退件完成');
+                loadSubmissions();
+            }).catch(e => alert(e.message));
+        }
+
         function generateCardCanvasBase64(item) {
             return new Promise(resolve => {
                 const qrBox = document.getElementById('card-qr-box');
                 qrBox.innerHTML = '';
-                
+
                 new QRCode(qrBox, {
                     text: item.url,
                     width: 110,
@@ -630,8 +1103,8 @@
                         doc.addImage(imgData, 'PNG', x, y, cardW, cardH);
                     }
                 }
-                toggleGlobalLoader(false); 
-                
+                toggleGlobalLoader(false);
+
                 const taskFilter = document.getElementById('submission-task-filter').value || '全部項目';
                 const classFilter = document.getElementById('submission-class-filter').value || '全部班級';
                 doc.save(`美術歷程_QR碼_${classFilter}_${taskFilter}.pdf`);
@@ -653,11 +1126,11 @@
         function renderReports() {
             const tbody = document.getElementById('reports-list'), kw = document.getElementById('report-keyword').value.trim().toLowerCase();
             const st = document.getElementById('report-status-filter').value, tp = document.getElementById('report-type-filter').value;
-            const rows = reportRows.filter(i => (`${i.studentId||''} ${i.studentName||''} ${i.subject||''}`.toLowerCase().includes(kw)) && (!st || (i.status||'pending') === st) && (!tp || (i.reportType||'') === tp));
+            const rows = reportRows.filter(i => (`${i.studentId || ''} ${i.studentName || ''} ${i.subject || ''}`.toLowerCase().includes(kw)) && (!st || (i.status || 'pending') === st) && (!tp || (i.reportType || '') === tp));
             if (!rows.length) return tbody.innerHTML = "<tr><td colspan='8'><div class='empty'>目前無回報。</div></td></tr>";
             tbody.innerHTML = rows.map(item => {
                 const s = item.status || 'pending';
-                return `<tr><td class="checkbox-cell"><input type="checkbox" class="report-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('report')"></td><td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td><td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td><td>${escapeHtml(item.studentId||'')}<br>${escapeHtml(item.studentName||'')} (${escapeHtml(item.className||'')})</td><td>${escapeHtml(item.contact||'-')}</td><td><strong>${escapeHtml(item.subject||'')}</strong><div class="report-description">${escapeHtml(item.description||'')}</div></td><td>${s === 'done' ? '<span class="status-active">● 已完成</span>' : s === 'processing' ? '<span class="status-processing">● 處理中</span>' : '<span style="color:var(--danger);font-weight:bold;">● 待處理</span>'}</td><td><div style="display:flex; gap:6px;"><select class="report-status-select" style="min-height:30px; padding:4px;"><option value="pending" ${s==='pending'?'selected':''}>待處理</option><option value="processing" ${s==='processing'?'selected':''}>處理中</option><option value="done" ${s==='done'?'selected':''}>已完成</option></select><button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button></div></td></tr>`;
+                return `<tr><td class="checkbox-cell"><input type="checkbox" class="report-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('report')"></td><td>${new Date(item.createdAt).toLocaleString('zh-TW', { hour12: false })}</td><td style="font-weight:600;">${escapeHtml(getReportTypeLabel(item.reportType))}</td><td>${escapeHtml(item.studentId || '')}<br>${escapeHtml(item.studentName || '')} (${escapeHtml(item.className || '')})</td><td>${escapeHtml(item.contact || '-')}</td><td><strong>${escapeHtml(item.subject || '')}</strong><div class="report-description">${escapeHtml(item.description || '')}</div></td><td>${s === 'done' ? '<span class="status-active">● 已完成</span>' : s === 'processing' ? '<span class="status-processing">● 處理中</span>' : '<span style="color:var(--danger);font-weight:bold;">● 待處理</span>'}</td><td><div style="display:flex; gap:6px;"><select class="report-status-select" style="min-height:30px; padding:4px;"><option value="pending" ${s === 'pending' ? 'selected' : ''}>待處理</option><option value="processing" ${s === 'processing' ? 'selected' : ''}>處理中</option><option value="done" ${s === 'done' ? 'selected' : ''}>已完成</option></select><button type="button" style="min-height:30px; padding:4px 10px; font-size:12px;" onclick="updateReportStatus(this, '${escapeHtml(item.id)}')">更新</button></div></td></tr>`;
             }).join('');
             updateBatchBar('report');
         }
@@ -674,10 +1147,10 @@
         function loadUsers() { return apiGet('getUsers', '讀取名冊...').then(d => { userRows = normalizeRows(d); renderUsers(); }).catch(() => { userRows = []; renderUsers(); }); }
         function renderUsers() {
             const tbody = document.getElementById('users-list'), kw = document.getElementById('user-keyword').value.trim().toLowerCase();
-            const rows = userRows.filter(i => `${i.studentId||''} ${i.name||''} ${i.className||''} ${i.club||''}`.toLowerCase().includes(kw));
+            const rows = userRows.filter(i => `${i.studentId || ''} ${i.name || ''} ${i.className || ''} ${i.club || ''}`.toLowerCase().includes(kw));
             if (!rows.length) return tbody.innerHTML = "<tr><td colspan='6'><div class='empty'>無符合帳號。</div></td></tr>";
             tbody.innerHTML = rows.map((item, index) => `
-                <tr><td class="checkbox-cell"><input type="checkbox" class="user-checkbox" value="${escapeHtml(item.studentId)}" onclick="updateBatchBar('user')"></td><td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId||'')}</td><td>${escapeHtml(item.name||'')}</td><td>${escapeHtml(item.className||'')}</td><td>${escapeHtml(item.club||'-')}</td><td><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openUserForm('edit', ${index})">修改</button></td></tr>
+                <tr><td class="checkbox-cell"><input type="checkbox" class="user-checkbox" value="${escapeHtml(item.studentId)}" onclick="updateBatchBar('user')"></td><td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId || '')}</td><td>${escapeHtml(item.name || '')}</td><td>${escapeHtml(item.className || '')}</td><td>${escapeHtml(item.club || '-')}</td><td><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openUserForm('edit', ${index})">修改</button></td></tr>
             `).join('');
             updateBatchBar('user');
         }
