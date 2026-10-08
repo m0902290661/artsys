@@ -1,6 +1,6 @@
 /**
  * ==========================================
- * 弘明實驗高級中學 - 美術歷程管理系統核心後端 (含檔案同步刪除)
+ * 弘明實驗高級中學 - 美術歷程管理系統核心後端
  * ==========================================
  */
 
@@ -10,9 +10,9 @@ const SESSION_TTL_HOURS = 8;
 
 const USER_HEADERS = ["studentId", "name", "className", "club", "password", "sessionToken", "sessionExpiresAt"];
 const REPORT_HEADERS = ["createdAt", "reportType", "studentId", "studentName", "className", "contact", "subject", "description", "status", "handledAt", "handledBy"];
-const SUBMISSION_HEADERS = ["task", "studentId", "studentName", "className", "filename", "url", "createdAt", "status", "revokedAt"];
+const SUBMISSION_HEADERS = ["task", "studentId", "studentName", "className", "filename", "url", "createdAt", "status", "revokedAt", "rejectReason"];
 const UNLOCK_HEADERS = ["studentId", "task"];
-const SCHEDULE_HEADERS = ["task", "deadline", "note"];
+const SCHEDULE_HEADERS = ["task", "deadline", "note", "attachmentUrl", "attachmentName"];
 const OPTION_HEADERS = ["type", "value"];
 
 function doGet(e) {
@@ -85,7 +85,6 @@ function doPost(e) {
   if (action === "signup") return signup_(userSheet, userData, params);
   if (action === "logout") return logout_(userSheet, userData, params);
 
-  // 管理員權限動作
   if (action === "addSchedule") {
     var addSession = requireSession_(ss, params, true);
     if (!addSession.success) return jsonOutput(addSession);
@@ -108,6 +107,12 @@ function doPost(e) {
     var delSubSession = requireSession_(ss, params, true);
     if (!delSubSession.success) return jsonOutput(delSubSession);
     return deleteSubmission_(ss, params);
+  }
+
+  if (action === "rejectSubmission") {
+    var rejectSubSession = requireSession_(ss, params, true);
+    if (!rejectSubSession.success) return jsonOutput(rejectSubSession);
+    return rejectSubmission_(ss, params);
   }
 
   if (action === "addUnlock") {
@@ -146,7 +151,6 @@ function doPost(e) {
     return updateReportStatus_(ss, params, reportStatusSession.user);
   }
 
-  // 學生/通用動作
   if (action === "uploadPDF") {
     var uploadSession = requireSession_(ss, params, false);
     if (!uploadSession.success) return jsonOutput(uploadSession);
@@ -208,7 +212,6 @@ function getOptionRows_(ss) {
 function login_(userSheet, userData, params) {
   var headerMap = getHeaderMap_(userSheet, USER_HEADERS);
   var tokenCol = headerMap.sessionToken + 1;
-  var expiresCol = headerMap.sessionExpiresAt + 1;
   var studentId = (params.studentId || "").toString().trim();
   var password = (params.password || "").toString();
 
@@ -276,7 +279,25 @@ function signup_(userSheet, userData, params) {
 
 function addSchedule_(ss, params) {
   var sheet = getSheet_(ss, "schedule", SCHEDULE_HEADERS);
-  sheet.appendRow([params.task, params.deadline, params.note || ""]);
+  var attachmentUrl = "";
+  var attachmentName = "";
+
+  if (params.attachmentBase64) {
+    try {
+      var mainFolder = DriveApp.getFolderById(MAIN_FOLDER_ID);
+      var attachmentFolder = getOrCreateFolder_(mainFolder, "時程項目附件");
+      var base64 = params.attachmentBase64.indexOf(",") >= 0 ? params.attachmentBase64.split(",")[1] : params.attachmentBase64;
+      var decoded = Utilities.base64Decode(base64);
+      var blob = Utilities.newBlob(decoded, params.attachmentMimeType || "application/octet-stream", params.attachmentFileName || "attachment");
+      var file = attachmentFolder.createFile(blob);
+      attachmentUrl = file.getUrl();
+      attachmentName = params.attachmentFileName || file.getName();
+    } catch(e) {
+      return jsonOutput({ success: false, message: "附件上傳失敗：" + e.toString() });
+    }
+  }
+
+  sheet.appendRow([params.task, params.deadline, params.note || "", attachmentUrl, attachmentName]);
   clearSystemCache_();
   return jsonOutput({ success: true, message: "時程已新增" });
 }
@@ -287,7 +308,32 @@ function editSchedule_(ss, params) {
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
     return jsonOutput({ success: false, message: "找不到要編輯的時程項目" });
   }
-  sheet.getRange(rowNumber, 1, 1, 3).setValues([[params.task, params.deadline, params.note || ""]]);
+
+  var currentRow = sheet.getRange(rowNumber, 1, 1, 5).getValues()[0];
+  var attachmentUrl = currentRow[3] || "";
+  var attachmentName = currentRow[4] || "";
+
+  if (params.removeAttachment === "true") {
+    attachmentUrl = "";
+    attachmentName = "";
+  }
+
+  if (params.attachmentBase64) {
+    try {
+      var mainFolder = DriveApp.getFolderById(MAIN_FOLDER_ID);
+      var attachmentFolder = getOrCreateFolder_(mainFolder, "時程項目附件");
+      var base64 = params.attachmentBase64.indexOf(",") >= 0 ? params.attachmentBase64.split(",")[1] : params.attachmentBase64;
+      var decoded = Utilities.base64Decode(base64);
+      var blob = Utilities.newBlob(decoded, params.attachmentMimeType || "application/octet-stream", params.attachmentFileName || "attachment");
+      var file = attachmentFolder.createFile(blob);
+      attachmentUrl = file.getUrl();
+      attachmentName = params.attachmentFileName || file.getName();
+    } catch(e) {
+      return jsonOutput({ success: false, message: "附件上傳失敗：" + e.toString() });
+    }
+  }
+
+  sheet.getRange(rowNumber, 1, 1, 5).setValues([[params.task, params.deadline, params.note || "", attachmentUrl, attachmentName]]);
   clearSystemCache_();
   return jsonOutput({ success: true, message: "時程項目已更新" });
 }
@@ -312,7 +358,14 @@ function getScheduleRows_(ss) {
   var data = sheet.getDataRange().getValues();
   var scheduleList = [];
   for (var i = 1; i < data.length; i++) {
-    scheduleList.push({ id: i - 1, task: data[i][0], deadline: data[i][1], note: data[i][2] });
+    scheduleList.push({ 
+      id: i - 1, 
+      task: data[i][0], 
+      deadline: data[i][1], 
+      note: data[i][2],
+      attachmentUrl: data[i][3] || "",
+      attachmentName: data[i][4] || ""
+    });
   }
   cache.put("schedule", JSON.stringify(scheduleList), 600);
   return scheduleList;
@@ -344,8 +397,14 @@ function uploadPdf_(ss, params) {
     var fileData = params.fileBase64 || params.file || "";
     
     if (!studentId || !fileData) return jsonOutput({ success: false, message: "缺少學號或檔案數據。" });
-    
-    var base64 = fileData.indexOf(",") >= 0 ? fileData.split(",")[1] : fileData;
+
+    var activeSubmission = findActiveSubmission_(ss, studentId, task);
+    if (activeSubmission) {
+      if (activeSubmission.status === "rejected") {
+        return jsonOutput({ success: false, message: "此作業已被退件，請先點擊「撤銷當前繳交」刪除舊檔後，再重新上傳。" });
+      }
+      return jsonOutput({ success: false, message: "此項目已繳交。請先至「已繳交內容」撤銷後，再重新提交。" });
+    }
 
     var sched = getScheduleRows_(ss);
     var item = sched.find(function(r) { return r.task === task; });
@@ -361,23 +420,19 @@ function uploadPdf_(ss, params) {
       }
     }
 
-    var activeSubmission = findActiveSubmission_(ss, studentId, task);
-    if (activeSubmission) {
-      return jsonOutput({ success: false, message: "此項目已繳交。請先至「已繳交內容」撤銷後，再重新提交。" });
-    }
-
     var taskName = sanitizeFolderName_(task);
     var mainFolder = DriveApp.getFolderById(MAIN_FOLDER_ID);
     var taskFolder = getOrCreateFolder_(mainFolder, taskName);
     var targetFolder = getOrCreateFolder_(taskFolder, studentId);
 
+    var base64 = fileData.indexOf(",") >= 0 ? fileData.split(",")[1] : fileData;
     var decoded = Utilities.base64Decode(base64);
     var blob = Utilities.newBlob(decoded, "application/pdf", fileName);
     var file = targetFolder.createFile(blob);
 
     appendSubmission_(ss, params, file);
-
     return jsonOutput({ success: true, message: "檔案上傳成功！", url: file.getUrl() });
+
   } catch (err) {
     return jsonOutput({ success: false, message: "上傳失敗: " + err.toString() });
   }
@@ -394,6 +449,7 @@ function appendSubmission_(ss, params, file) {
     file.getUrl(),
     new Date(),
     "active",
+    "",
     ""
   ]);
 }
@@ -414,7 +470,8 @@ function getSubmissionRows_(ss) {
       url: data[i][5],
       createdAt: data[i][6],
       status: data[i][7] || "active",
-      revokedAt: data[i][8] || ""
+      revokedAt: data[i][8] || "",
+      rejectReason: data[i][9] || ""
     });
   }
   return rows;
@@ -445,14 +502,30 @@ function revokeSubmission_(ss, params) {
     return jsonOutput({ success: false, message: "此繳交紀錄已撤銷" });
   }
 
-  trashDriveFileByUrl_(row[5]);
-  sheet.getRange(rowNumber, 6, 1, 4).setValues([["", new Date(), "revoked", new Date()]]);
+  if (row[5]) {
+    trashDriveFileByUrl_(row[5]);
+  }
+
+  sheet.getRange(rowNumber, 6, 1, 5).setValues([["", new Date(), "revoked", new Date(), ""]]);
   return jsonOutput({ success: true, message: "已撤銷繳交紀錄並刪除雲端檔案，可以重新提交此項目。" });
 }
 
-/**
- * 【核心新增】：管理員刪除繳交紀錄時，同步刪除 Google Drive 上的實體檔案
- */
+function rejectSubmission_(ss, params) {
+  var sheet = getSheet_(ss, "submissions", SUBMISSION_HEADERS);
+  var rowNumber = Number(params.id);
+  var reason = (params.rejectReason || "").toString().trim();
+
+  if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
+    return jsonOutput({ success: false, message: "找不到要退件的紀錄。" });
+  }
+
+  sheet.getRange(rowNumber, 8).setValue("rejected");
+  sheet.getRange(rowNumber, 10).setValue(reason);
+  SpreadsheetApp.flush();
+
+  return jsonOutput({ success: true, message: "已成功退件並附上私人訊息。" });
+}
+
 function deleteSubmission_(ss, params) {
   var sheet = getSheet_(ss, "submissions", SUBMISSION_HEADERS);
   var rowNumber = Number(params.id);
@@ -461,13 +534,10 @@ function deleteSubmission_(ss, params) {
   }
 
   var fileUrl = sheet.getRange(rowNumber, 6).getValue();
-  
-  // 先嘗試移至垃圾桶刪除雲端檔案
   if (fileUrl) {
     trashDriveFileByUrl_(fileUrl);
   }
 
-  // 刪除該行試算表資料
   sheet.deleteRow(rowNumber);
   return jsonOutput({ success: true, message: "紀錄與對應之雲端檔案皆已完全刪除。" });
 }

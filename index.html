@@ -36,14 +36,23 @@
             transition: background-color 0.2s ease, transform 0.2s ease;
         }
 
+        .mobile-header {
+            display: none;
+        }
+
+        .sidebar-overlay {
+            display: none;
+        }
+
         .left {
             width: 22%;
+            min-width: 260px;
             background-color: var(--card-bg);
             padding: 30px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
-            z-index: 10;
+            z-index: 100;
             flex-shrink: 0;
         }
 
@@ -146,6 +155,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            white-space: nowrap;
         }
 
         .refresh-btn:hover {
@@ -178,6 +188,7 @@
             color: var(--text-muted);
             display: inline-block;
             width: 90px;
+            vertical-align: top;
         }
 
         .upload-btn {
@@ -239,6 +250,11 @@
         .status-badge.active {
             background-color: var(--success-bg);
             color: var(--success-text);
+        }
+
+        .status-badge.late {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
         }
 
         .status-badge.none {
@@ -333,12 +349,91 @@
 
         @media (max-width: 900px) {
             body {
-                display: block;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background-color: var(--card-bg);
+                padding: 12px 20px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .mobile-title {
+                font-size: 16px;
+                font-weight: bold;
+                color: var(--text-main);
+            }
+
+            .hamburger-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 6px;
+                display: flex;
+                flex-direction: column;
+                justify-style: space-around;
+                width: 32px;
+                height: 32px;
+            }
+
+            .hamburger-btn span {
+                width: 100%;
+                height: 3px;
+                background-color: var(--text-main);
+                border-radius: 2px;
+                transition: all 0.3s ease;
+            }
+
+            .hamburger-btn.open span:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            .hamburger-btn.open span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger-btn.open span:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
             }
 
             .left {
-                width: 100%;
-                padding: 22px 18px;
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+                transition: left 0.3s ease;
+                z-index: 1001;
+                overflow-y: auto;
+            }
+
+            .left.open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(2px);
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
             }
 
             .right {
@@ -371,7 +466,18 @@
         <div id="loading-text" style="font-weight: bold; font-size: 16px;">系統連線中...</div>
     </div>
 
-    <div class="left">
+    <header class="mobile-header">
+        <div class="mobile-title">美術歷程系統</div>
+        <button type="button" class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" aria-label="切換選單">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="left" id="sidebar">
         <h1>弘明實驗高級中學<br>115美術歷程系統</h1>
         <hr style="width:100%; border:0; border-top:1px solid #eee; margin: 10px 0;">
         <h2>姓名：<span id="u-name">...</span></h2>
@@ -381,7 +487,7 @@
             美術社團：<span id="u-club">-</span>
         </p>
         <br>
-        <a href="#" class="menu-link active">美術歷程作業繳交</a>
+        <a href="#" class="menu-link active" onclick="closeSidebar()">美術歷程作業繳交</a>
         <a href="question.html" class="menu-link">問題回報</a>
         <a href="#" class="menu-link" onclick="logout()">登出</a>
     </div>
@@ -406,7 +512,7 @@
             <div id="action-section" style="display: none;">
                 <div class="info-card">
                     <div class="info-item"><span class="info-label">截止日期：</span><span id="task-deadline">-</span></div>
-                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note">-</span></div>
+                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note" style="display: inline-block; max-width: 380px; word-break: break-all;">-</span></div>
                     <div class="info-item"><span class="info-label">目前狀態：</span><span id="task-status">-</span></div>
                     <div id="reject-message-box" class="message-box" style="display: none;">
                         <strong>退件訊息 / 評語：</strong>
@@ -415,7 +521,7 @@
                 </div>
 
                 <div id="upload-box" class="form-group" style="display: none;">
-                    <label for="task-file">選擇 PDF 檔案上傳</label>
+                    <label for="task-file">選擇 PDF 檔案上傳 (建議檔名不含特殊符號，大小不超過 20MB)</label>
                     <input type="file" id="task-file" class="form-control" accept="application/pdf"
                         style="margin-bottom: 15px;">
                     <button type="button" id="submit-btn" class="upload-btn"
@@ -451,6 +557,26 @@
         let mySubmissions = [];
         let submissionsLoaded = false;
         let progressInterval = null;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const btn = document.getElementById('hamburger-btn');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            btn.classList.toggle('open');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const btn = document.getElementById('hamburger-btn');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            btn.classList.remove('open');
+        }
 
         document.addEventListener("DOMContentLoaded", function () {
             const userData = sessionStorage.getItem('user');
@@ -536,6 +662,15 @@
             return String(value ?? '').replace(/[&<>"']/g, char => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
             }[char]));
+        }
+
+        function formatTextWithLinks(text) {
+            if (!text) return '無';
+            const escaped = escapeHtml(text);
+            const urlRegex = /(https?:\/\/[^\s<]+)/g;
+            return escaped.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-hover); text-decoration: underline;">${url}</a>`;
+            });
         }
 
         function formatDateTime(value) {
@@ -690,7 +825,21 @@
             const isOverdue = now > deadline;
 
             document.getElementById('task-deadline').innerText = deadline.toLocaleString('zh-TW');
-            document.getElementById('task-note').innerText = item.note || '無';
+
+            const noteElement = document.getElementById('task-note');
+            let noteContent = formatTextWithLinks(item.note);
+
+            if (item.attachmentUrl) {
+                const attachName = escapeHtml(item.attachmentName || '查看附件');
+                noteContent += `<div style="margin-top: 8px;">
+                    📎 <strong>項目附件：</strong>
+                    <a href="${escapeHtml(item.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-bg); font-weight: bold; text-decoration: underline;">
+                        ${attachName} ↗
+                    </a>
+                </div>`;
+            }
+
+            noteElement.innerHTML = noteContent;
 
             if (!submissionsLoaded) {
                 document.getElementById('task-status').innerHTML = '<span>紀錄載入異常</span>';
@@ -715,6 +864,15 @@
                     }
                     revokeBtn.disabled = false;
                     message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 您的作業已被退件，請先點擊上方「撤銷當前繳交」按鈕刪除舊檔後重新上傳。</span>';
+                } else if (submitted.status === 'late') {
+                    document.getElementById('task-status').innerHTML = '<span class="status-badge late">已補繳（遲交）</span>';
+                    if (isOverdue) {
+                        revokeBtn.disabled = true;
+                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:bold;">⚠️ 補繳成功（註記：遲交）。由於已超過截止日期，系統關閉撤銷權限。</span>';
+                    } else {
+                        revokeBtn.disabled = false;
+                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:bold;">⚠️ 補繳成功（註記：遲交）。</span>';
+                    }
                 } else {
                     document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
                     if (isOverdue) {
@@ -726,8 +884,8 @@
                     }
                 }
             } else if (isOverdue) {
-                document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（補繳開放）</span>';
-                message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期！若已獲管理員解鎖，請直接上傳；未解鎖者送出將被阻斷。</span>';
+                document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（開放補繳）</span>';
+                message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期！若已獲管理員授權解鎖，請直接選擇 PDF 補繳上傳；未獲授權者送出將被阻斷。</span>';
                 uploadBox.style.display = 'block';
                 revocationBox.style.display = 'none';
             } else {
@@ -747,20 +905,19 @@
             container.style.display = 'block';
             let currentProgress = 0;
             const fileSizeMB = fileSize / (1024 * 1024);
-            let speedFactor = fileSizeMB > 5 ? 1.5 : (fileSizeMB > 2 ? 3 : 5);
+            let speedFactor = fileSizeMB > 5 ? 1.2 : 3;
 
             if (progressInterval) clearInterval(progressInterval);
 
             progressInterval = setInterval(() => {
-                if (currentProgress < 75) currentProgress += Math.random() * speedFactor;
-                else if (currentProgress < 93) currentProgress += Math.random() * 0.5;
-                else if (currentProgress < 97) currentProgress += 0.05;
+                if (currentProgress < 85) currentProgress += Math.random() * speedFactor;
+                else if (currentProgress < 95) currentProgress += 0.2;
 
-                if (currentProgress > 97) currentProgress = 97;
+                if (currentProgress > 95) currentProgress = 95;
 
                 progressBar.style.width = currentProgress + '%';
-                progressText.innerText = `檔案傳輸中... ${Math.floor(currentProgress)}%`;
-            }, 150);
+                progressText.innerText = `雲端寫入中... ${Math.floor(currentProgress)}%`;
+            }, 200);
         }
 
         function submitScheduleTask() {
@@ -786,23 +943,18 @@
                 return;
             }
 
+            const maxMB = 20;
+            if (file.size > maxMB * 1024 * 1024) {
+                alert(`檔案大小超過 ${maxMB}MB 上限，請先壓縮 PDF 再試！`);
+                return;
+            }
+
             button.disabled = true;
             fileInput.disabled = true;
             select.disabled = true;
-            message.innerHTML = '<span style="color:var(--primary-bg); font-weight:bold;">⏳ 正在處理檔案...</span>';
+            message.innerHTML = '<span style="color:var(--primary-bg); font-weight:bold;">⏳ 正在編碼與傳輸檔案...</span>';
 
             const reader = new FileReader();
-
-            reader.onprogress = function (data) {
-                if (data.lengthComputable) {
-                    let readPercent = Math.floor((data.loaded / data.total) * 100);
-                    if (readPercent < 100) {
-                        document.getElementById('upload-progress-container').style.display = 'block';
-                        progressBar.style.width = (readPercent * 0.1) + '%';
-                        progressText.innerText = `本地打包中... ${Math.floor(readPercent)}%`;
-                    }
-                }
-            };
 
             reader.onload = function (e) {
                 const dataUrl = e.target.result;
@@ -810,24 +962,25 @@
 
                 simulateProgress(file.size);
 
-                const formData = new URLSearchParams();
-                formData.append("action", "uploadPDF");
-                formData.append("studentId", currentUser.studentId);
-                formData.append("sessionToken", currentUser.sessionToken || "");
-                formData.append("studentName", currentUser.name);
-                formData.append("className", currentUser.className);
-                formData.append("club", currentUser.club || "");
-                formData.append("task", task);
-                formData.append("scheduleTask", task);
-                formData.append("originalFilename", file.name);
-                formData.append("filename", `${task}_${currentUser.studentId}_${currentUser.name}_${file.name}`);
-                formData.append("mimeType", "application/pdf");
-                formData.append("fileBase64", base64Data);
+                const payload = {
+                    action: "uploadPDF",
+                    studentId: currentUser.studentId,
+                    sessionToken: currentUser.sessionToken || "",
+                    studentName: currentUser.name,
+                    className: currentUser.className,
+                    club: currentUser.club || "",
+                    task: task,
+                    scheduleTask: task,
+                    originalFilename: file.name,
+                    filename: `${task}_${currentUser.studentId}_${currentUser.name}_${file.name}`,
+                    mimeType: "application/pdf",
+                    fileBase64: base64Data
+                };
 
                 fetch(GAS_API_URL, {
                     method: 'POST',
-                    body: formData.toString(),
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 })
                     .then(res => {
                         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -843,10 +996,11 @@
                         if (data.success) {
                             progressBar.style.width = '100%';
                             progressText.innerText = `🎉 上傳成功！`;
-                            message.innerHTML = '<span style="color:var(--success-text); font-weight:bold;">作業提交成功。</span>';
+                            const successTip = data.isLate ? "作業補繳成功！（已註記：遲交提交）" : "作業提交成功。";
+                            message.innerHTML = `<span style="color:var(--success-text); font-weight:bold;">${successTip}</span>`;
 
                             setTimeout(() => {
-                                alert(data.message || "上傳成功！");
+                                alert(data.isLate ? "作業補繳成功！（已帶入遲交狀態）" : (data.message || "上傳成功！"));
                                 loadMySubmissions().then(() => { handleTaskChange(); });
                             }, 300);
                         } else {
@@ -857,8 +1011,8 @@
                     })
                     .catch(err => {
                         clearInterval(progressInterval);
-                        alert("連線錯誤，請重新嘗試。");
-                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">❌ 連線異常</span>';
+                        alert("連線逾時或網路錯誤，請嘗試壓縮 PDF 檔後重試。");
+                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">❌ 連線異常，請降低檔案大小後重試</span>';
                         document.getElementById('upload-progress-container').style.display = 'none';
                     })
                     .finally(() => {

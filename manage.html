@@ -283,13 +283,45 @@
             font-weight: bold;
         }
 
-        .status-rejected {
+        .status-late {
             color: var(--warning);
+            font-weight: bold;
+        }
+
+        .status-rejected {
+            color: var(--danger);
             font-weight: bold;
         }
 
         .status-revoked {
             color: #909399;
+        }
+
+        .status-missing {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .stat-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e5e8ef;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+            color: var(--primary-h);
         }
 
         .report-description {
@@ -449,7 +481,6 @@
     <div id="global-loader" class="global-loader">
         <div class="spinner"></div><span id="loader-text">讀取中...</span>
     </div>
-    <div id="qrcode-hidden-container" style="display:none;"></div>
 
     <div id="pdf-render-card">
         <div id="card-qr-box"></div>
@@ -464,9 +495,8 @@
     <aside class="left">
         <h1>美術歷程管理後台</h1>
         <div class="admin-info">管理員：<span id="admin-name">..</span><br>帳號：<span id="admin-id">-</span></div>
-        <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程管理</a>
-        <a href="#" class="menu-link" onclick="switchPanel('submissions-panel', this)">繳交紀錄</a>
-        <a href="#" class="menu-link" onclick="switchPanel('unlock-panel', this)">遲交解鎖</a>
+        <a href="#" class="menu-link active" onclick="switchPanel('schedule-panel', this)">時程項目管理</a>
+        <a href="#" class="menu-link" onclick="switchPanel('project-panel', this)">繳交與缺交專案管理</a>
         <a href="#" class="menu-link" onclick="switchPanel('reports-panel', this)">問題回報</a>
         <a href="#" class="menu-link" onclick="switchPanel('users-panel', this)">帳號清單</a>
         <a href="#" class="menu-link" onclick="logout()" style="color:var(--danger); margin-top:auto;">登出系統</a>
@@ -475,7 +505,7 @@
     <main class="right">
         <!-- 1. 時程管理 -->
         <section id="schedule-panel" class="panel active">
-            <h2>時程管理</h2>
+            <h2>時程項目管理</h2>
             <div class="toolbar" style="margin-top: 0;">
                 <button type="button" onclick="openScheduleForm('add')">➕ 新增項目</button>
                 <button type="button" class="secondary" onclick="loadSchedule()">🔄 重新整理</button>
@@ -493,7 +523,16 @@
                     <div class="field-grid">
                         <label>項目名稱<input type="text" id="task" required></label>
                         <label>截止日期<input type="date" id="deadline" required></label>
-                        <label class="wide">項目備註<textarea id="note"></textarea></label>
+                        <label class="wide">項目備註/說明（內含網址會自動轉為超連結）<textarea id="note" placeholder="例如：請參考格式說明：https://example.com/guide"></textarea></label>
+                        <label class="wide">附加檔案/範本（可選）
+                            <input type="file" id="schedule-attachment-file" style="min-height:auto; padding:5px;">
+                            <div id="current-attachment-box" style="display:none; margin-top:5px; font-size:13px; color:#555;">
+                                目前附件：<a id="current-attachment-link" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">附件</a>
+                                <label style="display:inline-flex; align-items:center; gap:4px; margin-left:10px; cursor:pointer; color:var(--danger); font-weight:normal;">
+                                    <input type="checkbox" id="remove-attachment-check" style="min-height:auto;"> 移除目前附件
+                                </label>
+                            </div>
+                        </label>
                     </div>
                     <button type="submit">儲存</button>
                     <button type="button" class="secondary" onclick="closeScheduleForm()">取消</button>
@@ -507,7 +546,7 @@
                                     onclick="toggleCheckAll('schedule')"></th>
                             <th>項目</th>
                             <th>截止日期</th>
-                            <th>備註</th>
+                            <th>備註與附件</th>
                             <th style="width: 130px;">操作</th>
                         </tr>
                     </thead>
@@ -520,86 +559,122 @@
             </div>
         </section>
 
-        <!-- 2. 繳交紀錄 (含退件與對應檔案管理) -->
-        <section id="submissions-panel" class="panel">
-            <h2>繳交紀錄</h2>
-            <div class="toolbar" style="margin-top: 0;">
-                <select id="submission-task-filter">
-                    <option value="">全部項目</option>
-                </select>
-                <select id="submission-class-filter">
-                    <option value="">全部班級</option>
-                </select>
-                <select id="submission-club-filter">
-                    <option value="">全部社團</option>
-                </select>
-                <select id="submission-status-filter">
-                    <option value="active">僅顯示有效</option>
-                    <option value="">全部狀態</option>
-                    <option value="rejected">已退件</option>
-                    <option value="revoked">已撤銷</option>
-                </select>
-                <input type="text" id="submission-keyword" placeholder="搜尋學號、姓名、檔名..."
-                    style="flex: 1; min-width: 150px;">
-                <button type="button" class="secondary" onclick="loadSubmissions()">🔄 重新整理</button>
-                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出 A4 QR
-                    (符合當前篩選)</button>
-                <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除全校紀錄</button>
+        <!-- 2. 合併版：繳交與缺交專案管理 -->
+        <section id="project-panel" class="panel">
+            <h2>繳交與缺交專案管理</h2>
+            
+            <div class="toolbar" style="margin-top: 0; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <label style="font-weight: bold;">🎯 選擇專案項目：
+                    <select id="project-task-filter" style="min-width: 220px;">
+                        <option value="">-- 全部專案項目 --</option>
+                    </select>
+                </label>
+                <label style="font-weight: bold;">班級：
+                    <select id="project-class-filter">
+                        <option value="">全部班級</option>
+                    </select>
+                </label>
+                <label style="font-weight: bold;">社團：
+                    <select id="project-club-filter">
+                        <option value="">全部社團</option>
+                    </select>
+                </label>
+                <label style="font-weight: bold;">繳交狀態：
+                    <select id="project-status-filter">
+                        <option value="">全部狀態</option>
+                        <option value="active">有效繳交</option>
+                        <option value="late">補繳 (遲交)</option>
+                        <option value="rejected">已退件</option>
+                        <option value="missing">缺交 (未繳)</option>
+                    </select>
+                </label>
+                <input type="text" id="project-keyword" placeholder="搜尋學號、姓名、檔名..." style="flex: 1; min-width: 140px;">
+                <button type="button" class="secondary" onclick="reloadProjectData()">🔄 重新整理</button>
+                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出專案 QR Code (PDF)</button>
             </div>
-            <div id="submission-batch-bar" class="batch-bar">
-                <span class="batch-info">已選取 <span id="submission-selected-count">0</span> 項紀錄</span>
+
+            <!-- 專案數據數據統計卡片 -->
+            <div id="project-stats-container" class="stat-card-grid" style="margin-top: 15px;">
+                <div class="stat-card">
+                    <div style="font-size:13px; color:#666;">應繳總人數</div>
+                    <div id="stat-total-count" class="number">0</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size:13px; color:#666;">已有效繳交</div>
+                    <div id="stat-submitted-count" class="number" style="color:var(--success);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size:13px; color:#666;">缺交 / 退件人數</div>
+                    <div id="stat-missing-count" class="number" style="color:var(--danger);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size:13px; color:#666;">專案繳交率</div>
+                    <div id="stat-rate" class="number" style="color:var(--warning);">0%</div>
+                </div>
+            </div>
+
+            <div id="project-batch-bar" class="batch-bar">
+                <span class="batch-info">已選取 <span id="project-selected-count">0</span> 項紀錄</span>
                 <div class="batch-btns">
                     <button type="button" style="background:#2b8a3e; min-height:32px; font-size:13px;"
-                        onclick="exportBatchQrA4(true)">🖨️ 僅匯出選取的 QR Code</button>
+                        onclick="exportBatchQrA4(true)">🖨️ 匯出選取項 QR Code</button>
                     <button type="button" class="danger" style="min-height:32px; font-size:13px;"
                         onclick="batchDeleteSubmissions()">🗑️ 批量刪除紀錄與對應檔案</button>
                 </div>
             </div>
+
             <div id="qr-box" class="qr-box">
                 <strong id="qr-title" style="font-size:13px;">檔案 QR Code</strong>
                 <img id="qr-image" alt="QR">
                 <p style="margin: 6px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"
-                        style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟
-                        ↗</a></p>
+                        style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟 ↗</a></p>
             </div>
+
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"><input type="checkbox" id="submission-check-all"
-                                    onclick="toggleCheckAll('submission')"></th>
-                            <th>項目</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="project-check-all"
+                                    onclick="toggleCheckAll('project')"></th>
+                            <th>專案項目</th>
                             <th>學號</th>
                             <th>姓名</th>
                             <th>班級</th>
                             <th>社團</th>
                             <th>檔案名稱</th>
-                            <th>時間</th>
+                            <th>繳交時間</th>
                             <th>狀態</th>
-                            <th>退件私人訊息</th>
-                            <th style="width: 160px; min-width: 160px;">操作</th>
+                            <th>退件私人訊息/備註</th>
+                            <th style="width: 170px; min-width: 170px;">操作 (退件/解鎖)</th>
                         </tr>
                     </thead>
-                    <tbody id="submissions-list">
+                    <tbody id="project-list">
                         <tr>
                             <td colspan="11" class="empty">資料載入中...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
+            <details style="margin-top: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e5e8ef;">
+                <summary style="font-weight: bold; cursor: pointer; color: #555;">⚙️ 高級管理設定 (手動學號解鎖 / 全校紀錄清空)</summary>
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px;">手動指定學號解鎖</h4>
+                    <div class="field-grid" style="max-width: 500px;">
+                        <label>學號<input type="text" id="unlock-student-id"></label>
+                        <label>項目名稱<input type="text" id="unlock-task-name"></label>
+                    </div>
+                    <button type="button" onclick="performUnlock()">✅ 授予遲交權限</button>
+
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+                    
+                    <h4 style="margin: 0 0 10px; color: var(--danger);">危險操作</h4>
+                    <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除全校所有繳交紀錄</button>
+                </div>
+            </details>
         </section>
 
-        <!-- 3. 遲交解鎖 -->
-        <section id="unlock-panel" class="panel">
-            <h2>遲交解鎖</h2>
-            <div class="field-grid" style="max-width: 500px;">
-                <label>學號<input type="text" id="unlock-student-id"></label>
-                <label>項目名稱<input type="text" id="unlock-task-name"></label>
-            </div>
-            <button type="button" onclick="performUnlock()">✅ 授予權限</button>
-        </section>
-
-        <!-- 4. 問題回報 -->
+        <!-- 3. 問題回報 -->
         <section id="reports-panel" class="panel">
             <h2>問題回報</h2>
             <div class="toolbar" style="margin-top: 0;">
@@ -651,7 +726,7 @@
             </div>
         </section>
 
-        <!-- 5. 帳號清單 -->
+        <!-- 4. 帳號清單 -->
         <section id="users-panel" class="panel">
             <h2>帳號清單</h2>
             <div class="toolbar" style="margin-top: 0;">
@@ -777,8 +852,9 @@
         }
 
         async function batchDeleteSubmissions() {
-            const selected = Array.from(document.querySelectorAll('.submission-checkbox:checked')).map(cb => cb.value);
-            if (!selected.length || !confirm(`確定要刪除選取的 ${selected.length} 筆紀錄嗎？\n（注意：雲端硬碟中的對應實體 PDF 檔案將會被同步移至垃圾桶）`)) return;
+            const selected = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => cb.value).filter(val => val && val !== 'null');
+            if (!selected.length) return alert("請選擇已繳交之有效紀錄！");
+            if (!confirm(`確定要刪除選取的 ${selected.length} 筆紀錄嗎？\n（注意：雲端硬碟中的對應實體 PDF 檔案將會被同步移至垃圾桶）`)) return;
 
             toggleGlobalLoader(true, "正在同步刪除紀錄與對應雲端檔案...");
             for (let id of selected) {
@@ -789,7 +865,7 @@
                 }
             }
             toggleGlobalLoader(false);
-            loadSubmissions();
+            reloadProjectData();
         }
 
         async function batchUpdateReportStatus() {
@@ -855,13 +931,31 @@
             const f = document.getElementById('schedule-collapse');
             document.getElementById('schedule-form-title').innerText = mode === 'edit' ? "✏️ 編輯時程" : "➕ 新增時程";
             document.getElementById('schedule-action-mode').value = mode;
+            document.getElementById('schedule-attachment-file').value = '';
+            
+            const attachBox = document.getElementById('current-attachment-box');
+            const removeCheck = document.getElementById('remove-attachment-check');
+            removeCheck.checked = false;
+
             if (mode === 'edit' && index !== undefined) {
                 const item = scheduleRows[index];
                 document.getElementById('schedule-edit-id').value = item.id ?? index;
                 document.getElementById('task').value = item.task ?? '';
                 document.getElementById('deadline').value = item.deadline ? new Date(item.deadline).toISOString().split('T')[0] : '';
                 document.getElementById('note').value = item.note ?? '';
-            } else { document.getElementById('schedule-form').reset(); }
+
+                if (item.attachmentUrl) {
+                    attachBox.style.display = 'block';
+                    const link = document.getElementById('current-attachment-link');
+                    link.href = item.attachmentUrl;
+                    link.innerText = item.attachmentName || '檢視附件';
+                } else {
+                    attachBox.style.display = 'none';
+                }
+            } else { 
+                document.getElementById('schedule-form').reset(); 
+                attachBox.style.display = 'none';
+            }
             f.classList.add('open');
         }
         function closeScheduleForm() { document.getElementById('schedule-collapse').classList.remove('open'); }
@@ -915,12 +1009,14 @@
                 ]);
             }).then(([opts]) => {
                 if (opts) { globalOptions.classes = opts.classes || []; globalOptions.clubs = opts.clubs || []; }
+                populateProjectOptions();
+                renderProjectView();
                 const loading = document.getElementById("loading-screen");
                 if (loading) { loading.style.opacity = '0'; setTimeout(() => loading.remove(), 300); }
             }).catch(err => !err?.redirect && forceLogout(err?.message || '驗證失敗'));
 
-            document.getElementById('submission-keyword').addEventListener('input', renderSubmissions);
-            ['submission-task-filter', 'submission-class-filter', 'submission-club-filter', 'submission-status-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderSubmissions));
+            document.getElementById('project-keyword').addEventListener('input', renderProjectView);
+            ['project-task-filter', 'project-class-filter', 'project-club-filter', 'project-status-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderProjectView));
             document.getElementById('report-keyword').addEventListener('input', renderReports);
             ['report-status-filter', 'report-type-filter'].forEach(id => document.getElementById(id).addEventListener('change', renderReports));
             document.getElementById('user-keyword').addEventListener('input', renderUsers);
@@ -931,6 +1027,10 @@
             document.getElementById(panelId).classList.add('active');
             el.classList.add('active');
             document.querySelectorAll('.collapse-form').forEach(f => f.classList.remove('open'));
+            if (panelId === 'project-panel') {
+                populateProjectOptions();
+                renderProjectView();
+            }
         }
 
         function logout() { toggleGlobalLoader(true, "登出中..."); clearServerSession().finally(() => { sessionStorage.removeItem('user'); window.location.href = 'login.html'; }); }
@@ -970,7 +1070,11 @@
             if (!scheduleRows.length) return tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>目前無排定時程。</div></td></tr>";
             tbody.innerHTML = scheduleRows.map((item, index) => {
                 const id = item.id ?? index;
-                return `<tr><td class="checkbox-cell"><input type="checkbox" class="schedule-checkbox" value="${escapeHtml(id)}" onclick="updateBatchBar('schedule')"></td><td style="font-weight:600;">${escapeHtml(item.task)}</td><td>${formatDate(item.deadline)}</td><td style="color:#666;">${escapeHtml(item.note ?? '-')}</td><td><div style="display:flex; gap:6px;"><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button><button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button></div></td></tr>`;
+                let noteHtml = escapeHtml(item.note ?? '-');
+                if (item.attachmentUrl) {
+                    noteHtml += `<br><span style="font-size:12px; color:var(--primary);">📎 附件: <a href="${escapeHtml(item.attachmentUrl)}" target="_blank" style="color:var(--primary); font-weight:bold;">${escapeHtml(item.attachmentName || '查看')}</a></span>`;
+                }
+                return `<tr><td class="checkbox-cell"><input type="checkbox" class="schedule-checkbox" value="${escapeHtml(id)}" onclick="updateBatchBar('schedule')"></td><td style="font-weight:600;">${escapeHtml(item.task)}</td><td>${formatDate(item.deadline)}</td><td style="color:#666;">${noteHtml}</td><td><div style="display:flex; gap:6px;"><button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openScheduleForm('edit', ${index})">編輯</button><button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteSchedule('${escapeHtml(id)}')">刪除</button></div></td></tr>`;
             }).join('');
             updateBatchBar('schedule');
         }
@@ -978,7 +1082,42 @@
         document.getElementById('schedule-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const mode = document.getElementById('schedule-action-mode').value;
-            apiPost({ action: mode === 'edit' ? 'editSchedule' : 'addSchedule', id: document.getElementById('schedule-edit-id').value, task: document.getElementById('task').value.trim(), deadline: document.getElementById('deadline').value, note: document.getElementById('note').value.trim() }).then(d => { alert(d?.message || '儲存成功'); closeScheduleForm(); loadSchedule(); }).catch(e => alert(e.message));
+            const fileInput = document.getElementById('schedule-attachment-file');
+            const removeAttachment = document.getElementById('remove-attachment-check').checked;
+
+            const payload = {
+                action: mode === 'edit' ? 'editSchedule' : 'addSchedule',
+                id: document.getElementById('schedule-edit-id').value,
+                task: document.getElementById('task').value.trim(),
+                deadline: document.getElementById('deadline').value,
+                note: document.getElementById('note').value.trim(),
+                removeAttachment: removeAttachment ? "true" : "false"
+            };
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                toggleGlobalLoader(true, "正在上傳附件並儲存...");
+                
+                reader.onload = function(e) {
+                    payload.attachmentBase64 = e.target.result;
+                    payload.attachmentFileName = file.name;
+                    payload.attachmentMimeType = file.type;
+
+                    apiPost(payload).then(d => { 
+                        alert(d?.message || '儲存成功'); 
+                        closeScheduleForm(); 
+                        loadSchedule(); 
+                    }).catch(err => alert(err.message));
+                };
+                reader.readAsDataURL(file);
+            } else {
+                apiPost(payload).then(d => { 
+                    alert(d?.message || '儲存成功'); 
+                    closeScheduleForm(); 
+                    loadSchedule(); 
+                }).catch(err => alert(err.message));
+            }
         });
 
         function deleteSchedule(id) { if (confirm('確定刪除此項目嗎？')) apiPost({ action: 'deleteSchedule', id }).then(() => loadSchedule()).catch(e => alert(e.message)); }
@@ -988,52 +1127,139 @@
                 submissionRows = normalizeRows(d);
                 const map = {}; userRows.forEach(u => { if (u.studentId) map[u.studentId.toString()] = u.club || ''; });
                 submissionRows.forEach(s => { if (s.studentId && map[s.studentId.toString()]) s.club = map[s.studentId.toString()]; });
-                populateSubmissionFilters(); renderSubmissions();
-            }).catch(() => { submissionRows = []; renderSubmissions(); });
+            }).catch(() => { submissionRows = []; });
         }
 
-        function getFilteredSubmissions() {
-            const kw = document.getElementById('submission-keyword').value.trim().toLowerCase();
-            const t = document.getElementById('submission-task-filter').value, c = document.getElementById('submission-class-filter').value, cl = document.getElementById('submission-club-filter').value, st = document.getElementById('submission-status-filter').value;
-            return submissionRows.filter(i => {
-                const text = `${i.task || ''} ${i.studentId || ''} ${i.studentName || ''} ${i.className || ''} ${i.club || ''} ${i.filename || ''}`.toLowerCase();
-                return (!t || i.task === t) && (!c || i.className === c) && (!cl || i.club === cl) && (!st || (i.status === 'revoked' ? 'revoked' : i.status === 'rejected' ? 'rejected' : 'active') === st) && text.includes(kw);
+        function reloadProjectData() {
+            Promise.all([loadSchedule(), loadUsers(), loadSubmissions()]).then(() => {
+                populateProjectOptions();
+                renderProjectView();
             });
         }
 
-        function renderSubmissions() {
-            const tbody = document.getElementById('submissions-list'), rows = getFilteredSubmissions();
-            if (!rows.length) return tbody.innerHTML = "<tr><td colspan='11'><div class='empty'>無符合條件紀錄。</div></td></tr>";
-            tbody.innerHTML = rows.map(item => `
+        function populateProjectOptions() {
+            const taskSelect = document.getElementById('project-task-filter');
+            const classSelect = document.getElementById('project-class-filter');
+            const clubSelect = document.getElementById('project-club-filter');
+
+            const currentTask = taskSelect.value;
+            const currentClass = classSelect.value;
+            const currentClub = clubSelect.value;
+
+            taskSelect.innerHTML = '<option value="">-- 全部專案項目 --</option>' + scheduleRows.map(s => `<option value="${escapeHtml(s.task)}">${escapeHtml(s.task)}</option>`).join('');
+            classSelect.innerHTML = '<option value="">全部班級</option>' + globalOptions.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            clubSelect.innerHTML = '<option value="">全部社團</option>' + globalOptions.clubs.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+            taskSelect.value = currentTask;
+            classSelect.value = currentClass;
+            clubSelect.value = currentClub;
+        }
+
+        function renderProjectView() {
+            const selectedTask = document.getElementById('project-task-filter').value;
+            const selectedClass = document.getElementById('project-class-filter').value;
+            const selectedClub = document.getElementById('project-club-filter').value;
+            const selectedStatus = document.getElementById('project-status-filter').value;
+            const kw = document.getElementById('project-keyword').value.trim().toLowerCase();
+
+            let targetUsers = userRows.filter(u => u.className !== "管理員");
+            if (selectedClass) targetUsers = targetUsers.filter(u => u.className === selectedClass);
+            if (selectedClub) targetUsers = targetUsers.filter(u => u.club === selectedClub);
+
+            let combinedList = [];
+            let totalStudentsCount = targetUsers.length;
+            let submittedCount = 0;
+            let missingCount = 0;
+
+            const relevantSubmissions = submissionRows.filter(s => s.status !== 'revoked' && (!selectedTask || s.task === selectedTask));
+
+            targetUsers.forEach(student => {
+                const studentSubs = relevantSubmissions.filter(s => String(s.studentId) === String(student.studentId));
+
+                if (studentSubs.length > 0) {
+                    studentSubs.forEach(sub => {
+                        const statusKey = sub.status || 'active';
+                        if (statusKey === 'active' || statusKey === 'late') submittedCount++;
+                        else missingCount++;
+
+                        combinedList.push({
+                            id: sub.id,
+                            task: sub.task,
+                            studentId: student.studentId,
+                            studentName: student.name,
+                            className: student.className,
+                            club: student.club || '-',
+                            filename: sub.filename || '',
+                            url: sub.url || '',
+                            createdAt: sub.createdAt || '',
+                            status: statusKey,
+                            rejectReason: sub.rejectReason || ''
+                        });
+                    });
+                } else {
+                    missingCount++;
+                    combinedList.push({
+                        id: null,
+                        task: selectedTask || '未選擇',
+                        studentId: student.studentId,
+                        studentName: student.name,
+                        className: student.className,
+                        club: student.club || '-',
+                        filename: '-',
+                        url: '',
+                        createdAt: '-',
+                        status: 'missing',
+                        rejectReason: ''
+                    });
+                }
+            });
+
+            // 計算專案統計卡片
+            const rate = totalStudentsCount > 0 ? Math.round((submittedCount / totalStudentsCount) * 100) : 0;
+            document.getElementById('stat-total-count').innerText = totalStudentsCount;
+            document.getElementById('stat-submitted-count').innerText = submittedCount;
+            document.getElementById('stat-missing-count').innerText = missingCount;
+            document.getElementById('stat-rate').innerText = rate + '%';
+
+            // 套用篩選器
+            let displayRows = combinedList.filter(item => {
+                const text = `${item.task || ''} ${item.studentId || ''} ${item.studentName || ''} ${item.className || ''} ${item.club || ''} ${item.filename || ''}`.toLowerCase();
+                const matchKw = text.includes(kw);
+                const matchStatus = !selectedStatus || item.status === selectedStatus;
+                return matchKw && matchStatus;
+            });
+
+            const tbody = document.getElementById('project-list');
+            if (!displayRows.length) return tbody.innerHTML = "<tr><td colspan='11'><div class='empty'>目前無符合條件之紀錄。</div></td></tr>";
+
+            tbody.innerHTML = displayRows.map(item => `
                 <tr>
-                    <td class="checkbox-cell"><input type="checkbox" class="submission-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('submission')"></td>
+                    <td class="checkbox-cell">
+                        ${item.id ? `<input type="checkbox" class="project-checkbox" value="${escapeHtml(item.id)}" onclick="updateBatchBar('project')">` : ''}
+                    </td>
                     <td>${escapeHtml(item.task || '')}</td>
-                    <td>${escapeHtml(item.studentId || '')}</td>
+                    <td style="font-family:monospace; font-weight:bold;">${escapeHtml(item.studentId || '')}</td>
                     <td>${escapeHtml(item.studentName || '')}</td>
                     <td>${escapeHtml(item.className || '')}</td>
                     <td>${escapeHtml(item.club || '-')}</td>
-                    <td>${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(item.filename || '查看')}</a>` : escapeHtml(item.filename || '')}</td>
-                    <td>${escapeHtml(item.createdAt || '')}</td>
-                    <td>${item.status === 'revoked' ? '<span class="status-revoked">已撤銷</span>' : item.status === 'rejected' ? '<span class="status-rejected">已退件</span>' : '<span class="status-active">有效</span>'}</td>
+                    <td>${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(item.filename || '查看')}</a>` : escapeHtml(item.filename || '-')}</td>
+                    <td>${escapeHtml(item.createdAt || '-')}</td>
+                    <td>
+                        ${item.status === 'missing' ? '<span class="status-missing">缺交</span>' : 
+                          item.status === 'rejected' ? '<span class="status-rejected">已退件</span>' : 
+                          item.status === 'late' ? '<span class="status-late">補繳 (遲交)</span>' : '<span class="status-active">有效繳交</span>'}
+                    </td>
                     <td style="font-size:13px; color:#555;">${escapeHtml(item.rejectReason || '-')}</td>
                     <td>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap; min-width:130px;">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; min-width:150px;">
                             ${item.url ? `<button type="button" class="secondary" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2;" onclick="showQrCode('${escapeHtml(item.url)}', '${escapeHtml(item.filename || '')}')">QR</button>` : ''}
-                            <button type="button" class="warning" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2; background-color:#d97706; color:#fff;" onclick="promptReject('${escapeHtml(item.id)}')">退件/評語</button>
+                           ${item.id ? `<button type="button" class="warning" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2; background-color:#d97706; color:#fff;" onclick="promptReject('${escapeHtml(item.id)}', '${escapeHtml(item.task || '')}', '${escapeHtml(item.studentId || '')}')">退件</button>` : ''}
+                            <button type="button" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2;" onclick="quickUnlock('${escapeHtml(item.studentId)}', '${escapeHtml(item.task)}')">🔓 解鎖</button>
                         </div>
                     </td>
                 </tr>
             `).join('');
-            updateBatchBar('submission');
-        }
-
-        function populateSubmissionFilters() {
-            ['task', 'class', 'club'].forEach(key => {
-                const select = document.getElementById(`submission-${key}-filter`), val = select.value;
-                const opts = [...new Set(submissionRows.map(i => (key === 'class' ? i.className : i[key]) || '').filter(Boolean))].sort();
-                select.innerHTML = `<option value="">全部${key === 'task' ? '項目' : key === 'class' ? '班級' : '社團'}</option>` + opts.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
-                select.value = opts.includes(val) ? val : '';
-            });
+            updateBatchBar('project');
         }
 
         function showQrCode(url, title) {
@@ -1043,13 +1269,22 @@
             document.getElementById('qr-link').href = url; box.classList.add('active');
         }
 
-        function promptReject(id) {
+        function promptReject(id, taskName, studentId) {
             const reason = prompt("請輸入退件原因或私人訊息（學生可在前端頁面即時查看）：");
             if (reason === null) return;
 
+            const proj = scheduleRows.find(s => s.task === taskName);
+            const isOverdue = proj && proj.deadline ? (new Date() > new Date(proj.deadline)) : false;
+
             apiPost({ action: 'rejectSubmission', id: id, rejectReason: reason }, '處理退件中...').then(d => {
                 alert(d?.message || '退件完成');
-                loadSubmissions();
+                
+                if (isOverdue && studentId) {
+                    if (confirm(`⚠️ 項目【${taskName}】已超過截止日期。是否順便為學生【${studentId}】授權解鎖補繳權限？`)) {
+                        quickUnlock(studentId, taskName);
+                    }
+                }
+                reloadProjectData();
             }).catch(e => alert(e.message));
         }
 
@@ -1080,9 +1315,12 @@
         }
 
         async function exportBatchQrA4(selectedOnly) {
-            let list = getFilteredSubmissions().filter(i => i.url && i.status !== 'revoked');
+            let list = submissionRows.filter(i => i.url && i.status !== 'revoked');
+            const selectedTask = document.getElementById('project-task-filter').value;
+            if (selectedTask) list = list.filter(i => i.task === selectedTask);
+
             if (selectedOnly) {
-                const ids = Array.from(document.querySelectorAll('.submission-checkbox:checked')).map(cb => String(cb.value));
+                const ids = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => String(cb.value));
                 list = list.filter(i => ids.includes(String(i.id)));
             }
             if (!list.length) return alert("無符合篩選條件的有效檔案可匯出！");
@@ -1105,15 +1343,23 @@
                 }
                 toggleGlobalLoader(false);
 
-                const taskFilter = document.getElementById('submission-task-filter').value || '全部項目';
-                const classFilter = document.getElementById('submission-class-filter').value || '全部班級';
+                const taskFilter = selectedTask || '全部項目';
+                const classFilter = document.getElementById('project-class-filter').value || '全部班級';
                 doc.save(`美術歷程_QR碼_${classFilter}_${taskFilter}.pdf`);
             } catch (e) { toggleGlobalLoader(false); alert("PDF 生成過程發生錯誤: " + e.message); }
         }
 
         function clearSubmissions() {
             const pass = prompt('輸入管理碼清空紀錄：');
-            if (pass && confirm('確定清空？操作不可逆！')) apiPost({ action: 'clearSubmissions', password: pass }).then(() => loadSubmissions()).catch(e => alert(e.message));
+            if (pass && confirm('確定清空？操作不可逆！')) apiPost({ action: 'clearSubmissions', password: pass }).then(() => reloadProjectData()).catch(e => alert(e.message));
+        }
+
+        function quickUnlock(studentId, task) {
+            if (!task || task === '未選擇') return alert("請先選定一個具體的「專案項目」再執行解鎖！");
+            if (!confirm(`確定要直接為【${studentId}】解鎖專案項目【${task}】的遲交補繳權限嗎？`)) return;
+            apiPost({ action: 'addUnlock', targetStudentId: studentId, task }).then(d => {
+                alert(d?.message || '授權完成');
+            }).catch(e => alert(e.message));
         }
 
         function performUnlock() {

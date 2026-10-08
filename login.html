@@ -7,113 +7,227 @@
     <title>115 私立弘明實驗高級中學 美術歷程系統</title>
     <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
     <style>
+        :root {
+            --primary-color: rgb(161, 161, 255);
+            --primary-hover: rgb(120, 120, 255);
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            background-image: url('login.png');
+            background-color: #eef2f7;
+            background-image: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%), url('login.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            margin: 0;
-            font-family: Arial, sans-serif;
+            background-attachment: fixed;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', Arial, sans-serif;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        * { box-sizing: border-box; }
-        main { display: flex; min-height: 100vh; }
+
+        /* 主容器：限制最大寬度，避免在超大螢幕拉寬破圖 */
+        main {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 480px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
         .left, .right {
-            flex: 1 1 auto;
+            flex: 1;
+            padding: 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 40px;
         }
+
+        .left {
+            background: rgba(255, 255, 255, 0.4);
+            border-right: 1px solid rgba(220, 225, 235, 0.5);
+        }
+
         .left h1 { 
-            color: #333; 
-            max-width: 400px; 
+            color: var(--text-main); 
+            font-size: clamp(22px, 2.5vw, 28px);
             line-height: 1.4;
+            margin-bottom: 16px;
             animation: fadeInUp 0.8s ease forwards;
         }
-        .r-m { margin-bottom: 10px; }
+
+        .left p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 6px;
+        }
+
+        .left a {
+            color: var(--primary-hover);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .left a:hover {
+            text-decoration: underline;
+        }
+
+        /* 右側表單切換頁籤 */
+        .r-m { 
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
         .r-m button {
             cursor: pointer; 
             background-color: transparent; 
-            border: 0;
-            border-bottom: 2px solid transparent; 
-            padding: 5px 15px; 
+            border: none;
+            border-bottom: 3px solid transparent; 
+            padding: 8px 16px; 
             font-size: 16px; 
-            margin-right: 10px;
-            color: #666;
-            transition: all 0.4s ease;
-        }
-        .r-m button.active { 
-            border-bottom-color: rgb(161, 161, 255); 
-            color: rgb(161, 161, 255); 
-            font-weight: bold;
-        }
-        #login, #signup { padding: 15px 0; }
-        .form-container {
-            display: none;
-            animation: fadeIn 0.5s ease forwards;
-        }
-        #login input, #signup input {
-            background-color: transparent; 
-            border: 0; 
-            border-bottom: 1px solid #ccc;
-            height: 30px; 
-            margin: 10px 0; 
-            padding: 5px; 
-            font-size: 14px; 
-            width: 250px;
-            max-width: 100%;
+            font-weight: 500;
+            color: var(--text-muted);
             transition: all 0.3s ease;
         }
+
+        .r-m button.active { 
+            border-bottom-color: var(--primary-color); 
+            color: var(--primary-color); 
+            font-weight: bold;
+        }
+
+        /* 表單內容元件 */
+        .form-container {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        #login input[type="text"], 
+        #login input[type="password"], 
+        #signup input[type="text"], 
+        #signup input[type="password"] {
+            background-color: #fff; 
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            height: 42px; 
+            padding: 0 14px; 
+            font-size: 15px; 
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
         #login input:focus, #signup input:focus { 
             outline: none; 
-            border-bottom-color: rgb(161, 161, 255); 
-            padding-left: 10px;
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 3px rgba(161, 161, 255, 0.2);
         }
+
         #login input[type="submit"], #signup input[type="submit"] {
-            background-color: rgb(161, 161, 255); 
+            background-color: var(--primary-color); 
             color: white; 
             border: none; 
-            border-radius: 4px; 
+            border-radius: 8px; 
+            height: 44px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer; 
-            margin-top: 15px;
+            margin-top: 10px;
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
+
         #login input[type="submit"]:hover, #signup input[type="submit"]:hover {
-            background-color: rgb(120, 120, 255);
+            background-color: var(--primary-hover);
             transform: translateY(-2px);
         }
+
         #login input[type="submit"]:active, #signup input[type="submit"]:active {
             transform: translateY(0);
         }
+
         #login input[type="submit"]:disabled, #signup input[type="submit"]:disabled {
             cursor: not-allowed;
             opacity: 0.65;
             transform: none;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: cubic-bezier(0.4, 0, 0.2, 1); }
-            to { opacity: 1; }
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 760px) {
-            body { background-position: center top; }
-            main { flex-direction: column; justify-content: center; padding: 28px 18px; background: rgba(255,255,255,0.78); }
-            .left, .right { flex: none; width: 100%; padding: 0; }
-            .left { justify-content: flex-end; margin-bottom: 24px; }
-            .left h1 { max-width: none; margin: 0 0 12px; font-size: clamp(24px, 7vw, 34px); }
-            .left p { margin: 0; line-height: 1.6; color: #555; }
-            .right { justify-content: flex-start; }
-            .r-m { display: flex; gap: 8px; margin-bottom: 12px; }
-            .r-m button { flex: 1; min-height: 42px; margin-right: 0; padding: 8px 10px; }
-            #login input, #signup input { width: 100%; height: 44px; font-size: 16px; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 420px) {
-            main { padding: 22px 14px; }
-            .r-m { flex-direction: column; }
+
+        /* RWD 響應式：平板與手機斷點 (< 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            main {
+                flex-direction: column;
+                min-height: auto;
+                max-width: 440px;
+            }
+
+            .left, .right {
+                padding: 24px;
+            }
+
+            .left {
+                border-right: none;
+                border-bottom: 1px solid rgba(220, 225, 235, 0.5);
+                text-align: center;
+            }
+
+            .left h1 {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+
+            .r-m {
+                justify-content: center;
+            }
+
+            .r-m button {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        /* 極小螢幕 (< 380px) */
+        @media (max-width: 380px) {
+            .left, .right {
+                padding: 18px 14px;
+            }
         }
     </style>
 </head>
@@ -123,6 +237,7 @@
         <div class="left">
             <h1>弘明實驗高級中學<br>115美術歷程系統</h1>
             <p>若您在使用中遇到問題 煩請您向我們 <a href="question.html">通報</a> 感謝 ！</p>
+            <p style="margin-top: 10px; font-weight: bold; opacity: 0.8;">V 4.1</p>
         </div>
         <div class="right">
             <div class="r-m">
@@ -133,9 +248,7 @@
             <div id="login" class="form-container" style="display: block;">
                 <form id="form-login">
                     <input type="text" id="login-id" placeholder="學號" required autocomplete="username">
-                    <br>
                     <input type="password" id="login-pw" placeholder="密碼" required autocomplete="current-password">
-                    <br>
                     <input type="submit" value="送出">
                 </form>
             </div>
@@ -143,11 +256,8 @@
             <div id="signup" class="form-container">
                 <form id="form-signup">
                     <input type="text" id="signup-id" placeholder="學號" required autocomplete="username">
-                    <br>
                     <input type="password" id="signup-pw" placeholder="設定密碼" required autocomplete="new-password">
-                    <br>
                     <input type="password" id="signup-pw2" placeholder="確認密碼" required autocomplete="new-password">
-                    <br>
                     <input type="submit" value="送出">
                 </form>
             </div>
@@ -229,7 +339,6 @@
                     
                     sessionStorage.setItem('user', JSON.stringify(user));
                     
-                    // 正確根據身份跳轉
                     if (user.className === "管理員") {
                         window.location.href = 'manage.html';
                     } else {
