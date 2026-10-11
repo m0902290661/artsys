@@ -529,17 +529,24 @@ function rejectSubmission_(ss, params) {
 function deleteSubmission_(ss, params) {
   var sheet = getSheet_(ss, "submissions", SUBMISSION_HEADERS);
   var rowNumber = Number(params.id);
+  
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
-    return jsonOutput({ success: false, message: "找不到要刪除的繳交紀錄" });
+    return jsonOutput({ success: false, message: "找不到要刪除的繳交紀錄 (ID: " + params.id + ")" });
   }
 
-  var fileUrl = sheet.getRange(rowNumber, 6).getValue();
-  if (fileUrl) {
-    trashDriveFileByUrl_(fileUrl);
-  }
+  try {
+    var fileUrl = sheet.getRange(rowNumber, 6).getValue();
+    if (fileUrl) {
+      trashDriveFileByUrl_(fileUrl);
+    }
 
-  sheet.deleteRow(rowNumber);
-  return jsonOutput({ success: true, message: "紀錄與對應之雲端檔案皆已完全刪除。" });
+    sheet.deleteRow(rowNumber);
+    SpreadsheetApp.flush();
+    
+    return jsonOutput({ success: true, message: "紀錄與對應之雲端檔案皆已完全刪除。" });
+  } catch(err) {
+    return jsonOutput({ success: false, message: "刪除失敗: " + err.toString() });
+  }
 }
 
 function deleteUser_(userSheet, userData, params) {

@@ -852,19 +852,33 @@
         }
 
         async function batchDeleteSubmissions() {
-            const selected = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => cb.value).filter(val => val && val !== 'null');
+            const selected = Array.from(document.querySelectorAll('.project-checkbox:checked'))
+                .map(cb => cb.value)
+                .filter(val => val !== undefined && val !== null && val !== '' && val !== 'null' && val !== 'undefined');
+
             if (!selected.length) return alert("請選擇已繳交之有效紀錄！");
             if (!confirm(`確定要刪除選取的 ${selected.length} 筆紀錄嗎？\n（注意：雲端硬碟中的對應實體 PDF 檔案將會被同步移至垃圾桶）`)) return;
 
-            toggleGlobalLoader(true, "正在同步刪除紀錄與對應雲端檔案...");
+            toggleGlobalLoader(true, `正在同步刪除 ${selected.length} 筆紀錄與對應雲端檔案...`);
+            
+            let successCount = 0;
             for (let id of selected) {
                 try {
-                    await apiPost({ action: 'deleteSubmission', id });
+                    const res = await apiPost({ action: 'deleteSubmission', id: String(id) });
+                    if (res && res.success) {
+                        successCount++;
+                    }
                 } catch (e) {
                     console.error("刪除失敗 ID:", id, e);
                 }
             }
+            
             toggleGlobalLoader(false);
+            alert(`批量刪除完成，成功刪除 ${successCount} 筆紀錄。`);
+            
+            const masterCheck = document.getElementById('project-check-all');
+            if (masterCheck) masterCheck.checked = false;
+            
             reloadProjectData();
         }
 
@@ -1183,7 +1197,7 @@
                         else missingCount++;
 
                         combinedList.push({
-                            id: sub.id,
+                            id: sub.id !== undefined && sub.id !== null ? String(sub.id) : null,
                             task: sub.task,
                             studentId: student.studentId,
                             studentName: student.name,
@@ -1214,14 +1228,14 @@
                 }
             });
 
-            // 計算專案統計卡片
+            // 計算專案統計數據
             const rate = totalStudentsCount > 0 ? Math.round((submittedCount / totalStudentsCount) * 100) : 0;
             document.getElementById('stat-total-count').innerText = totalStudentsCount;
             document.getElementById('stat-submitted-count').innerText = submittedCount;
             document.getElementById('stat-missing-count').innerText = missingCount;
             document.getElementById('stat-rate').innerText = rate + '%';
 
-            // 套用篩選器
+            // 套用條件過濾
             let displayRows = combinedList.filter(item => {
                 const text = `${item.task || ''} ${item.studentId || ''} ${item.studentName || ''} ${item.className || ''} ${item.club || ''} ${item.filename || ''}`.toLowerCase();
                 const matchKw = text.includes(kw);
@@ -1230,7 +1244,11 @@
             });
 
             const tbody = document.getElementById('project-list');
-            if (!displayRows.length) return tbody.innerHTML = "<tr><td colspan='11'><div class='empty'>目前無符合條件之紀錄。</div></td></tr>";
+            if (!displayRows.length) {
+                tbody.innerHTML = "<tr><td colspan='11'><div class='empty'>目前無符合條件之紀錄。</div></td></tr>";
+                updateBatchBar('project');
+                return;
+            }
 
             tbody.innerHTML = displayRows.map(item => `
                 <tr>
@@ -1253,12 +1271,13 @@
                     <td>
                         <div style="display:flex; gap:6px; flex-wrap:wrap; min-width:150px;">
                             ${item.url ? `<button type="button" class="secondary" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2;" onclick="showQrCode('${escapeHtml(item.url)}', '${escapeHtml(item.filename || '')}')">QR</button>` : ''}
-                           ${item.id ? `<button type="button" class="warning" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2; background-color:#d97706; color:#fff;" onclick="promptReject('${escapeHtml(item.id)}', '${escapeHtml(item.task || '')}', '${escapeHtml(item.studentId || '')}')">退件</button>` : ''}
+                            ${item.id ? `<button type="button" class="warning" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2; background-color:#d97706; color:#fff;" onclick="promptReject('${escapeHtml(item.id)}', '${escapeHtml(item.task || '')}', '${escapeHtml(item.studentId || '')}')">退件</button>` : ''}
                             <button type="button" style="padding:4px 8px; font-size:12px; height:auto; line-height:1.2;" onclick="quickUnlock('${escapeHtml(item.studentId)}', '${escapeHtml(item.task)}')">🔓 解鎖</button>
                         </div>
                     </td>
                 </tr>
             `).join('');
+            
             updateBatchBar('project');
         }
 

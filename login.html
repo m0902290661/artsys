@@ -142,6 +142,49 @@
             transition: all 0.3s ease;
         }
 
+        /* 密碼可視化輸入框專用右側留白，避免文字蓋住按鈕 */
+        .password-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-group input {
+            padding-right: 42px !important;
+        }
+
+        /* 顯示/隱藏密碼切換按鈕 */
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            border-radius: 50%;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-hover);
+            background-color: rgba(161, 161, 255, 0.1);
+        }
+
+        .toggle-password svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         #login input:focus, #signup input:focus { 
             outline: none; 
             border-color: var(--primary-color); 
@@ -237,7 +280,7 @@
         <div class="left">
             <h1>弘明實驗高級中學<br>115美術歷程系統</h1>
             <p>若您在使用中遇到問題 煩請您向我們 <a href="question.html">通報</a> 感謝 ！</p>
-            <p style="margin-top: 10px; font-weight: bold; opacity: 0.8;">V 4.1</p>
+            <p style="margin-top: 10px; font-weight: bold; opacity: 0.8;">V 4.2</p>
         </div>
         <div class="right">
             <div class="r-m">
@@ -248,7 +291,17 @@
             <div id="login" class="form-container" style="display: block;">
                 <form id="form-login">
                     <input type="text" id="login-id" placeholder="學號" required autocomplete="username">
-                    <input type="password" id="login-pw" placeholder="密碼" required autocomplete="current-password">
+                    
+                    <div class="password-group">
+                        <input type="password" id="login-pw" placeholder="密碼" required autocomplete="current-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-pw', this)" title="顯示/隱藏密碼">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    
                     <input type="submit" value="送出">
                 </form>
             </div>
@@ -256,8 +309,27 @@
             <div id="signup" class="form-container">
                 <form id="form-signup">
                     <input type="text" id="signup-id" placeholder="學號" required autocomplete="username">
-                    <input type="password" id="signup-pw" placeholder="設定密碼" required autocomplete="new-password">
-                    <input type="password" id="signup-pw2" placeholder="確認密碼" required autocomplete="new-password">
+                    
+                    <div class="password-group">
+                        <input type="password" id="signup-pw" placeholder="設定密碼" required autocomplete="new-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signup-pw', this)" title="顯示/隱藏密碼">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="password-group">
+                        <input type="password" id="signup-pw2" placeholder="確認密碼" required autocomplete="new-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signup-pw2', this)" title="顯示/隱藏密碼">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
                     <input type="submit" value="送出">
                 </form>
             </div>
@@ -266,6 +338,27 @@
 
     <script>
         let GAS_API_URL = "";
+
+        // 密碼可視化切換函數
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isPassword = input.type === 'password';
+            
+            input.type = isPassword ? 'text' : 'password';
+
+            // SVG 圖示 Path 定義 (開啟的眼睛 vs 劃過的眼睛)
+            const eyeOpenSvg = `
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            `;
+            
+            const eyeClosedSvg = `
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+            `;
+
+            btn.querySelector('.eye-icon').innerHTML = isPassword ? eyeClosedSvg : eyeOpenSvg;
+        }
 
         function postForm(payload) {
             const formData = new URLSearchParams();
