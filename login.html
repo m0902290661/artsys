@@ -50,7 +50,8 @@
             transition: all 0.3s ease;
         }
 
-        .left, .right {
+        .left,
+        .right {
             flex: 1;
             padding: 40px;
             display: flex;
@@ -63,8 +64,8 @@
             border-right: 1px solid rgba(220, 225, 235, 0.5);
         }
 
-        .left h1 { 
-            color: var(--text-main); 
+        .left h1 {
+            color: var(--text-main);
             font-size: clamp(22px, 2.5vw, 28px);
             line-height: 1.4;
             margin-bottom: 16px;
@@ -89,29 +90,29 @@
         }
 
         /* 右側表單切換頁籤 */
-        .r-m { 
+        .r-m {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px; 
+            margin-bottom: 20px;
             border-bottom: 2px solid #eee;
             padding-bottom: 8px;
         }
 
         .r-m button {
-            cursor: pointer; 
-            background-color: transparent; 
+            cursor: pointer;
+            background-color: transparent;
             border: none;
-            border-bottom: 3px solid transparent; 
-            padding: 8px 16px; 
-            font-size: 16px; 
+            border-bottom: 3px solid transparent;
+            padding: 8px 16px;
+            font-size: 16px;
             font-weight: 500;
             color: var(--text-muted);
             transition: all 0.3s ease;
         }
 
-        .r-m button.active { 
-            border-bottom-color: var(--primary-color); 
-            color: var(--primary-color); 
+        .r-m button.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
             font-weight: bold;
         }
 
@@ -128,16 +129,16 @@
             width: 100%;
         }
 
-        #login input[type="text"], 
-        #login input[type="password"], 
-        #signup input[type="text"], 
+        #login input[type="text"],
+        #login input[type="password"],
+        #signup input[type="text"],
         #signup input[type="password"] {
-            background-color: #fff; 
+            background-color: #fff;
             border: 1px solid #dfe6e9;
             border-radius: 8px;
-            height: 42px; 
-            padding: 0 14px; 
-            font-size: 15px; 
+            height: 42px;
+            padding: 0 14px;
+            font-size: 15px;
             width: 100%;
             transition: all 0.3s ease;
         }
@@ -185,48 +186,67 @@
             stroke-linejoin: round;
         }
 
-        #login input:focus, #signup input:focus { 
-            outline: none; 
-            border-color: var(--primary-color); 
+        #login input:focus,
+        #signup input:focus {
+            outline: none;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(161, 161, 255, 0.2);
         }
 
-        #login input[type="submit"], #signup input[type="submit"] {
-            background-color: var(--primary-color); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
+        #login input[type="submit"],
+        #signup input[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
             height: 44px;
             font-size: 16px;
             font-weight: bold;
-            cursor: pointer; 
+            cursor: pointer;
             margin-top: 10px;
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        #login input[type="submit"]:hover, #signup input[type="submit"]:hover {
+        #login input[type="submit"]:hover,
+        #signup input[type="submit"]:hover {
             background-color: var(--primary-hover);
             transform: translateY(-2px);
         }
 
-        #login input[type="submit"]:active, #signup input[type="submit"]:active {
+        #login input[type="submit"]:active,
+        #signup input[type="submit"]:active {
             transform: translateY(0);
         }
 
-        #login input[type="submit"]:disabled, #signup input[type="submit"]:disabled {
+        #login input[type="submit"]:disabled,
+        #signup input[type="submit"]:disabled {
             cursor: not-allowed;
             opacity: 0.65;
             transform: none;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* RWD 響應式：平板與手機斷點 (< 768px) */
@@ -241,7 +261,8 @@
                 max-width: 440px;
             }
 
-            .left, .right {
+            .left,
+            .right {
                 padding: 24px;
             }
 
@@ -268,7 +289,9 @@
 
         /* 極小螢幕 (< 380px) */
         @media (max-width: 380px) {
-            .left, .right {
+
+            .left,
+            .right {
                 padding: 18px 14px;
             }
         }
@@ -287,32 +310,34 @@
                 <button id="btn-login" class="active" onclick="toggleForm('login')">登入系統</button>
                 <button id="btn-signup" onclick="toggleForm('signup')">帳號開通</button>
             </div>
-            
+
             <div id="login" class="form-container" style="display: block;">
                 <form id="form-login">
                     <input type="text" id="login-id" placeholder="學號" required autocomplete="username">
-                    
+
                     <div class="password-group">
                         <input type="password" id="login-pw" placeholder="密碼" required autocomplete="current-password">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-pw', this)" title="顯示/隱藏密碼">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePasswordVisibility('login-pw', this)" title="顯示/隱藏密碼">
                             <svg class="eye-icon" viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </button>
                     </div>
-                    
+
                     <input type="submit" value="送出">
                 </form>
             </div>
-            
+
             <div id="signup" class="form-container">
                 <form id="form-signup">
                     <input type="text" id="signup-id" placeholder="學號" required autocomplete="username">
-                    
+
                     <div class="password-group">
                         <input type="password" id="signup-pw" placeholder="設定密碼" required autocomplete="new-password">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signup-pw', this)" title="顯示/隱藏密碼">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePasswordVisibility('signup-pw', this)" title="顯示/隱藏密碼">
                             <svg class="eye-icon" viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -322,7 +347,8 @@
 
                     <div class="password-group">
                         <input type="password" id="signup-pw2" placeholder="確認密碼" required autocomplete="new-password">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signup-pw2', this)" title="顯示/隱藏密碼">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePasswordVisibility('signup-pw2', this)" title="顯示/隱藏密碼">
                             <svg class="eye-icon" viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -343,7 +369,7 @@
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             const isPassword = input.type === 'password';
-            
+
             input.type = isPassword ? 'text' : 'password';
 
             // SVG 圖示 Path 定義 (開啟的眼睛 vs 劃過的眼睛)
@@ -351,7 +377,7 @@
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
             `;
-            
+
             const eyeClosedSvg = `
                 <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                 <line x1="1" y1="1" x2="23" y2="23"></line>
@@ -374,13 +400,18 @@
             });
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             fetch('api.json')
                 .then(response => {
                     if (!response.ok) throw new Error('無法讀取設定檔');
                     return response.json();
                 })
                 .then(config => {
+                    // 檢查系統狀態是否為維護中
+                    if (config.status === 'maintenance') {
+                        window.location.href = 'fix.html';
+                        return;
+                    }
                     GAS_API_URL = config.gasUrl;
                 })
                 .catch(error => {
@@ -398,17 +429,17 @@
             if (type === 'login') {
                 signupForm.style.display = 'none';
                 loginForm.style.display = 'block';
-                btnLogin.classList.add('active'); 
+                btnLogin.classList.add('active');
                 btnSignup.classList.remove('active');
             } else {
                 loginForm.style.display = 'none';
                 signupForm.style.display = 'block';
-                btnLogin.classList.remove('active'); 
+                btnLogin.classList.remove('active');
                 btnSignup.classList.add('active');
             }
         }
 
-        document.getElementById('form-login').addEventListener('submit', function(e) {
+        document.getElementById('form-login').addEventListener('submit', function (e) {
             e.preventDefault();
             if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
 
@@ -421,34 +452,34 @@
             const password = document.getElementById('login-pw').value;
 
             postForm({ action: 'login', studentId: studentId, password: password })
-            .then(data => {
-                if (data.success) {
-                    alert('登入成功！歡迎 ' + data.user.name);
-                    const user = {
-                        ...data.user,
-                        sessionToken: data.sessionToken || data.user.sessionToken,
-                        sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
-                    };
-                    
-                    sessionStorage.setItem('user', JSON.stringify(user));
-                    
-                    if (user.className === "管理員") {
-                        window.location.href = 'manage.html';
+                .then(data => {
+                    if (data.success) {
+                        alert('登入成功！歡迎 ' + data.user.name);
+                        const user = {
+                            ...data.user,
+                            sessionToken: data.sessionToken || data.user.sessionToken,
+                            sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
+                        };
+
+                        sessionStorage.setItem('user', JSON.stringify(user));
+
+                        if (user.className === "管理員") {
+                            window.location.href = 'manage.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
                     } else {
-                        window.location.href = 'index.html'; 
+                        alert(data.message);
                     }
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(err => alert('系統連線錯誤，請稍後再試'))
-            .finally(() => {
-                submitButton.disabled = false;
-                submitButton.value = '送出';
-            });
+                })
+                .catch(err => alert('系統連線錯誤，請稍後再試'))
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.value = '送出';
+                });
         });
 
-        document.getElementById('form-signup').addEventListener('submit', function(e) {
+        document.getElementById('form-signup').addEventListener('submit', function (e) {
             e.preventDefault();
             if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
 
@@ -469,18 +500,19 @@
             }
 
             postForm({ action: 'signup', studentId: studentId, password: password })
-            .then(data => {
-                alert(data.message);
-                if (data.success) {
-                    toggleForm('login');
-                }
-            })
-            .catch(err => alert('系統連線錯誤，請稍後再試'))
-            .finally(() => {
-                submitButton.disabled = false;
-                submitButton.value = '送出';
-            });
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        toggleForm('login');
+                    }
+                })
+                .catch(err => alert('系統連線錯誤，請稍後再試'))
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.value = '送出';
+                });
         });
     </script>
 </body>
+
 </html>

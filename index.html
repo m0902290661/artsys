@@ -512,7 +512,8 @@
             <div id="action-section" style="display: none;">
                 <div class="info-card">
                     <div class="info-item"><span class="info-label">截止日期：</span><span id="task-deadline">-</span></div>
-                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note" style="display: inline-block; max-width: 380px; word-break: break-all;">-</span></div>
+                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note"
+                            style="display: inline-block; max-width: 380px; word-break: break-all;">-</span></div>
                     <div class="info-item"><span class="info-label">目前狀態：</span><span id="task-status">-</span></div>
                     <div id="reject-message-box" class="message-box" style="display: none;">
                         <strong>退件訊息 / 評語：</strong>
@@ -562,7 +563,7 @@
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
             const btn = document.getElementById('hamburger-btn');
-            
+
             sidebar.classList.toggle('open');
             overlay.classList.toggle('active');
             btn.classList.toggle('open');
@@ -572,7 +573,7 @@
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
             const btn = document.getElementById('hamburger-btn');
-            
+
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
             btn.classList.remove('open');
@@ -605,10 +606,18 @@
             fetch('api.json')
                 .then(res => res.json())
                 .then(config => {
+                    // 檢查系統狀態是否為維護中
+                    if (config.status === 'maintenance') {
+                        window.location.href = 'fix.html';
+                        return;
+                    }
+
                     GAS_API_URL = config.gasUrl;
                     return Promise.all([validateSession(), loadSchedule(), loadMySubmissions()]);
                 })
-                .then(([user]) => {
+                .then(result => {
+                    if (!result) return; // 若已導向維護頁面則中斷執行
+                    const [user] = result;
                     if (user) {
                         currentUser = user;
                         sessionStorage.setItem('user', JSON.stringify(user));
@@ -668,7 +677,7 @@
             if (!text) return '無';
             const escaped = escapeHtml(text);
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
-            return escaped.replace(urlRegex, function(url) {
+            return escaped.replace(urlRegex, function (url) {
                 return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-hover); text-decoration: underline;">${url}</a>`;
             });
         }

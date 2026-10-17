@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
         * {
             box-sizing: border-box;
         }
+
         body {
             min-height: 100vh;
             margin: 0;
@@ -17,39 +19,47 @@
             background: #f4f6f9;
             padding: 32px 20px;
         }
+
         main {
             width: min(100%, 760px);
             margin: 0 auto;
         }
+
         .top-link {
             display: inline-block;
             margin-bottom: 16px;
             color: rgb(92, 92, 220);
             text-decoration: none;
         }
+
         .top-link:hover {
             text-decoration: underline;
         }
+
         .report-card {
             padding: 28px;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
         }
+
         h1 {
             margin: 0 0 8px;
             font-size: 24px;
         }
+
         .lead {
             margin: 0 0 22px;
             color: #666;
             line-height: 1.7;
         }
+
         .field-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 14px;
         }
+
         label {
             display: flex;
             flex-direction: column;
@@ -57,10 +67,15 @@
             color: #555;
             font-size: 14px;
         }
+
         .wide {
             grid-column: 1 / -1;
         }
-        input, select, textarea, button {
+
+        input,
+        select,
+        textarea,
+        button {
             width: 100%;
             min-height: 42px;
             padding: 9px 11px;
@@ -68,17 +83,20 @@
             border-radius: 4px;
             font: inherit;
         }
+
         textarea {
             min-height: 128px;
             resize: vertical;
             line-height: 1.6;
         }
+
         .hint {
             margin: 6px 0 0;
             color: #777;
             font-size: 13px;
             line-height: 1.5;
         }
+
         .password-note {
             display: none;
             margin: 14px 0 0;
@@ -89,15 +107,18 @@
             border-radius: 6px;
             line-height: 1.6;
         }
+
         .password-note.active {
             display: block;
         }
+
         .actions {
             display: flex;
             gap: 10px;
             align-items: center;
             margin-top: 18px;
         }
+
         button {
             width: auto;
             border: 0;
@@ -105,55 +126,69 @@
             background: rgb(161, 161, 255);
             cursor: pointer;
         }
+
         button:hover {
             background: rgb(120, 120, 255);
         }
+
         button:disabled {
             cursor: not-allowed;
             opacity: 0.65;
         }
+
         .secondary {
             color: #444;
             background: #eef0f5;
         }
+
         .secondary:hover {
             background: #dde2ec;
         }
+
         .status {
             min-height: 22px;
             margin: 14px 0 0;
             color: #555;
             line-height: 1.6;
         }
+
         .status.success {
             color: #2b8a3e;
         }
+
         .status.error {
             color: #c92a2a;
         }
+
         @media (max-width: 640px) {
             body {
                 padding: 16px 12px;
             }
+
             .report-card {
                 padding: 20px 16px;
             }
+
             h1 {
                 font-size: 22px;
             }
+
             .field-grid {
                 grid-template-columns: 1fr;
             }
+
             .actions {
                 display: grid;
                 grid-template-columns: 1fr;
             }
+
             button {
                 width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <main>
         <a class="top-link" href="index.html">返回系統首頁</a>
@@ -212,7 +247,7 @@
         let GAS_API_URL = "";
         let currentUser = null;
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const userData = sessionStorage.getItem('user');
             if (!userData) {
                 alert('請先登入後再使用問題回報。');
@@ -239,10 +274,16 @@
                     return response.json();
                 })
                 .then(config => {
+                    // 檢查系統狀態是否為維護中
+                    if (config.status === 'maintenance') {
+                        window.location.href = 'fix.html';
+                        return;
+                    }
                     GAS_API_URL = config.gasUrl;
                     return validateSession();
                 })
                 .then(user => {
+                    if (!user) return;
                     currentUser = user;
                     sessionStorage.setItem('user', JSON.stringify(user));
                     document.getElementById('student-id').value = user.studentId || '';
@@ -252,14 +293,14 @@
                 .catch(err => forceLogout(err.message || '登入已失效，請重新登入。'));
         });
 
-        document.getElementById('report-type').addEventListener('change', function(e) {
+        document.getElementById('report-type').addEventListener('change', function (e) {
             document.getElementById('password-note').classList.toggle(
                 'active',
                 e.target.value === 'password-reset'
             );
         });
 
-        document.getElementById('report-form').addEventListener('reset', function() {
+        document.getElementById('report-form').addEventListener('reset', function () {
             setTimeout(() => {
                 document.getElementById('password-note').classList.remove('active');
                 document.getElementById('student-id').value = currentUser?.studentId || '';
@@ -269,7 +310,7 @@
             }, 0);
         });
 
-        document.getElementById('report-form').addEventListener('submit', function(e) {
+        document.getElementById('report-form').addEventListener('submit', function (e) {
             e.preventDefault();
             if (!GAS_API_URL) {
                 setStatus('API 尚未就緒，請稍後再試。', 'error');
@@ -292,16 +333,16 @@
                 subject: document.getElementById('subject').value.trim(),
                 description: document.getElementById('description').value.trim()
             })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || '送出失敗');
-                setStatus(data.message || '回報已送出，請等待管理員處理。', 'success');
-                e.target.reset();
-            })
-            .catch(err => setStatus(err.message || '送出失敗，請稍後再試。', 'error'))
-            .finally(() => {
-                button.disabled = false;
-                button.innerText = '送出回報';
-            });
+                .then(data => {
+                    if (!data.success) throw new Error(data.message || '送出失敗');
+                    setStatus(data.message || '回報已送出，請等待管理員處理。', 'success');
+                    e.target.reset();
+                })
+                .catch(err => setStatus(err.message || '送出失敗，請稍後再試。', 'error'))
+                .finally(() => {
+                    button.disabled = false;
+                    button.innerText = '送出回報';
+                });
         });
 
         function postForm(payload) {
@@ -350,4 +391,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -523,12 +523,16 @@
                     <div class="field-grid">
                         <label>項目名稱<input type="text" id="task" required></label>
                         <label>截止日期<input type="date" id="deadline" required></label>
-                        <label class="wide">項目備註/說明（內含網址會自動轉為超連結）<textarea id="note" placeholder="例如：請參考格式說明：https://example.com/guide"></textarea></label>
+                        <label class="wide">項目備註/說明（內含網址會自動轉為超連結）<textarea id="note"
+                                placeholder="例如：請參考格式說明：https://example.com/guide"></textarea></label>
                         <label class="wide">附加檔案/範本（可選）
                             <input type="file" id="schedule-attachment-file" style="min-height:auto; padding:5px;">
-                            <div id="current-attachment-box" style="display:none; margin-top:5px; font-size:13px; color:#555;">
-                                目前附件：<a id="current-attachment-link" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">附件</a>
-                                <label style="display:inline-flex; align-items:center; gap:4px; margin-left:10px; cursor:pointer; color:var(--danger); font-weight:normal;">
+                            <div id="current-attachment-box"
+                                style="display:none; margin-top:5px; font-size:13px; color:#555;">
+                                目前附件：<a id="current-attachment-link" href="#" target="_blank"
+                                    style="color:var(--primary); font-weight:bold;">附件</a>
+                                <label
+                                    style="display:inline-flex; align-items:center; gap:4px; margin-left:10px; cursor:pointer; color:var(--danger); font-weight:normal;">
                                     <input type="checkbox" id="remove-attachment-check" style="min-height:auto;"> 移除目前附件
                                 </label>
                             </div>
@@ -562,7 +566,7 @@
         <!-- 2. 合併版：繳交與缺交專案管理 -->
         <section id="project-panel" class="panel">
             <h2>繳交與缺交專案管理</h2>
-            
+
             <div class="toolbar" style="margin-top: 0; background: #f8f9fa; padding: 15px; border-radius: 8px;">
                 <label style="font-weight: bold;">🎯 選擇專案項目：
                     <select id="project-task-filter" style="min-width: 220px;">
@@ -590,7 +594,8 @@
                 </label>
                 <input type="text" id="project-keyword" placeholder="搜尋學號、姓名、檔名..." style="flex: 1; min-width: 140px;">
                 <button type="button" class="secondary" onclick="reloadProjectData()">🔄 重新整理</button>
-                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出專案 QR Code (PDF)</button>
+                <button type="button" style="background:#2b8a3e;" onclick="exportBatchQrA4(false)">🖨️ 匯出專案 QR Code
+                    (PDF)</button>
             </div>
 
             <!-- 專案數據數據統計卡片 -->
@@ -627,7 +632,8 @@
                 <strong id="qr-title" style="font-size:13px;">檔案 QR Code</strong>
                 <img id="qr-image" alt="QR">
                 <p style="margin: 6px 0 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"
-                        style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟 ↗</a></p>
+                        style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:13px;">在新分頁開啟
+                        ↗</a></p>
             </div>
 
             <div class="table-container">
@@ -656,7 +662,8 @@
                 </table>
             </div>
 
-            <details style="margin-top: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e5e8ef;">
+            <details
+                style="margin-top: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e5e8ef;">
                 <summary style="font-weight: bold; cursor: pointer; color: #555;">⚙️ 高級管理設定 (手動學號解鎖 / 全校紀錄清空)</summary>
                 <div style="margin-top: 15px;">
                     <h4 style="margin: 0 0 10px;">手動指定學號解鎖</h4>
@@ -667,7 +674,7 @@
                     <button type="button" onclick="performUnlock()">✅ 授予遲交權限</button>
 
                     <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
-                    
+
                     <h4 style="margin: 0 0 10px; color: var(--danger);">危險操作</h4>
                     <button type="button" class="danger" onclick="clearSubmissions()">⚠️ 清除全校所有繳交紀錄</button>
                 </div>
@@ -860,7 +867,7 @@
             if (!confirm(`確定要刪除選取的 ${selected.length} 筆紀錄嗎？\n（注意：雲端硬碟中的對應實體 PDF 檔案將會被同步移至垃圾桶）`)) return;
 
             toggleGlobalLoader(true, `正在同步刪除 ${selected.length} 筆紀錄與對應雲端檔案...`);
-            
+
             let successCount = 0;
             for (let id of selected) {
                 try {
@@ -872,13 +879,13 @@
                     console.error("刪除失敗 ID:", id, e);
                 }
             }
-            
+
             toggleGlobalLoader(false);
             alert(`批量刪除完成，成功刪除 ${successCount} 筆紀錄。`);
-            
+
             const masterCheck = document.getElementById('project-check-all');
             if (masterCheck) masterCheck.checked = false;
-            
+
             reloadProjectData();
         }
 
@@ -946,7 +953,7 @@
             document.getElementById('schedule-form-title').innerText = mode === 'edit' ? "✏️ 編輯時程" : "➕ 新增時程";
             document.getElementById('schedule-action-mode').value = mode;
             document.getElementById('schedule-attachment-file').value = '';
-            
+
             const attachBox = document.getElementById('current-attachment-box');
             const removeCheck = document.getElementById('remove-attachment-check');
             removeCheck.checked = false;
@@ -966,8 +973,8 @@
                 } else {
                     attachBox.style.display = 'none';
                 }
-            } else { 
-                document.getElementById('schedule-form').reset(); 
+            } else {
+                document.getElementById('schedule-form').reset();
                 attachBox.style.display = 'none';
             }
             f.classList.add('open');
@@ -1007,9 +1014,15 @@
             if (currentUser.className !== "管理員") return window.location.href = "index.html";
 
             fetch('api.json').then(r => r.json()).then(config => {
+                // 檢查系統狀態是否為維護中
+                if (config.status === 'maintenance') {
+                    window.location.href = 'fix.html';
+                    return;
+                }
                 GAS_API_URL = config.gasUrl;
                 return validateSession();
             }).then(user => {
+                if (!user) return;
                 currentUser = user;
                 document.getElementById('admin-name').innerText = user.name ?? '管理員';
                 document.getElementById('admin-id').innerText = user.studentId ?? '-';
@@ -1021,7 +1034,9 @@
                     loadSubmissions(),
                     loadReports()
                 ]);
-            }).then(([opts]) => {
+            }).then(results => {
+                if (!results) return;
+                const [opts] = results;
                 if (opts) { globalOptions.classes = opts.classes || []; globalOptions.clubs = opts.clubs || []; }
                 populateProjectOptions();
                 renderProjectView();
@@ -1112,24 +1127,24 @@
                 const file = fileInput.files[0];
                 const reader = new FileReader();
                 toggleGlobalLoader(true, "正在上傳附件並儲存...");
-                
-                reader.onload = function(e) {
+
+                reader.onload = function (e) {
                     payload.attachmentBase64 = e.target.result;
                     payload.attachmentFileName = file.name;
                     payload.attachmentMimeType = file.type;
 
-                    apiPost(payload).then(d => { 
-                        alert(d?.message || '儲存成功'); 
-                        closeScheduleForm(); 
-                        loadSchedule(); 
+                    apiPost(payload).then(d => {
+                        alert(d?.message || '儲存成功');
+                        closeScheduleForm();
+                        loadSchedule();
                     }).catch(err => alert(err.message));
                 };
                 reader.readAsDataURL(file);
             } else {
-                apiPost(payload).then(d => { 
-                    alert(d?.message || '儲存成功'); 
-                    closeScheduleForm(); 
-                    loadSchedule(); 
+                apiPost(payload).then(d => {
+                    alert(d?.message || '儲存成功');
+                    closeScheduleForm();
+                    loadSchedule();
                 }).catch(err => alert(err.message));
             }
         });
@@ -1263,9 +1278,9 @@
                     <td>${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600; text-decoration:none;">📄 ${escapeHtml(item.filename || '查看')}</a>` : escapeHtml(item.filename || '-')}</td>
                     <td>${escapeHtml(item.createdAt || '-')}</td>
                     <td>
-                        ${item.status === 'missing' ? '<span class="status-missing">缺交</span>' : 
-                          item.status === 'rejected' ? '<span class="status-rejected">已退件</span>' : 
-                          item.status === 'late' ? '<span class="status-late">補繳 (遲交)</span>' : '<span class="status-active">有效繳交</span>'}
+                        ${item.status === 'missing' ? '<span class="status-missing">缺交</span>' :
+                    item.status === 'rejected' ? '<span class="status-rejected">已退件</span>' :
+                        item.status === 'late' ? '<span class="status-late">補繳 (遲交)</span>' : '<span class="status-active">有效繳交</span>'}
                     </td>
                     <td style="font-size:13px; color:#555;">${escapeHtml(item.rejectReason || '-')}</td>
                     <td>
@@ -1277,7 +1292,7 @@
                     </td>
                 </tr>
             `).join('');
-            
+
             updateBatchBar('project');
         }
 
@@ -1297,7 +1312,7 @@
 
             apiPost({ action: 'rejectSubmission', id: id, rejectReason: reason }, '處理退件中...').then(d => {
                 alert(d?.message || '退件完成');
-                
+
                 if (isOverdue && studentId) {
                     if (confirm(`⚠️ 項目【${taskName}】已超過截止日期。是否順便為學生【${studentId}】授權解鎖補繳權限？`)) {
                         quickUnlock(studentId, taskName);
