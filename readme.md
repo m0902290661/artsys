@@ -1,4 +1,4 @@
-# 弘明實驗高級中學 - 美術歷程檔案管理系統 (v4.1)
+# 弘明實驗高級中學 - 美術歷程檔案管理系統 (v5.0)
 
 本系統為 **弘明實驗高級中學 115 級美術歷程** 所開發的線上作業繳交、審核與專案管理系統。前端採用純 HTML/JS/CSS 打造響應式介面（RWD），後端基於 **Google Apps Script (GAS)** 結合 **Google Sheets** 與 **Google Drive**，提供無伺服器（Serverless）架構的完整作業管理與權限控管方案。
 
@@ -9,11 +9,14 @@
 專案由前端靜態網頁、API 設定檔以及 Google Apps Script 後端程式碼組成：
 
 ```text
-├── index.html       # 學生端首頁 (作業項目選單、PDF 上傳/補繳、繳交撤銷)
-├── login.html       # 系統登入與學生帳號開通頁面
-├── manage.html      # 管理員後台 (時程設定、繳交/缺交追蹤、退件審核、批量匯出 QR Code、帳號管理)
+├── index.html       # 學生端首頁 (系統公告、快捷卡片、作業選單、PDF 上傳/補繳、繳交撤銷)
+├── login.html       # 系統登入與學生帳號開通頁面 (支援密碼可視化切換)
+├── manage.html      # 管理員主後台 (時程設定、專案繳交/缺交追蹤、退件審核、批量匯出 QR Code、帳號與 CSV 匯入)
+├── post-manage.html # 管理員公告後台 (發布、編輯、刪除系統公告與範本附件)
 ├── question.html    # 問題通報頁面 (密碼重設、無法登入、上傳問題回報)
-├── api.json         # 前端 API 設定檔 (記錄 Google Apps Script 部署 URL)
+├── fix.html         # 系統維護提示頁面 (系統暫停服務時自動引導)
+├── updatelog.html   # 系統版本更新日誌頁面
+├── api.json         # 前端 API 設定檔 (記錄 Google Apps Script 部署 URL 與系統運行狀態)
 └── 程式碼.js         # 後端核心邏輯 (GAS 伺服器端腳本)
 ```
 
@@ -23,6 +26,7 @@
 
 ### 1. 學生端 (Student Portal)
 - **身分驗證與 Session 控管**：採用 8 小時時效性 Session Token，保障連線安全。
+- **最新系統公告與英雄卡片**：即時同步課程公告事項、支援網址自動超連結與附加檔案/範本下載。
 - **作業繳交與狀態即時同步**：
   - 上傳 PDF 檔案（限制 20MB 以內，具備寫入進度模擬）。
   - 自動偵測是否「逾時遲交」，逾時未獲授權將自動阻斷上傳。
@@ -31,6 +35,8 @@
 - **問題回報功能**：可線上填報密碼重設、登入障礙或系統異常。
 
 ### 2. 管理員後台 (Admin Console)
+- **公告事項管理 (`post-manage.html`)**：
+  - 發布、編輯與刪除首頁最新公告，支援附加參考檔案或範本（儲存於 Google Drive）。
 - **時程項目管理**：
   - 新增/編輯/刪除美術作業項目與截止日期。
   - 支援附加範本檔案上傳（儲存於 Google Drive 獨立目錄）。
@@ -40,11 +46,22 @@
   - 單筆/批量退件：可附帶私人訊息通知學生。
   - 手動/快速解鎖：針對個別學生授予逾時「補繳權限」。
 - **批量列印與 QR Code 匯出**：
-  - 自動產生包含學生資訊、檔案名稱與雲端連結 QR Code 的卡片版面。
+  - 自動產生包含學生資訊、檔案名稱與雲端連結 QR Code 的中文名卡版面。
   - 利用 `jsPDF` 與 `html2canvas` 支援批量導出標準 **A4 PDF 文件**。
 - **帳號管理與批量匯入**：
   - 支援 CSV 檔案批量導入學生名冊（欄位包含學號、姓名、班級、社團、預設密碼）。
 - **問題單據管理**：處理並更新學生通報的各類系統單據狀態（待處理 / 處理中 / 已完成）。
+
+---
+
+## 🚀 系統更新歷程 (`updatelog.html`)
+
+- **V 5.0**：新增首頁系統公告模組、獨立公告管理後台 (`post-manage.html`) 與系統維護提示頁 (`fix.html`)。
+- **V 4.2**：修復管理員後台繳交紀錄批量操作功能，登入頁面加入密碼可視化切換按鈕。
+- **V 4.1**：時程說明支援上傳範本附件、整合繳交與缺交專案管理頁面、設定上傳檔案 20MB 上限。
+- **V 3.0**：管理員頁面加入批量匯出 A4 排版中文 QR Code PDF 功能。
+- **V 2.0**：新增線上問題回報機制與 RWD 行動裝置介面支援。
+- **V 1.0**：系統正式上線營運。
 
 ---
 
@@ -61,6 +78,7 @@
 - `submissions`：`task`, `studentId`, `studentName`, `className`, `filename`, `url`, `createdAt`, `status`, `revokedAt`, `rejectReason`
 - `unlocks`：`studentId`, `task`
 - `reports`：`createdAt`, `reportType`, `studentId`, `studentName`, `className`, `contact`, `subject`, `description`, `status`, `handledAt`, `handledBy`
+- `announcements`：`createdAt`, `title`, `content`, `attachmentUrl`, `attachmentName`
 - `options`：`type`, `value` (定義班級與社團下拉選單選項)
 
 ### 3. 發布網路應用程式 (Web App)
@@ -72,11 +90,12 @@
 4. 複製部署後取得的 Web App URL。
 
 ### 4. 前端 API 配置
-將取得的 Web App URL 填入專案根目錄的 `api.json` 檔案中：
+將取得的 Web App URL 填入專案根目錄的 `api.json` 檔案中（可設定 `status` 為 `normal` 或 `maintenance` 觸發維護模式）：
 
 ```json
 {
-  "gasUrl": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
+  "gasUrl": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
+  "status": "normal"
 }
 ```
 

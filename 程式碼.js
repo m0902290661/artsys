@@ -14,6 +14,7 @@ const SUBMISSION_HEADERS = ["task", "studentId", "studentName", "className", "fi
 const UNLOCK_HEADERS = ["studentId", "task"];
 const SCHEDULE_HEADERS = ["task", "deadline", "note", "attachmentUrl", "attachmentName"];
 const OPTION_HEADERS = ["type", "value"];
+const ANNOUNCEMENT_HEADERS = ["createdAt", "title", "content", "attachmentUrl", "attachmentName", "author"];
 
 function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
@@ -27,6 +28,7 @@ function doGet(e) {
 
   if (action === "getSchedule") return jsonOutput(getScheduleRows_(ss));
   if (action === "getOptions") return jsonOutput(getOptionRows_(ss));
+  if (action === "getAnnouncements") return jsonOutput(getAnnouncementRows_(ss));
 
   if (action === "getSubmissions") {
     var adminSession = requireSession_(ss, params, true);
@@ -101,6 +103,24 @@ function doPost(e) {
     var deleteSession = requireSession_(ss, params, true);
     if (!deleteSession.success) return jsonOutput(deleteSession);
     return deleteSchedule_(ss, params);
+  }
+
+  if (action === "addAnnouncement") {
+    var addAnnSession = requireSession_(ss, params, true);
+    if (!addAnnSession.success) return jsonOutput(addAnnSession);
+    return addAnnouncement_(ss, params, addAnnSession.user);
+  }
+
+  if (action === "editAnnouncement") {
+    var editAnnSession = requireSession_(ss, params, true);
+    if (!editAnnSession.success) return jsonOutput(editAnnSession);
+    return editAnnouncement_(ss, params, editAnnSession.user);
+  }
+
+  if (action === "deleteAnnouncement") {
+    var delAnnSession = requireSession_(ss, params, true);
+    if (!delAnnSession.success) return jsonOutput(delAnnSession);
+    return deleteAnnouncement_(ss, params);
   }
 
   if (action === "deleteSubmission") {
@@ -184,7 +204,7 @@ function doPost(e) {
 function clearSystemCache_() {
   try {
     var cache = CacheService.getScriptCache();
-    cache.removeAll(["schedule", "options"]);
+    cache.removeAll(["schedule", "options", "announcements"]);
   } catch(e) {}
 }
 
@@ -207,6 +227,114 @@ function getOptionRows_(ss) {
   var result = { classes: classes, clubs: clubs };
   cache.put("options", JSON.stringify(result), 1800);
   return result;
+}
+
+function addAnnouncement_(ss, params, user) {
+  var sheet = getSheet_(ss, "announcements", ANNOUNCEMENT_HEADERS);
+  var attachmentUrl = "";
+  var attachmentName = "";
+  var authorName = params.author || (user ? user.name : "管理員");
+
+  if (params.attachmentBase64) {
+    try {
+      var mainFolder = DriveApp.getFolderById(MAIN_FOLDER_ID);
+      var attachmentFolder = getOrCreateFolder_(mainFolder, "公告附件");
+      var base64 = params.attachmentBase64.indexOf(",") >= 0 ? params.attachmentBase64.split(",")[1] : params.attachmentBase64;
+      var decoded = Utilities.base64Decode(base64);
+      var blob = Utilities.newBlob(decoded, params.attachmentMimeType || "application/octet-stream", params.attachmentFileName || "announcement_attachment");
+      var file = attachmentFolder.createFile(blob);
+      attachmentUrl = file.getUrl();
+      attachmentName = params.attachmentFileName || file.getName();
+    } catch(e) {
+      return jsonOutput({ success: false, message: "附件上傳失敗：" + e.toString() });
+    }
+  }
+
+  sheet.appendRow([new Date(), params.title || "", params.content || "", attachmentUrl, attachmentName, authorName]);
+  clearSystemCache_();
+  return jsonOutput({ success: true, message: "公告已發布。" });
+}
+
+function editAnnouncement_(ss, params, user) {
+  var sheet = getSheet_(ss, "announcements", ANNOUNCEMENT_HEADERS);
+  var rowNumber = Number(params.id) + 2; 
+  if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
+    return jsonOutput({ success: false, message: "找不到要編輯的公告項目" });
+  }
+
+  var currentRow = sheet.getRange(rowNumber, 1, 1, 6).getValues()[0];
+  var createdAt = currentRow[0] || new Date();
+  var attachmentUrl = currentRow[3] || "";
+  var attachmentName = currentRow[4] || "";
+  var authorName = params.author || currentRow[5] || (user ? user.name : "管理員");
+
+  if (params.removeAttachment === "true") {
+    if (attachmentUrl) trashDriveFileByUrl_(attachmentUrl);
+    attachmentUrl = "";
+    attachmentName = "";
+  }
+
+  if (params.attachmentBase64) {
+    try {
+      if (attachmentUrl && params.removeAttachment !== "true") trashDriveFileByUrl_(attachmentUrl);
+      var mainFolder = DriveApp.getFolderById(MAIN_FOLDER_ID);
+      var attachmentFolder = getOrCreateFolder_(mainFolder, "公告附件");
+      var base64 = params.attachmentBase64.indexOf(",") >= 0 ? params.attachmentBase64.split(",")[1] : params.attachmentBase64;
+      var decoded = Utilities.base64Decode(base64);
+      var blob = Utilities.newBlob(decoded, params.attachmentMimeType || "application/octet-stream", params.attachmentFileName || "announcement_attachment");
+      var file = attachmentFolder.createFile(blob);
+      attachmentUrl = file.getUrl();
+      attachmentName = params.attachmentFileName || file.getName();
+    } catch(e) {
+      return jsonOutput({ success: false, message: "附件上傳失敗：" + e.toString() });
+    }
+  }
+
+  sheet.getRange(rowNumber, 1, 1, 6).setValues([[createdAt, params.title || "", params.content || "", attachmentUrl, attachmentName, authorName]]);
+  clearSystemCache_();
+  return jsonOutput({ success: true, message: "公告內容已更新。" });
+}
+
+function deleteAnnouncement_(ss, params) {
+  var sheet = getSheet_(ss, "announcements", ANNOUNCEMENT_HEADERS);
+  var rowNumber = Number(params.id) + 2;
+  if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
+    return jsonOutput({ success: false, message: "找不到要刪除的公告" });
+  }
+  
+  var attachmentUrl = sheet.getRange(rowNumber, 4).getValue();
+  if (attachmentUrl) {
+    trashDriveFileByUrl_(attachmentUrl);
+  }
+
+  sheet.deleteRow(rowNumber);
+  clearSystemCache_();
+  return jsonOutput({ success: true, message: "公告已刪除。" });
+}
+
+function getAnnouncementRows_(ss) {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get("announcements");
+  if (cached) return JSON.parse(cached);
+
+  var sheet = getSheet_(ss, "announcements", ANNOUNCEMENT_HEADERS);
+  var data = sheet.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (!data[i][1] && !data[i][2]) continue;
+    list.push({ 
+      id: i - 1, 
+      createdAt: data[i][0],
+      title: data[i][1], 
+      content: data[i][2], 
+      attachmentUrl: data[i][3] || "",
+      attachmentName: data[i][4] || "",
+      author: data[i][5] || "管理員"
+    });
+  }
+  list.reverse();
+  cache.put("announcements", JSON.stringify(list), 600);
+  return list;
 }
 
 function login_(userSheet, userData, params) {
@@ -314,12 +442,14 @@ function editSchedule_(ss, params) {
   var attachmentName = currentRow[4] || "";
 
   if (params.removeAttachment === "true") {
+    if (attachmentUrl) trashDriveFileByUrl_(attachmentUrl);
     attachmentUrl = "";
     attachmentName = "";
   }
 
   if (params.attachmentBase64) {
     try {
+      if (attachmentUrl && params.removeAttachment !== "true") trashDriveFileByUrl_(attachmentUrl);
       var mainFolder = DriveApp.getFolderById(MAIN_FOLDER_ID);
       var attachmentFolder = getOrCreateFolder_(mainFolder, "時程項目附件");
       var base64 = params.attachmentBase64.indexOf(",") >= 0 ? params.attachmentBase64.split(",")[1] : params.attachmentBase64;
@@ -344,6 +474,12 @@ function deleteSchedule_(ss, params) {
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
     return jsonOutput({ success: false, message: "找不到要刪除的時程" });
   }
+
+  var attachmentUrl = sheet.getRange(rowNumber, 4).getValue();
+  if (attachmentUrl) {
+    trashDriveFileByUrl_(attachmentUrl);
+  }
+
   sheet.deleteRow(rowNumber);
   clearSystemCache_();
   return jsonOutput({ success: true, message: "時程已刪除" });
