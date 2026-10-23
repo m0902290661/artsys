@@ -1,0 +1,66 @@
+name: Build, Obfuscate and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # 推送到 main 分支時觸發
+
+permissions:
+  contents: write # 給予部署至 gh-pages 分支的寫入權限
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 簽出程式碼
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 2. 設定 Node.js 環境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. 安裝 JavaScript 混淆工具
+      - name: Install Obfuscator
+        run: |
+          npm install -g javascript-obfuscator
+
+      # 4. 打包與混淆處理（適用於根目錄結構）
+      - name: Build & Obfuscate
+        run: |
+          # 建立產出目錄 dist
+          mkdir -p dist
+
+          # 複製根目錄下的所有檔案到 dist (排除隱藏檔與 dist 本身)
+          rsync -av --exclude='.git' --exclude='.github' --exclude='dist' ./ dist/
+
+          # 針對 dist 目錄下的所有 .js 進行混淆處理
+          javascript-obfuscator ./dist \
+            --output ./dist \
+            --compact true \
+            --control-flow-flattening true \
+            --control-flow-flattening-threshold 0.75 \
+            --dead-code-injection true \
+            --debug-protection true \
+            --debug-protection-interval 2000 \
+            --disable-console-output true \
+            --string-array true \
+            --string-array-encoding 'base64' \
+            --source-map false
+
+      # 5. 清除潛在殘留的 Source Map 檔案
+      - name: Clean Source Maps
+        run: |
+          find ./dist -name "*.map" -type f -delete
+
+      # 6. 部署至 GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
