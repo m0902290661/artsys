@@ -5,15 +5,18 @@ on:
     branches:
       - main # 推送到 main 分支時觸發
 
+# 必須設定足夠的權限以讓 GitHub Actions 部署至 Pages
 permissions:
-  contents: write # 給予部署至 gh-pages 分支的寫入權限
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 簽出程式碼
+      # 1. 簽出原始碼 (私有專案內 Action 仍具存取權)
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
@@ -28,16 +31,12 @@ jobs:
         run: |
           npm install -g javascript-obfuscator
 
-      # 4. 打包與混淆處理（適用於根目錄結構）
+      # 4. 打包與混淆處理
       - name: Build & Obfuscate
         run: |
-          # 建立產出目錄 dist
           mkdir -p dist
-
-          # 複製根目錄下的所有檔案到 dist (排除隱藏檔與 dist 本身)
           rsync -av --exclude='.git' --exclude='.github' --exclude='dist' ./ dist/
 
-          # 針對 dist 目錄下的所有 .js 進行混淆處理
           javascript-obfuscator ./dist \
             --output ./dist \
             --compact true \
