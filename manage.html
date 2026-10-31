@@ -1015,7 +1015,6 @@
             if (currentUser.className !== "管理員") return window.location.href = "index.html";
 
             fetch('api.json').then(r => r.json()).then(config => {
-                // 檢查系統狀態是否為維護中
                 if (config.status === 'maintenance') {
                     window.location.href = 'fix.html';
                     return;
@@ -1244,14 +1243,12 @@
                 }
             });
 
-            // 計算專案統計數據
             const rate = totalStudentsCount > 0 ? Math.round((submittedCount / totalStudentsCount) * 100) : 0;
             document.getElementById('stat-total-count').innerText = totalStudentsCount;
             document.getElementById('stat-submitted-count').innerText = submittedCount;
             document.getElementById('stat-missing-count').innerText = missingCount;
             document.getElementById('stat-rate').innerText = rate + '%';
 
-            // 套用條件過濾
             let displayRows = combinedList.filter(item => {
                 const text = `${item.task || ''} ${item.studentId || ''} ${item.studentName || ''} ${item.className || ''} ${item.club || ''} ${item.filename || ''}`.toLowerCase();
                 const matchKw = text.includes(kw);
@@ -1297,11 +1294,17 @@
             updateBatchBar('project');
         }
 
-        function showQrCode(url, title) {
+        // 顯示 QR Code：夾帶可使用之完整 Google Drive URL
+        function showQrCode(driveUrl, filename) {
             const box = document.getElementById('qr-box');
-            document.getElementById('qr-title').innerText = title;
-            document.getElementById('qr-image').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
-            document.getElementById('qr-link').href = url; box.classList.add('active');
+            document.getElementById('qr-title').innerText = filename;
+            
+            // 將完整 Drive URL 當作參數夾帶於 topdf.html 網址後方
+            const redirectUrl = `${window.location.origin}/topdf.html?url=${encodeURIComponent(driveUrl)}`;
+            
+            document.getElementById('qr-image').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(redirectUrl);
+            document.getElementById('qr-link').href = redirectUrl; 
+            box.classList.add('active');
         }
 
         function promptReject(id, taskName, studentId) {
@@ -1323,13 +1326,17 @@
             }).catch(e => alert(e.message));
         }
 
+        // 畫布卡片繪製：同樣夾帶完整 Drive URL
         function generateCardCanvasBase64(item) {
             return new Promise(resolve => {
                 const qrBox = document.getElementById('card-qr-box');
                 qrBox.innerHTML = '';
 
+                // 指向包含實體 Drive URL 的中轉頁面
+                const redirectUrl = `${window.location.origin}/topdf.html?url=${encodeURIComponent(item.url)}`;
+
                 new QRCode(qrBox, {
-                    text: item.url,
+                    text: redirectUrl,
                     width: 110,
                     height: 110,
                     correctLevel: QRCode.CorrectLevel.M

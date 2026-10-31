@@ -8,37 +8,37 @@
     <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
     <style>
         :root {
-            --primary-bg: rgb(161, 161, 255);
-            --primary-hover: rgb(120, 120, 255);
-            --primary-light: rgba(161, 161, 255, 0.12);
-            --bg-color: #f4f6f9;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --bg-main: #f8fafc;
             --card-bg: #ffffff;
-            --text-main: #2d3436;
-            --text-muted: #636e72;
-            --danger-color: #d94848;
-            --danger-hover: #b83232;
-            --success-bg: #e6f4ea;
-            --success-text: #137333;
-            --warning-bg: #fef7e0;
-            --warning-text: #b06000;
-            --border-radius: 12px;
-            --transition-speed: 0.25s;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --warning-bg: #fffbeb;
+            --warning-text: #b45309;
+            --border-radius: 10px;
+            --transition-speed: 0.2s;
         }
 
         * {
             box-sizing: border-box;
-            transition: background-color var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                        transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-                        border-color var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color var(--transition-speed) ease,
+                        box-shadow var(--transition-speed) ease,
+                        border-color var(--transition-speed) ease;
         }
 
         body {
             display: flex;
             margin: 0;
-            font-family: 'PingFang TC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
             min-height: 100vh;
-            background-color: var(--bg-color);
+            background-color: var(--bg-main);
             color: var(--text-main);
             -webkit-font-smoothing: antialiased;
         }
@@ -52,53 +52,50 @@
         }
 
         .left {
-            width: 22%;
-            min-width: 270px;
+            width: 260px;
             background-color: var(--card-bg);
-            padding: 32px 24px;
-            box-shadow: 1px 0 15px rgba(0, 0, 0, 0.03);
+            padding: 28px 20px;
             display: flex;
             flex-direction: column;
             z-index: 100;
             flex-shrink: 0;
-            border-right: 1px solid #eef2f5;
+            border-right: 1px solid var(--border-color);
         }
 
         .right {
             flex: 1;
-            padding: 36px 48px;
+            padding: 40px 48px;
             overflow-y: auto;
             position: relative;
         }
 
-        .left h1 {
-            font-size: 18px;
+        .brand-title {
+            font-size: 16px;
             font-weight: 700;
             color: var(--text-main);
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             line-height: 1.4;
-            letter-spacing: -0.2px;
+            letter-spacing: -0.01em;
         }
 
         .user-profile-box {
-            background: #f8fafc;
-            border: 1px solid #edf2f7;
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 14px 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
         }
 
         .user-profile-box h2 {
-            font-size: 17px;
+            font-size: 15px;
             color: var(--text-main);
-            margin: 0 0 8px 0;
-            font-weight: 700;
+            margin: 0 0 6px 0;
+            font-weight: 600;
         }
 
         .user-profile-box p {
             color: var(--text-muted);
             line-height: 1.6;
-            font-size: 13.5px;
+            font-size: 13px;
             margin: 0;
         }
 
@@ -106,37 +103,34 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 12px 18px;
-            margin: 4px 0;
-            color: #4a5568;
+            padding: 10px 14px;
+            margin: 2px 0;
+            color: var(--text-muted);
             text-decoration: none;
-            border-radius: 10px;
-            font-size: 14.5px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
         }
 
         .menu-link:hover {
             background-color: #f1f5f9;
-            color: var(--primary-hover);
+            color: var(--text-main);
         }
 
         .menu-link.active {
-            background: linear-gradient(135deg, var(--primary-bg), var(--primary-hover));
-            color: white;
-            font-weight: 700;
-            box-shadow: 0 4px 14px rgba(161, 161, 255, 0.35);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
         }
 
         .panel {
             display: none;
             background: var(--card-bg);
-            padding: 36px;
+            padding: 32px;
             border-radius: var(--border-radius);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.025);
-            border: 1px solid #eef2f5;
+            border: 1px solid var(--border-color);
             position: relative;
-            overflow: hidden;
         }
 
         .panel.active {
@@ -144,110 +138,84 @@
         }
 
         .welcome-hero {
-            background: linear-gradient(135deg, #7878ff, #9898ff);
-            color: white;
-            padding: 32px 36px;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 28px 32px;
             border-radius: var(--border-radius);
             margin-bottom: 32px;
-            box-shadow: 0 8px 24px rgba(120, 120, 255, 0.22);
             position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-hero::after {
-            content: "";
-            position: absolute;
-            right: -20px;
-            bottom: -30px;
-            width: 180px;
-            height: 180px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 50%;
-            pointer-events: none;
         }
 
         .welcome-hero h2 {
-            margin: 0 0 10px 0;
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
+            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .welcome-hero p {
             margin: 0;
-            opacity: 0.92;
-            font-size: 15px;
+            color: #94a3b8;
+            font-size: 14px;
             line-height: 1.5;
         }
 
         .section-title {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 600;
             color: var(--text-main);
-            margin: 0 0 18px 0;
+            margin: 0 0 16px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
         }
 
         .quick-card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
             margin-bottom: 36px;
         }
 
         .quick-card {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
-            padding: 24px;
+            padding: 20px;
             cursor: pointer;
-            position: relative;
         }
 
         .quick-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
-            border-color: var(--primary-bg);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .quick-card h4 {
-            margin: 0 0 10px 0;
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--primary-hover);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin: 0 0 6px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
         }
 
         .quick-card p {
             margin: 0;
-            font-size: 13.5px;
+            font-size: 13px;
             color: var(--text-muted);
-            line-height: 1.55;
+            line-height: 1.5;
         }
 
         .announcement-card {
-            border: 1px solid #e2e8f0;
-            border-left: 5px solid var(--primary-bg);
+            border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
-            padding: 22px 24px;
-            margin-bottom: 18px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
             background: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.015);
-        }
-
-        .announcement-card:hover {
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
         }
 
         .announcement-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             gap: 16px;
             margin-bottom: 12px;
             flex-wrap: wrap;
@@ -255,105 +223,96 @@
 
         .announcement-title {
             margin: 0;
-            font-size: 17.5px;
-            font-weight: 700;
-            color: #1e293b;
-            line-height: 1.4;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
         }
 
         .announcement-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             font-size: 12px;
         }
 
         .badge-author {
-            background-color: var(--primary-light);
-            color: var(--primary-hover);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .badge-date {
-            color: #94a3b8;
+            color: var(--primary);
             font-weight: 500;
         }
 
+        .badge-date {
+            color: var(--text-muted);
+        }
+
         .announcement-body {
-            font-size: 14.5px;
-            line-height: 1.65;
+            font-size: 14px;
+            line-height: 1.6;
             color: #334155;
             white-space: pre-wrap;
             word-break: break-all;
         }
 
         .announcement-attachment {
-            margin-top: 14px;
+            margin-top: 12px;
             padding-top: 12px;
-            border-top: 1px dashed #e2e8f0;
-            font-size: 13.5px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 13px;
             color: var(--text-muted);
         }
 
         .form-group {
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .form-group label {
             display: block;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #1e293b;
-            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 14px;
         }
 
         .select-container {
             display: flex;
-            gap: 12px;
-            max-width: 520px;
+            gap: 10px;
+            max-width: 480px;
             width: 100%;
         }
 
         .form-control {
             flex: 1;
-            padding: 12px 16px;
-            font-size: 14.5px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             background-color: #fff;
             outline: none;
-            color: #1e293b;
+            color: var(--text-main);
         }
 
         .form-control:focus {
-            border-color: var(--primary-bg);
-            box-shadow: 0 0 0 3px rgba(161, 161, 255, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .refresh-btn {
-            background-color: #f1f5f9;
-            color: #475569;
-            border: 1.5px solid #cbd5e1;
-            padding: 6px 16px;
-            border-radius: 10px;
+            background-color: #ffffff;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 13.5px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
             white-space: nowrap;
-            gap: 4px;
         }
 
         .refresh-btn:hover {
-            background-color: #e2e8f0;
-            color: var(--primary-hover);
+            background-color: #f8fafc;
+            color: var(--text-main);
         }
 
         .refresh-btn:disabled {
@@ -363,86 +322,76 @@
 
         .info-card {
             background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-left: 4px solid var(--primary-bg);
-            padding: 22px;
-            border-radius: 0 var(--border-radius) var(--border-radius) 0;
-            margin-bottom: 28px;
-            max-width: 520px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+            max-width: 480px;
         }
 
         .info-item {
-            margin: 10px 0;
-            font-size: 14.5px;
+            margin: 8px 0;
+            font-size: 13.5px;
             color: #334155;
             display: flex;
             align-items: baseline;
         }
 
         .info-label {
-            font-weight: 700;
-            color: #64748b;
-            display: inline-block;
-            width: 95px;
+            font-weight: 500;
+            color: var(--text-muted);
+            width: 90px;
             flex-shrink: 0;
         }
 
         .upload-btn {
-            background: linear-gradient(135deg, var(--primary-bg), var(--primary-hover));
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 13px 32px;
-            border-radius: 10px;
+            padding: 10px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 15px;
-            font-weight: 700;
-            box-shadow: 0 4px 14px rgba(161, 161, 255, 0.35);
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .upload-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(120, 120, 255, 0.4);
+            background-color: var(--primary-hover);
         }
 
         .upload-btn:disabled {
             cursor: not-allowed;
-            opacity: 0.65;
-            transform: none !important;
-            box-shadow: none;
+            opacity: 0.6;
         }
 
         .danger-btn {
             background-color: var(--danger-color);
             color: white;
             border: 0;
-            padding: 12px 28px;
-            border-radius: 10px;
+            padding: 10px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 15px;
-            font-weight: 700;
-            box-shadow: 0 4px 14px rgba(217, 72, 72, 0.25);
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .danger-btn:hover {
             background-color: var(--danger-hover);
-            transform: translateY(-1px);
         }
 
         .danger-btn:disabled {
             background-color: #cbd5e1;
             cursor: not-allowed;
             opacity: 0.6;
-            transform: none !important;
-            box-shadow: none;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
         }
 
         .status-badge.active {
@@ -467,11 +416,11 @@
 
         .message-box {
             background: #fffbe8;
-            border: 1px solid #fef08a;
-            padding: 14px;
-            border-radius: 10px;
+            border: 1px solid #fde047;
+            padding: 12px 14px;
+            border-radius: 8px;
             margin-top: 14px;
-            font-size: 14px;
+            font-size: 13.5px;
             color: #854d0e;
         }
 
@@ -479,32 +428,31 @@
             display: block;
             margin-top: 16px;
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13.5px;
             line-height: 1.5;
         }
 
         .progress-container {
-            margin-top: 20px;
-            max-width: 520px;
+            margin-top: 16px;
+            max-width: 480px;
             background: #e2e8f0;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             display: none;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         .progress-bar {
-            height: 12px;
+            height: 8px;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary-bg), var(--primary-hover));
-            border-radius: 10px;
+            background: var(--primary);
+            border-radius: 8px;
             transition: width 0.3s ease;
         }
 
         .progress-text {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary-hover);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
             margin-top: 6px;
             display: block;
             text-align: right;
@@ -520,9 +468,9 @@
             align-items: center;
             gap: 16px;
             color: var(--text-main);
-            background: rgba(244, 246, 249, 0.96);
-            backdrop-filter: blur(4px);
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(2px);
+            transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
         .loading-overlay.hidden {
@@ -531,10 +479,10 @@
         }
 
         .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #cbd5e1;
-            border-top-color: var(--primary-hover);
+            width: 36px;
+            height: 36px;
+            border: 3px solid #cbd5e1;
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -557,15 +505,15 @@
                 justify-content: space-between;
                 background-color: var(--card-bg);
                 padding: 14px 20px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                border-bottom: 1px solid var(--border-color);
                 position: sticky;
                 top: 0;
                 z-index: 1000;
             }
 
             .mobile-title {
-                font-size: 16px;
-                font-weight: 700;
+                font-size: 15px;
+                font-weight: 600;
                 color: var(--text-main);
             }
 
@@ -577,20 +525,20 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: space-around;
-                width: 32px;
-                height: 32px;
+                width: 28px;
+                height: 28px;
             }
 
             .hamburger-btn span {
                 width: 100%;
-                height: 3px;
+                height: 2px;
                 background-color: var(--text-main);
                 border-radius: 2px;
                 transition: all 0.3s ease;
             }
 
             .hamburger-btn.open span:nth-child(1) {
-                transform: translateY(8px) rotate(45deg);
+                transform: translateY(7px) rotate(45deg);
             }
 
             .hamburger-btn.open span:nth-child(2) {
@@ -598,16 +546,16 @@
             }
 
             .hamburger-btn.open span:nth-child(3) {
-                transform: translateY(-8px) rotate(-45deg);
+                transform: translateY(-7px) rotate(-45deg);
             }
 
             .left {
                 position: fixed;
                 top: 0;
-                left: -290px;
-                width: 290px;
+                left: -270px;
+                width: 270px;
                 height: 100vh;
-                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
                 transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 1001;
                 overflow-y: auto;
@@ -621,8 +569,7 @@
                 display: block;
                 position: fixed;
                 inset: 0;
-                background: rgba(0, 0, 0, 0.4);
-                backdrop-filter: blur(3px);
+                background: rgba(15, 23, 42, 0.3);
                 z-index: 1000;
                 opacity: 0;
                 visibility: hidden;
@@ -640,11 +587,11 @@
             }
 
             .panel {
-                padding: 24px 20px;
+                padding: 20px;
             }
 
             .welcome-hero {
-                padding: 24px;
+                padding: 20px;
             }
 
             .form-control,
@@ -660,7 +607,7 @@
 <body>
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <div id="loading-text" style="font-weight: 700; font-size: 16px;">系統連線中...</div>
+        <div id="loading-text" style="font-weight: 500; font-size: 14px; color: var(--text-muted);">系統連線中...</div>
     </div>
 
     <header class="mobile-header">
@@ -675,8 +622,7 @@
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
     <div class="left" id="sidebar">
-        <h1>弘明實驗高級中學<br>115美術歷程系統</h1>
-        <hr style="width:100%; border:0; border-top:1px solid #edf2f7; margin: 12px 0 20px 0;">
+        <div class="brand-title">弘明實驗高級中學<br>115 美術歷程系統</div>
         
         <div class="user-profile-box">
             <h2><span id="u-name">...</span></h2>
@@ -687,37 +633,37 @@
             </p>
         </div>
 
-        <a id="nav-welcome" href="#" class="menu-link active" onclick="switchTab('welcome', this)">📌 系統公告與首頁</a>
-        <a id="nav-submission" href="#" class="menu-link" onclick="switchTab('submission', this)">📤 作業繳交與歷程</a>
-        <a href="question.html" class="menu-link">💬 問題回報專區</a>
-        <a href="#" class="menu-link" onclick="logout()" style="margin-top: auto; color: var(--danger-color);">🚪 登出系統</a>
+        <a id="nav-welcome" href="#" class="menu-link active" onclick="switchTab('welcome', this)">系統公告與首頁</a>
+        <a id="nav-submission" href="#" class="menu-link" onclick="switchTab('submission', this)">作業繳交與歷程</a>
+        <a href="question.html" class="menu-link">問題回報專區</a>
+        <a href="#" class="menu-link" onclick="logout()" style="margin-top: auto; color: var(--danger-color);">登出系統</a>
     </div>
 
     <div class="right">
         <!-- 歡迎頁面 Panel -->
         <div id="welcome-panel" class="panel active">
             <div class="welcome-hero">
-                <h2>歡迎回來，<span id="hero-user-name">同學</span>！</h2>
-                <p>請留意最新的課程公告說明，並可點擊下方快捷卡片前往作業繳交專區。</p>
-                <p style="cursor: pointer; text-decoration: underline; margin-top: 8px; font-size: 13px; opacity: 0.8;" onclick="location.href='updatelog.html'">v5.0 版本紀錄</p>
+                <h2>歡迎回來，<span id="hero-user-name">同學</span></h2>
+                <p>請留意最新的課程公告說明，或前往作業繳交專區管理您的歷程檔案。</p>
+                <p style="cursor: pointer; margin-top: 12px; font-size: 12px; color: #cbd5e1;" onclick="location.href='updatelog.html'">查看 v5.0 版本紀錄 →</p>
             </div>
 
-            <div class="section-title">⚡ 快捷功能專區</div>
+            <div class="section-title">快捷功能</div>
             <div class="quick-card-grid">
                 <div class="quick-card" onclick="switchTab('submission', document.getElementById('nav-submission'))">
-                    <h4>📤 作業繳交與歷程</h4>
-                    <p>查看當前美術歷程作業項目、截止日期、歷史上傳紀錄與狀態。</p>
+                    <h4>作業繳交與歷程</h4>
+                    <p>查看當前美術歷程作業項目、截止日期與歷史上傳紀錄。</p>
                 </div>
                 <div class="quick-card" onclick="window.location.href='question.html'">
-                    <h4>💬 問題回報專區</h4>
-                    <p>若遇帳號密碼問題、系統錯誤或上傳疑問，可由此線上提報。</p>
+                    <h4>問題回報專區</h4>
+                    <p>若遇帳號問題、系統錯誤或上傳疑問，可由此線上提報。</p>
                 </div>
             </div>
 
             <div class="section-title">
-                <span>📢 最新公告事項</span>
-                <button type="button" id="refresh-announcement-btn" class="refresh-btn" onclick="refreshAnnouncementsOnly()" title="重新整理最新公告">
-                    🔄 重新整理
+                <span>最新公告事項</span>
+                <button type="button" id="refresh-announcement-btn" class="refresh-btn" onclick="refreshAnnouncementsOnly()">
+                    重新整理
                 </button>
             </div>
             <div id="announcement-container">
@@ -727,16 +673,16 @@
 
         <!-- 作業繳交 Panel -->
         <div id="main-panel" class="panel">
-            <div class="section-title" style="font-size: 20px; margin-bottom: 24px;">🎨 美術歷程時程與繳交</div>
+            <div class="section-title" style="font-size: 18px; margin-bottom: 20px;">美術歷程時程與繳交</div>
 
             <div class="form-group">
-                <label for="task-select">請選擇美術歷程項目</label>
+                <label for="task-select">選擇美術歷程項目</label>
                 <div class="select-container">
                     <select id="task-select" class="form-control" onchange="handleTaskChange()">
                         <option value="">-- 請選擇項目 --</option>
                     </select>
-                    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()" title="重新整理最新繳交與時程狀態">
-                        🔄 重新整理
+                    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">
+                        重新整理
                     </button>
                 </div>
             </div>
@@ -744,18 +690,18 @@
             <div id="action-section" style="display: none;">
                 <div class="info-card">
                     <div class="info-item"><span class="info-label">截止日期：</span><span id="task-deadline">-</span></div>
-                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note" style="display: inline-block; max-width: 380px; word-break: break-all;">-</span></div>
+                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note" style="display: inline-block; max-width: 360px; word-break: break-all;">-</span></div>
                     <div class="info-item"><span class="info-label">目前狀態：</span><span id="task-status">-</span></div>
                     <div id="reject-message-box" class="message-box" style="display: none;">
                         <strong>退件訊息 / 評語：</strong>
-                        <p id="reject-reason-text" style="margin: 6px 0 0;"></p>
+                        <p id="reject-reason-text" style="margin: 4px 0 0;"></p>
                     </div>
                 </div>
 
                 <div id="upload-box" class="form-group" style="display: none;">
-                    <label for="task-file">選擇 PDF 檔案上傳 (建議檔名不含特殊符號，大小不超過 20MB)</label>
+                    <label for="task-file">上傳 PDF 檔案（建議檔名不含特殊符號，上限 20MB）</label>
                     <input type="file" id="task-file" class="form-control" accept="application/pdf" style="margin-bottom: 16px;">
-                    <button type="button" id="submit-btn" class="upload-btn" onclick="submitScheduleTask()">送出上傳</button>
+                    <button type="button" id="submit-btn" class="upload-btn" onclick="submitScheduleTask()">確認送出</button>
 
                     <div id="upload-progress-container" class="progress-container">
                         <div id="upload-progress-bar" class="progress-bar"></div>
@@ -764,10 +710,10 @@
                 </div>
 
                 <div id="revocation-box" class="form-group" style="display: none;">
-                    <label style="color: var(--text-main);">已繳交檔案</label>
-                    <div style="margin-bottom: 16px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 10px;">
-                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener" style="font-weight: 700; color: var(--primary-hover); text-decoration: underline;">查看已上傳 PDF ↗</a>
-                        <span id="submitted-time" style="color: var(--text-muted); font-size: 13px; margin-left: 15px;"></span>
+                    <label>已繳交檔案</label>
+                    <div style="margin-bottom: 16px; background: #f8fafc; border: 1px solid var(--border-color); padding: 12px 14px; border-radius: 8px;">
+                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener" style="font-weight: 500; color: var(--primary); text-decoration: underline;">檢視已上傳 PDF ↗</a>
+                        <span id="submitted-time" style="color: var(--text-muted); font-size: 13px; margin-left: 12px;"></span>
                     </div>
                     <button type="button" id="revoke-btn" class="danger-btn" onclick="revokeSubmission()">撤銷當前繳交</button>
                 </div>
@@ -937,7 +883,7 @@
             const escaped = escapeHtml(text);
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
             return escaped.replace(urlRegex, function (url) {
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-hover); text-decoration: underline;">${url}</a>`;
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${url}</a>`;
             });
         }
 
@@ -1075,8 +1021,8 @@
                     const attachName = escapeHtml(post.attachmentName || '下載/檢視附件');
                     attachHtml = `
                         <div class="announcement-attachment">
-                            📎 <strong>附件下載：</strong>
-                            <a href="${escapeHtml(post.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-hover); font-weight: 700; text-decoration: underline;">
+                            附件下載：
+                            <a href="${escapeHtml(post.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 500; text-decoration: underline;">
                                 ${attachName} ↗
                             </a>
                         </div>`;
@@ -1085,9 +1031,9 @@
                 return `
                     <div class="announcement-card">
                         <div class="announcement-header">
-                            <h4 class="announcement-title">📌 ${title}</h4>
+                            <h4 class="announcement-title">${title}</h4>
                             <div class="announcement-meta">
-                                <span class="badge-author">👤 ${author}</span>
+                                <span class="badge-author">${author}</span>
                                 <span class="badge-date">${date}</span>
                             </div>
                         </div>
@@ -1150,8 +1096,8 @@
             if (item.attachmentUrl) {
                 const attachName = escapeHtml(item.attachmentName || '查看附件');
                 noteContent += `<div style="margin-top: 8px;">
-                    📎 <strong>項目附件：</strong>
-                    <a href="${escapeHtml(item.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-hover); font-weight: 700; text-decoration: underline;">
+                    項目附件：
+                    <a href="${escapeHtml(item.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 500; text-decoration: underline;">
                         ${attachName} ↗
                     </a>
                 </div>`;
@@ -1181,29 +1127,29 @@
                         rejectReasonText.innerText = submitted.rejectReason;
                     }
                     revokeBtn.disabled = false;
-                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 您的作業已被退件，請先點擊上方「撤銷當前繳交」按鈕刪除舊檔後重新上傳。</span>';
+                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">您的作業已被退件，請先撤銷當前繳交後重新上傳。</span>';
                 } else if (submitted.status === 'late') {
                     document.getElementById('task-status').innerHTML = '<span class="status-badge late">已補繳（遲交）</span>';
                     if (isOverdue) {
                         revokeBtn.disabled = true;
-                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:bold;">⚠️ 補繳成功（註記：遲交）。由於已超過截止日期，系統關閉撤銷權限。</span>';
+                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:500;">補繳成功（遲交）。已超過截止日期，系統已關閉撤銷權限。</span>';
                     } else {
                         revokeBtn.disabled = false;
-                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:bold;">⚠️ 補繳成功（註記：遲交）。</span>';
+                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:500;">補繳成功（遲交）。</span>';
                     }
                 } else {
                     document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
                     if (isOverdue) {
                         revokeBtn.disabled = true;
-                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期，系統已關閉撤銷修改權限。</span>';
+                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">已過截止日期，系統已關閉撤銷修改權限。</span>';
                     } else {
                         revokeBtn.disabled = false;
-                        message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先點擊撤銷原繳交內容再重新提交。</span>';
+                        message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先撤銷原繳交內容再重新提交。</span>';
                     }
                 }
             } else if (isOverdue) {
                 document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（開放補繳）</span>';
-                message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">⚠️ 已過截止日期！若已獲管理員授權解鎖，請直接選擇 PDF 補繳上傳；未獲授權者送出將被阻斷。</span>';
+                message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">已過截止日期。若已獲管理員授權解鎖，請直接選擇 PDF 補繳上傳。</span>';
                 uploadBox.style.display = 'block';
                 revocationBox.style.display = 'none';
             } else {
@@ -1270,7 +1216,7 @@
             button.disabled = true;
             fileInput.disabled = true;
             select.disabled = true;
-            message.innerHTML = '<span style="color:var(--primary-bg); font-weight:bold;">⏳ 正在編碼與傳輸檔案...</span>';
+            message.innerHTML = '<span style="color:var(--primary); font-weight:500;">正在編碼與傳輸檔案...</span>';
 
             const reader = new FileReader();
 
@@ -1313,16 +1259,16 @@
 
                         if (data.success) {
                             progressBar.style.width = '100%';
-                            progressText.innerText = `🎉 上傳成功！`;
-                            const successTip = data.isLate ? "作業補繳成功！（已註記：遲交提交）" : "作業提交成功。";
-                            message.innerHTML = `<span style="color:var(--success-text); font-weight:bold;">${successTip}</span>`;
+                            progressText.innerText = `上傳成功`;
+                            const successTip = data.isLate ? "作業補繳成功（遲交提交）。" : "作業提交成功。";
+                            message.innerHTML = `<span style="color:var(--success-text); font-weight:500;">${successTip}</span>`;
 
                             setTimeout(() => {
                                 alert(data.isLate ? "作業補繳成功！（已帶入遲交狀態）" : (data.message || "上傳成功！"));
                                 loadMySubmissions().then(() => { handleTaskChange(); });
                             }, 300);
                         } else {
-                            message.innerHTML = `<span style="color:var(--danger-color); font-weight:bold;">❌ 錯誤：${data.message}</span>`;
+                            message.innerHTML = `<span style="color:var(--danger-color); font-weight:500;">錯誤：${data.message}</span>`;
                             alert("上傳失敗：" + data.message);
                             document.getElementById('upload-progress-container').style.display = 'none';
                         }
@@ -1330,7 +1276,7 @@
                     .catch(err => {
                         clearInterval(progressInterval);
                         alert("連線逾時或網路錯誤，請嘗試壓縮 PDF 檔後重試。");
-                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:bold;">❌ 連線異常，請降低檔案大小後重試</span>';
+                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">連線異常，請降低檔案大小後重試</span>';
                         document.getElementById('upload-progress-container').style.display = 'none';
                     })
                     .finally(() => {

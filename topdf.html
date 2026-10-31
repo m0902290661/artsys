@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正在開啟檔案...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f7f9fc;
+            color: #2f343b;
+        }
+        .container {
+            text-align: center;
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8c8cff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .msg {
+            font-size: 15px;
+            font-weight: 600;
+            color: #555;
+        }
+        .sub-msg {
+            font-size: 13px;
+            color: #888;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="spinner"></div>
+        <div class="msg" id="status-text">已在新分頁開啟檔案...</div>
+        <div class="sub-msg" id="sub-text">本頁面將於流量統計完成後自動關閉</div>
+    </div>
+
+    <script>
+        // 請務必填寫完整的 GAS Web App 部署網址 (需為 /exec 結尾)
+        const ANALYTICS_GAS_URL = "https://script.google.com/macros/s/AKfycby6ZD9E9kjVFVqCVhUc47TOO7AMFErkMxEXhUDFWgsRElWUjP-zb7AiAVvTWyOkFq3K/exec";
+
+        async function processRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetUrl = urlParams.get('url');
+
+            if (!targetUrl) {
+                document.getElementById('status-text').innerText = "❌ 參數錯誤：未找到目標網址 (url missing)";
+                document.getElementById('sub-text').style.display = 'none';
+                return;
+            }
+
+            // 1. 立即在新分頁開啟目標 Drive 檔案 (使用者完全不需要等待)
+            window.open(targetUrl, '_blank');
+
+            // 2. 本頁面留在背景發送點擊流量紀錄
+            const userAgent = encodeURIComponent(navigator.userAgent || '');
+            const apiReqUrl = `${ANALYTICS_GAS_URL}?action=logAndGetUrl&targetUrl=${encodeURIComponent(targetUrl)}&ua=${userAgent}`;
+
+            try {
+                // 等待 GAS 試算表確實寫入成功
+                await fetch(apiReqUrl, { 
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                
+                document.getElementById('status-text').innerText = "✅ 流量統計完成！";
+            } catch (err) {
+                console.error("流量記錄失敗:", err);
+            } finally {
+                // 3. 統計處理完成後，自動關閉目前的統計頁面
+                setTimeout(() => {
+                    window.close();
+                }, 500);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', processRedirect);
+    </script>
+</body>
+</html>
