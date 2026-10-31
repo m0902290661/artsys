@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115 弘明實驗高級中學 美術歷程系統</title>
+    <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --warning-bg: #fffbeb;
+            --warning-text: #b45309;
+            --border-radius: 10px;
+            --transition-speed: 0.2s;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background-color var(--transition-speed) ease,
+                        box-shadow var(--transition-speed) ease,
+                        border-color var(--transition-speed) ease;
+        }
+
+        body {
+            display: flex;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            min-height: 100vh;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .mobile-header {
+            display: none;
+        }
+
+        .sidebar-overlay {
+            display: none;
+        }
+
+        .left {
+            width: 260px;
+            background-color: var(--card-bg);
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .right {
+            flex: 1;
+            padding: 40px 48px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            line-height: 1.4;
+            letter-spacing: -0.01em;
+        }
+
+        .user-profile-box {
+            background: #f1f5f9;
+            padding: 14px 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+        }
+
+        .user-profile-box h2 {
+            font-size: 15px;
+            color: var(--text-main);
+            margin: 0 0 6px 0;
+            font-weight: 600;
+        }
+
+        .user-profile-box p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            margin: 2px 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .menu-link:hover {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .menu-link.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .panel {
+            display: none;
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .welcome-hero {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 28px 32px;
+            border-radius: var(--border-radius);
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .welcome-hero h2 {
+            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .welcome-hero p {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quick-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .quick-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        .quick-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .quick-card h4 {
+            margin: 0 0 6px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .quick-card p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .announcement-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            background: #ffffff;
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .announcement-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .announcement-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .badge-author {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .badge-date {
+            color: var(--text-muted);
+        }
+
+        .announcement-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .announcement-attachment {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .select-container {
+            display: flex;
+            gap: 10px;
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .form-control {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+            outline: none;
+            color: var(--text-main);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .refresh-btn {
+            background-color: #ffffff;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .refresh-btn:hover {
+            background-color: #f8fafc;
+            color: var(--text-main);
+        }
+
+        .refresh-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .info-card {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+            max-width: 480px;
+        }
+
+        .info-item {
+            margin: 8px 0;
+            font-size: 13.5px;
+            color: #334155;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: var(--text-muted);
+            width: 90px;
+            flex-shrink: 0;
+        }
+
+        .upload-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .upload-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .upload-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .danger-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: 0;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .danger-btn:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .danger-btn:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .status-badge.late {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .status-badge.none {
+            background-color: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        .status-badge.rejected {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .message-box {
+            background: #fffbe8;
+            border: 1px solid #fde047;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-top: 14px;
+            font-size: 13.5px;
+            color: #854d0e;
+        }
+
+        .assignment-message {
+            display: block;
+            margin-top: 16px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+
+        .progress-container {
+            margin-top: 16px;
+            max-width: 480px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 8px;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: block;
+            text-align: right;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(2px);
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #cbd5e1;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background-color: var(--card-bg);
+                padding: 14px 20px;
+                border-bottom: 1px solid var(--border-color);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .mobile-title {
+                font-size: 15px;
+                font-weight: 600;
+                color: var(--text-main);
+            }
+
+            .hamburger-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 6px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                width: 28px;
+                height: 28px;
+            }
+
+            .hamburger-btn span {
+                width: 100%;
+                height: 2px;
+                background-color: var(--text-main);
+                border-radius: 2px;
+                transition: all 0.3s ease;
+            }
+
+            .hamburger-btn.open span:nth-child(1) {
+                transform: translateY(7px) rotate(45deg);
+            }
+
+            .hamburger-btn.open span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger-btn.open span:nth-child(3) {
+                transform: translateY(-7px) rotate(-45deg);
+            }
+
+            .left {
+                position: fixed;
+                top: 0;
+                left: -270px;
+                width: 270px;
+                height: 100vh;
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1001;
+                overflow-y: auto;
+            }
+
+            .left.open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.3);
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .right {
+                width: 100%;
+                padding: 20px 16px;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .welcome-hero {
+                padding: 20px;
+            }
+
+            .form-control,
+            .info-card,
+            .progress-container,
+            .select-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div id="loading-text" style="font-weight: 500; font-size: 14px; color: var(--text-muted);">系統連線中...</div>
+    </div>
+
+    <header class="mobile-header">
+        <div class="mobile-title">美術歷程系統</div>
+        <button type="button" class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" aria-label="切換選單">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="left" id="sidebar">
+        <div class="brand-title">弘明實驗高級中學<br>115 美術歷程系統</div>
+        
+        <div class="user-profile-box">
+            <h2><span id="u-name">...</span></h2>
+            <p>
+                學號：<span id="u-id">-</span><br>
+                班級：<span id="u-class">-</span><br>
+                社團：<span id="u-club">-</span>
+            </p>
+        </div>
+
+        <a id="nav-welcome" href="#" class="menu-link active" onclick="switchTab('welcome', this)">系統公告與首頁</a>
+        <a id="nav-submission" href="#" class="menu-link" onclick="switchTab('submission', this)">作業繳交與歷程</a>
+        <a href="question.html" class="menu-link">問題回報專區</a>
+        <a href="#" class="menu-link" onclick="logout()" style="margin-top: auto; color: var(--danger-color);">登出系統</a>
+    </div>
+
+    <div class="right">
+        <!-- 歡迎頁面 Panel -->
+        <div id="welcome-panel" class="panel active">
+            <div class="welcome-hero">
+                <h2>歡迎回來，<span id="hero-user-name">同學</span></h2>
+                <p>請留意最新的課程公告說明，或前往作業繳交專區管理您的歷程檔案。</p>
+                <p style="cursor: pointer; margin-top: 12px; font-size: 12px; color: #cbd5e1;" onclick="location.href='updatelog.html'">查看 v5.0 版本紀錄 →</p>
+            </div>
+
+            <div class="section-title">快捷功能</div>
+            <div class="quick-card-grid">
+                <div class="quick-card" onclick="switchTab('submission', document.getElementById('nav-submission'))">
+                    <h4>作業繳交與歷程</h4>
+                    <p>查看當前美術歷程作業項目、截止日期與歷史上傳紀錄。</p>
+                </div>
+                <div class="quick-card" onclick="window.location.href='question.html'">
+                    <h4>問題回報專區</h4>
+                    <p>若遇帳號問題、系統錯誤或上傳疑問，可由此線上提報。</p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>最新公告事項</span>
+                <button type="button" id="refresh-announcement-btn" class="refresh-btn" onclick="refreshAnnouncementsOnly()">
+                    重新整理
+                </button>
+            </div>
+            <div id="announcement-container">
+                <p style="color: var(--text-muted); font-size: 14px;">載入公告事項中...</p>
+            </div>
+        </div>
+
+        <!-- 作業繳交 Panel -->
+        <div id="main-panel" class="panel">
+            <div class="section-title" style="font-size: 18px; margin-bottom: 20px;">美術歷程時程與繳交</div>
+
+            <div class="form-group">
+                <label for="task-select">選擇美術歷程項目</label>
+                <div class="select-container">
+                    <select id="task-select" class="form-control" onchange="handleTaskChange()">
+                        <option value="">-- 請選擇項目 --</option>
+                    </select>
+                    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">
+                        重新整理
+                    </button>
+                </div>
+            </div>
+
+            <div id="action-section" style="display: none;">
+                <div class="info-card">
+                    <div class="info-item"><span class="info-label">截止日期：</span><span id="task-deadline">-</span></div>
+                    <div class="info-item"><span class="info-label">項目備註：</span><span id="task-note" style="display: inline-block; max-width: 360px; word-break: break-all;">-</span></div>
+                    <div class="info-item"><span class="info-label">目前狀態：</span><span id="task-status">-</span></div>
+                    <div id="reject-message-box" class="message-box" style="display: none;">
+                        <strong>退件訊息 / 評語：</strong>
+                        <p id="reject-reason-text" style="margin: 4px 0 0;"></p>
+                    </div>
+                </div>
+
+                <div id="upload-box" class="form-group" style="display: none;">
+                    <label for="task-file">上傳 PDF 檔案（建議檔名不含特殊符號，上限 20MB）</label>
+                    <input type="file" id="task-file" class="form-control" accept="application/pdf" style="margin-bottom: 16px;">
+                    <button type="button" id="submit-btn" class="upload-btn" onclick="submitScheduleTask()">確認送出</button>
+
+                    <div id="upload-progress-container" class="progress-container">
+                        <div id="upload-progress-bar" class="progress-bar"></div>
+                        <span id="upload-progress-text" class="progress-text">0%</span>
+                    </div>
+                </div>
+
+                <div id="revocation-box" class="form-group" style="display: none;">
+                    <label>已繳交檔案</label>
+                    <div style="margin-bottom: 16px; background: #f8fafc; border: 1px solid var(--border-color); padding: 12px 14px; border-radius: 8px;">
+                        <a id="submitted-file-link" href="#" target="_blank" rel="noopener" style="font-weight: 500; color: var(--primary); text-decoration: underline;">檢視已上傳 PDF ↗</a>
+                        <span id="submitted-time" style="color: var(--text-muted); font-size: 13px; margin-left: 12px;"></span>
+                    </div>
+                    <button type="button" id="revoke-btn" class="danger-btn" onclick="revokeSubmission()">撤銷當前繳交</button>
+                </div>
+
+                <span id="action-message" class="assignment-message"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let GAS_API_URL = "";
+        let currentUser = null;
+        let scheduleItems = [];
+        let mySubmissions = [];
+        let announcements = [];
+        let submissionsLoaded = false;
+        let progressInterval = null;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const btn = document.getElementById('hamburger-btn');
+
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            btn.classList.toggle('open');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const btn = document.getElementById('hamburger-btn');
+
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            btn.classList.remove('open');
+        }
+
+        function switchTab(tabName, el) {
+            closeSidebar();
+            document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            document.getElementById('welcome-panel').classList.remove('active');
+            document.getElementById('main-panel').classList.remove('active');
+
+            if (tabName === 'welcome') {
+                document.getElementById('welcome-panel').classList.add('active');
+            } else if (tabName === 'submission') {
+                document.getElementById('main-panel').classList.add('active');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const userData = sessionStorage.getItem('user');
+            if (!userData) {
+                alert('未登入，請先登入系統！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                currentUser = JSON.parse(userData);
+            } catch (err) {
+                sessionStorage.removeItem('user');
+                alert('登入資料異常，請重新登入。');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (currentUser.className === "管理員") {
+                window.location.href = "manage.html";
+                return;
+            }
+
+            renderCurrentUser();
+
+            fetch('api.json')
+                .then(res => res.json())
+                .then(config => {
+                    if (config.status === 'maintenance') {
+                        window.location.href = 'fix.html';
+                        return;
+                    }
+
+                    GAS_API_URL = config.gasUrl;
+                    return Promise.all([validateSession(), loadSchedule(), loadMySubmissions(), loadAnnouncements()]);
+                })
+                .then(result => {
+                    if (!result) return;
+                    const [user] = result;
+                    if (user) {
+                        currentUser = user;
+                        sessionStorage.setItem('user', JSON.stringify(user));
+                        renderCurrentUser();
+                    }
+                    buildTaskSelect();
+                    renderAnnouncements();
+                    hideLoading();
+                })
+                .catch(err => {
+                    if (err && err.redirect) return;
+                    forceLogout(err.message || '登入失效，請重新登入。');
+                });
+        });
+
+        function showLoading(text) {
+            const overlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-text').innerText = text || '載入中...';
+            overlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        function refreshAnnouncementsOnly() {
+            const btn = document.getElementById('refresh-announcement-btn');
+            btn.disabled = true;
+            showLoading('同步最新公告中...');
+
+            loadAnnouncements()
+                .then(() => {
+                    renderAnnouncements();
+                })
+                .catch(() => alert('公告刷新失敗，請確認網路狀態。'))
+                .finally(() => {
+                    btn.disabled = false;
+                    hideLoading();
+                });
+        }
+
+        function refreshData() {
+            const refreshBtn = document.getElementById('refresh-btn');
+            const select = document.getElementById('task-select');
+            const previousSelectedIndex = select.value;
+
+            refreshBtn.disabled = true;
+            select.disabled = true;
+            showLoading('正在同步最新雲端資料...');
+
+            Promise.all([loadSchedule(), loadMySubmissions(), loadAnnouncements()])
+                .then(() => {
+                    buildTaskSelect();
+                    renderAnnouncements();
+                    if (previousSelectedIndex && previousSelectedIndex < scheduleItems.length) {
+                        select.value = previousSelectedIndex;
+                    }
+                    handleTaskChange();
+                })
+                .catch(() => alert('重新整理失敗，請檢查網路。'))
+                .finally(() => {
+                    refreshBtn.disabled = false;
+                    select.disabled = false;
+                    hideLoading();
+                });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[char]));
+        }
+
+        function formatTextWithLinks(text) {
+            if (!text) return '';
+            const escaped = escapeHtml(text);
+            const urlRegex = /(https?:\/\/[^\s<]+)/g;
+            return escaped.replace(urlRegex, function (url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${url}</a>`;
+            });
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return escapeHtml(value);
+            return date.toLocaleString('zh-TW');
+        }
+
+        function postForm(payload) {
+            const formData = new URLSearchParams();
+            Object.keys(payload).forEach(key => formData.append(key, payload[key] ?? ''));
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            });
+        }
+
+        function getAuthParams() {
+            return {
+                studentId: currentUser?.studentId || '',
+                sessionToken: currentUser?.sessionToken || ''
+            };
+        }
+
+        function withAuthQuery(url) {
+            const params = new URLSearchParams(getAuthParams());
+            return `${url}&${params.toString()}`;
+        }
+
+        function validateSession() {
+            if (!currentUser?.studentId || !currentUser?.sessionToken) {
+                return Promise.reject(new Error('登入失效，請重新登入。'));
+            }
+            return fetch(withAuthQuery(`${GAS_API_URL}?action=validateSession`))
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.success) throw new Error(data.message || '登入失效，請重新登入。');
+                    if (data.user.className === "管理員") {
+                        window.location.href = "manage.html";
+                        throw { redirect: true };
+                    }
+                    return data.user;
+                });
+        }
+
+        function renderCurrentUser() {
+            document.getElementById('u-name').innerText = currentUser.name || '';
+            document.getElementById('hero-user-name').innerText = currentUser.name || '同學';
+            document.getElementById('u-id').innerText = currentUser.studentId || '-';
+            document.getElementById('u-class').innerText = currentUser.className || '-';
+            document.getElementById('u-club').innerText = currentUser.club || '無';
+        }
+
+        function forceLogout(message) {
+            sessionStorage.removeItem('user');
+            if (message) alert(message);
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            showLoading('安全登出中...');
+            if (GAS_API_URL && currentUser?.studentId && currentUser?.sessionToken) {
+                postForm({
+                    action: 'logout',
+                    studentId: currentUser.studentId,
+                    sessionToken: currentUser.sessionToken
+                }).catch(() => { }).finally(() => {
+                    sessionStorage.removeItem('user');
+                    setTimeout(() => { window.location.href = 'login.html'; }, 300);
+                });
+            } else {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function loadSchedule() {
+            if (!GAS_API_URL) return Promise.resolve();
+            return fetch(`${GAS_API_URL}?action=getSchedule`)
+                .then(res => res.json())
+                .then(data => { scheduleItems = Array.isArray(data) ? data : []; })
+                .catch(() => { scheduleItems = []; });
+        }
+
+        function loadMySubmissions() {
+            if (!GAS_API_URL || !currentUser) return Promise.resolve();
+            return fetch(withAuthQuery(`${GAS_API_URL}?action=getMySubmissions`))
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data) && data && data.success === false) {
+                        forceLogout(data.message || '登入失效，請重新登入。');
+                        return;
+                    }
+                    mySubmissions = Array.isArray(data) ? data : [];
+                    submissionsLoaded = true;
+                })
+                .catch(() => {
+                    mySubmissions = [];
+                    submissionsLoaded = false;
+                });
+        }
+
+        function loadAnnouncements() {
+            if (!GAS_API_URL) return Promise.resolve();
+            return fetch(`${GAS_API_URL}?action=getAnnouncements`)
+                .then(res => res.json())
+                .then(data => { announcements = Array.isArray(data) ? data : []; })
+                .catch(() => { announcements = []; });
+        }
+
+        function renderAnnouncements() {
+            const container = document.getElementById('announcement-container');
+            if (!announcements || announcements.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">目前尚無公告事項。</p>';
+                return;
+            }
+
+            container.innerHTML = announcements.map(post => {
+                const title = escapeHtml(post.title || '無標題');
+                const author = escapeHtml(post.author || '管理員');
+                const date = formatDateTime(post.createdAt);
+                const contentHtml = formatTextWithLinks(post.content);
+                
+                let attachHtml = '';
+                if (post.attachmentUrl) {
+                    const attachName = escapeHtml(post.attachmentName || '下載/檢視附件');
+                    attachHtml = `
+                        <div class="announcement-attachment">
+                            附件下載：
+                            <a href="${escapeHtml(post.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 500; text-decoration: underline;">
+                                ${attachName} ↗
+                            </a>
+                        </div>`;
+                }
+
+                return `
+                    <div class="announcement-card">
+                        <div class="announcement-header">
+                            <h4 class="announcement-title">${title}</h4>
+                            <div class="announcement-meta">
+                                <span class="badge-author">${author}</span>
+                                <span class="badge-date">${date}</span>
+                            </div>
+                        </div>
+                        <div class="announcement-body">${contentHtml}</div>
+                        ${attachHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildTaskSelect() {
+            const select = document.getElementById('task-select');
+            select.innerHTML = '<option value="">-- 請選擇項目 --</option>';
+            scheduleItems.forEach((item, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = item.task;
+                select.appendChild(opt);
+            });
+        }
+
+        function getActiveSubmission(taskName) {
+            return mySubmissions.find(item =>
+                item.status !== 'revoked' &&
+                (item.task || '').toString() === (taskName || '').toString()
+            );
+        }
+
+        function handleTaskChange() {
+            const select = document.getElementById('task-select');
+            const actionSection = document.getElementById('action-section');
+            const uploadBox = document.getElementById('upload-box');
+            const revocationBox = document.getElementById('revocation-box');
+            const revokeBtn = document.getElementById('revoke-btn');
+            const message = document.getElementById('action-message');
+            const rejectBox = document.getElementById('reject-message-box');
+            const rejectReasonText = document.getElementById('reject-reason-text');
+
+            document.getElementById('upload-progress-container').style.display = 'none';
+            document.getElementById('upload-progress-bar').style.width = '0%';
+            message.innerText = '';
+            rejectBox.style.display = 'none';
+
+            if (!select.value) {
+                actionSection.style.display = 'none';
+                return;
+            }
+
+            const item = scheduleItems[select.value];
+            const deadline = new Date(item.deadline);
+            if (deadline.getHours() === 0 && deadline.getMinutes() === 0) deadline.setHours(23, 59, 59, 999);
+            const now = new Date();
+            const isOverdue = now > deadline;
+
+            document.getElementById('task-deadline').innerText = deadline.toLocaleString('zh-TW');
+
+            const noteElement = document.getElementById('task-note');
+            let noteContent = formatTextWithLinks(item.note);
+
+            if (item.attachmentUrl) {
+                const attachName = escapeHtml(item.attachmentName || '查看附件');
+                noteContent += `<div style="margin-top: 8px;">
+                    項目附件：
+                    <a href="${escapeHtml(item.attachmentUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 500; text-decoration: underline;">
+                        ${attachName} ↗
+                    </a>
+                </div>`;
+            }
+
+            noteElement.innerHTML = noteContent;
+
+            if (!submissionsLoaded) {
+                document.getElementById('task-status').innerHTML = '<span>紀錄載入異常</span>';
+                actionSection.style.display = 'block';
+                return;
+            }
+
+            const submitted = getActiveSubmission(item.task);
+
+            if (submitted) {
+                document.getElementById('submitted-file-link').href = submitted.url || '#';
+                document.getElementById('submitted-time').innerText = `繳交時間：${formatDateTime(submitted.createdAt)}`;
+                uploadBox.style.display = 'none';
+                revocationBox.style.display = 'block';
+                revokeBtn.dataset.id = submitted.id;
+
+                if (submitted.status === 'rejected') {
+                    document.getElementById('task-status').innerHTML = '<span class="status-badge rejected">已被退件</span>';
+                    if (submitted.rejectReason) {
+                        rejectBox.style.display = 'block';
+                        rejectReasonText.innerText = submitted.rejectReason;
+                    }
+                    revokeBtn.disabled = false;
+                    message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">您的作業已被退件，請先撤銷當前繳交後重新上傳。</span>';
+                } else if (submitted.status === 'late') {
+                    document.getElementById('task-status').innerHTML = '<span class="status-badge late">已補繳（遲交）</span>';
+                    if (isOverdue) {
+                        revokeBtn.disabled = true;
+                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:500;">補繳成功（遲交）。已超過截止日期，系統已關閉撤銷權限。</span>';
+                    } else {
+                        revokeBtn.disabled = false;
+                        message.innerHTML = '<span style="color:var(--warning-text); font-weight:500;">補繳成功（遲交）。</span>';
+                    }
+                } else {
+                    document.getElementById('task-status').innerHTML = '<span class="status-badge active">已繳交</span>';
+                    if (isOverdue) {
+                        revokeBtn.disabled = true;
+                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">已過截止日期，系統已關閉撤銷修改權限。</span>';
+                    } else {
+                        revokeBtn.disabled = false;
+                        message.innerHTML = '<span style="color:var(--text-muted);">如需修改，請先撤銷原繳交內容再重新提交。</span>';
+                    }
+                }
+            } else if (isOverdue) {
+                document.getElementById('task-status').innerHTML = '<span class="status-badge none">已截止（開放補繳）</span>';
+                message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">已過截止日期。若已獲管理員授權解鎖，請直接選擇 PDF 補繳上傳。</span>';
+                uploadBox.style.display = 'block';
+                revocationBox.style.display = 'none';
+            } else {
+                document.getElementById('task-status').innerHTML = '<span class="status-badge none">未繳交</span>';
+                uploadBox.style.display = 'block';
+                revocationBox.style.display = 'none';
+            }
+
+            actionSection.style.display = 'block';
+        }
+
+        function simulateProgress(fileSize) {
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressText = document.getElementById('upload-progress-text');
+            const container = document.getElementById('upload-progress-container');
+
+            container.style.display = 'block';
+            let currentProgress = 0;
+            const fileSizeMB = fileSize / (1024 * 1024);
+            let speedFactor = fileSizeMB > 5 ? 1.2 : 3;
+
+            if (progressInterval) clearInterval(progressInterval);
+
+            progressInterval = setInterval(() => {
+                if (currentProgress < 85) currentProgress += Math.random() * speedFactor;
+                else if (currentProgress < 95) currentProgress += 0.2;
+
+                if (currentProgress > 95) currentProgress = 95;
+
+                progressBar.style.width = currentProgress + '%';
+                progressText.innerText = `雲端寫入中... ${Math.floor(currentProgress)}%`;
+            }, 200);
+        }
+
+        function submitScheduleTask() {
+            const button = document.getElementById('submit-btn');
+            if (button.disabled) return;
+
+            const select = document.getElementById('task-select');
+            const item = scheduleItems[select.value];
+            const task = item.task;
+            const fileInput = document.getElementById('task-file');
+            const message = document.getElementById('action-message');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressText = document.getElementById('upload-progress-text');
+
+            if (!fileInput.files.length) {
+                alert('請先選擇 PDF 檔案。');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                alert('限制上傳 PDF 格式。');
+                return;
+            }
+
+            const maxMB = 20;
+            if (file.size > maxMB * 1024 * 1024) {
+                alert(`檔案大小超過 ${maxMB}MB 上限，請先壓縮 PDF 再試！`);
+                return;
+            }
+
+            button.disabled = true;
+            fileInput.disabled = true;
+            select.disabled = true;
+            message.innerHTML = '<span style="color:var(--primary); font-weight:500;">正在編碼與傳輸檔案...</span>';
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const dataUrl = e.target.result;
+                const base64Data = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
+
+                simulateProgress(file.size);
+
+                const payload = {
+                    action: "uploadPDF",
+                    studentId: currentUser.studentId,
+                    sessionToken: currentUser.sessionToken || "",
+                    studentName: currentUser.name,
+                    className: currentUser.className,
+                    club: currentUser.club || "",
+                    task: task,
+                    scheduleTask: task,
+                    originalFilename: file.name,
+                    filename: `${task}_${currentUser.studentId}_${currentUser.name}_${file.name}`,
+                    mimeType: "application/pdf",
+                    fileBase64: base64Data
+                };
+
+                fetch(GAS_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
+                    .then(data => {
+                        clearInterval(progressInterval);
+                        if (!data.success && /登入|密鑰|逾時/.test(data.message || '')) {
+                            forceLogout(data.message);
+                            return;
+                        }
+
+                        if (data.success) {
+                            progressBar.style.width = '100%';
+                            progressText.innerText = `上傳成功`;
+                            const successTip = data.isLate ? "作業補繳成功（遲交提交）。" : "作業提交成功。";
+                            message.innerHTML = `<span style="color:var(--success-text); font-weight:500;">${successTip}</span>`;
+
+                            setTimeout(() => {
+                                alert(data.isLate ? "作業補繳成功！（已帶入遲交狀態）" : (data.message || "上傳成功！"));
+                                loadMySubmissions().then(() => { handleTaskChange(); });
+                            }, 300);
+                        } else {
+                            message.innerHTML = `<span style="color:var(--danger-color); font-weight:500;">錯誤：${data.message}</span>`;
+                            alert("上傳失敗：" + data.message);
+                            document.getElementById('upload-progress-container').style.display = 'none';
+                        }
+                    })
+                    .catch(err => {
+                        clearInterval(progressInterval);
+                        alert("連線逾時或網路錯誤，請嘗試壓縮 PDF 檔後重試。");
+                        message.innerHTML = '<span style="color:var(--danger-color); font-weight:500;">連線異常，請降低檔案大小後重試</span>';
+                        document.getElementById('upload-progress-container').style.display = 'none';
+                    })
+                    .finally(() => {
+                        button.disabled = false;
+                        fileInput.disabled = false;
+                        select.disabled = false;
+                    });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function revokeSubmission() {
+            const button = document.getElementById('revoke-btn');
+            const select = document.getElementById('task-select');
+            if (button.disabled) return;
+            if (!confirm('確定要撤銷這份繳交內容嗎？（雲端舊檔將同步刪除）')) return;
+
+            button.disabled = true;
+            select.disabled = true;
+            showLoading('正在向雲端申請撤銷...');
+
+            postForm({
+                action: 'revokeSubmission',
+                id: button.dataset.id,
+                ...getAuthParams()
+            })
+                .then(data => {
+                    hideLoading();
+                    if (!data.success && /登入|密鑰|逾時/.test(data.message || '')) {
+                        forceLogout(data.message);
+                        return;
+                    }
+                    alert(data.message || '已成功撤銷。');
+                    if (data.success) {
+                        showLoading('正在更新繳交名冊...');
+                        loadMySubmissions().then(() => { handleTaskChange(); }).finally(() => hideLoading());
+                    }
+                })
+                .catch(() => {
+                    hideLoading();
+                    alert('連線失敗，請稍後再試。');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    select.disabled = false;
+                });
+        }
+    </script>
+</body>
+
+</html>

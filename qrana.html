@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流量分析儀表板</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Inter & Noto Sans TC 系統字型 -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+    body {
+      font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: -0.01em;
+    }
+  </style>
+</head>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen antialiased selection:bg-zinc-800 selection:text-white">
+
+  <!-- 頂部極簡導覽列 -->
+  <header class="border-b border-zinc-800/80 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="text-sm font-semibold tracking-wider text-zinc-200 uppercase">流量分析控制台</span>
+      </div>
+      <button onclick="fetchData()" class="group inline-flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 px-3.5 py-1.5 rounded-full transition-all duration-200">
+        <svg id="refreshIcon" class="w-3.5 h-3.5 transition-transform duration-500 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        同步數據
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-10 space-y-10">
+
+    <!-- 數據概覽區塊 -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- 指標卡片 1 -->
+      <div class="bg-zinc-900/40 border border-zinc-800/80 p-6 rounded-2xl backdrop-blur-sm flex flex-col justify-between">
+        <span class="text-xs font-medium text-zinc-500 tracking-wider uppercase">已紀錄網址數</span>
+        <div class="mt-4 flex items-baseline justify-between">
+          <p id="statTotalUrls" class="text-4xl font-light tracking-tight text-white">0</p>
+          <span class="text-[11px] text-zinc-600 font-mono">獨立連結</span>
+        </div>
+      </div>
+
+      <!-- 指標卡片 2 -->
+      <div class="bg-zinc-900/40 border border-zinc-800/80 p-6 rounded-2xl backdrop-blur-sm flex flex-col justify-between">
+        <span class="text-xs font-medium text-zinc-500 tracking-wider uppercase">總累積瀏覽數</span>
+        <div class="mt-4 flex items-baseline justify-between">
+          <p id="statTotalViews" class="text-4xl font-light tracking-tight text-emerald-400">0</p>
+          <span class="text-[11px] text-zinc-600 font-mono">總點擊量</span>
+        </div>
+      </div>
+
+      <!-- 指標卡片 3 -->
+      <div class="bg-zinc-900/40 border border-zinc-800/80 p-6 rounded-2xl backdrop-blur-sm flex flex-col justify-between">
+        <span class="text-xs font-medium text-zinc-500 tracking-wider uppercase">單一最高流量</span>
+        <div class="mt-4 flex items-baseline justify-between">
+          <p id="statMaxViews" class="text-4xl font-light tracking-tight text-white">0</p>
+          <span class="text-[11px] text-zinc-600 font-mono">最高紀錄</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 中段雙欄：模擬點擊與圖表分析 -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- 左側：記錄點擊表單 -->
+      <div class="lg:col-span-5 bg-zinc-900/30 border border-zinc-800/80 p-6 rounded-2xl flex flex-col justify-between space-y-6">
+        <div>
+          <h2 class="text-sm font-medium text-zinc-200 tracking-wide uppercase">手動新增／紀錄點擊</h2>
+          <p class="text-xs text-zinc-500 mt-1">觸發流量計數紀錄 (logAndGetUrl)</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 mb-1.5">目標網址 (TARGET URL) *</label>
+            <input type="url" id="targetUrlInput" placeholder="https://example.com" 
+                   class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-500 rounded-xl px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-700 outline-none transition-colors duration-200">
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 mb-1.5">備註說明 (NOTE)</label>
+            <input type="text" id="noteInput" placeholder="例如：行銷活動 / LINE 橫幅" 
+                   class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-500 rounded-xl px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-700 outline-none transition-colors duration-200">
+          </div>
+        </div>
+
+        <button onclick="logClick()" class="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-medium py-2.5 rounded-xl text-xs tracking-wider uppercase transition-colors duration-200 flex items-center justify-center gap-2">
+          <span>送出點擊紀錄 (+1)</span>
+        </button>
+      </div>
+
+      <!-- 右側：Top 5 熱門排行圖表 -->
+      <div class="lg:col-span-7 bg-zinc-900/30 border border-zinc-800/80 p-6 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-medium text-zinc-200 tracking-wide uppercase">前 5 大熱門連結分析</h2>
+          <span class="text-xs text-zinc-600 font-mono">長條圖</span>
+        </div>
+        <div class="relative h-56 w-full">
+          <canvas id="trafficChart"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 下方數據明細表格 -->
+    <section class="bg-zinc-900/30 border border-zinc-800/80 rounded-2xl overflow-hidden">
+      <div class="p-6 border-b border-zinc-800/80 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-medium text-zinc-200 tracking-wide uppercase">流量明細紀錄</h2>
+          <p class="text-xs text-zinc-500 mt-0.5">顯示目前 Google 試算表中所有儲存的目標網址與統計數據</p>
+        </div>
+        <span id="loadingStatus" class="text-xs font-mono text-zinc-500 hidden">同步數據中...</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-zinc-400">
+          <thead class="bg-zinc-950/50 text-zinc-500 font-mono uppercase text-[10px] tracking-wider border-b border-zinc-800/80">
+            <tr>
+              <th class="px-6 py-3.5 font-normal">目標網址 (Target URL)</th>
+              <th class="px-6 py-3.5 font-normal text-center">總點擊數</th>
+              <th class="px-6 py-3.5 font-normal">最後存取時間</th>
+              <th class="px-6 py-3.5 font-normal">備註</th>
+            </tr>
+          </thead>
+          <tbody id="statsTableBody" class="divide-y divide-zinc-800/50 font-mono">
+            <tr>
+              <td colspan="4" class="px-6 py-12 text-center text-zinc-600 font-sans">請點擊右上角「同步數據」載入資料</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6ZD9E9kjVFVqCVhUc47TOO7AMFErkMxEXhUDFWgsRElWUjP-zb7AiAVvTWyOkFq3K/exec';
+
+    let chartInstance = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchData();
+    });
+
+    // 1. 抓取所有統計數據 (getAllStats)
+    async function fetchData() {
+      const loadingStatus = document.getElementById('loadingStatus');
+      const refreshIcon = document.getElementById('refreshIcon');
+      
+      loadingStatus.classList.remove('hidden');
+      refreshIcon.classList.add('animate-spin');
+
+      try {
+        const response = await fetch(`${GAS_API_URL}?action=getAllStats`);
+        const result = await response.json();
+
+        if (result.success) {
+          renderTable(result.data);
+          renderDashboard(result.data);
+        } else {
+          console.error('Fetch error:', result.message || result.error);
+        }
+      } catch (err) {
+        console.error('Network error:', err);
+      } finally {
+        loadingStatus.classList.add('hidden');
+        refreshIcon.classList.remove('animate-spin');
+      }
+    }
+
+    // 2. 模擬紀錄點擊 (logAndGetUrl)
+    async function logClick() {
+      const targetUrl = document.getElementById('targetUrlInput').value.trim();
+      const note = document.getElementById('noteInput').value.trim();
+
+      if (!targetUrl) {
+        alert('請輸入目標網址 (Target URL)');
+        return;
+      }
+
+      try {
+        const queryParams = new URLSearchParams({
+          action: 'logAndGetUrl',
+          targetUrl: targetUrl,
+          ua: navigator.userAgent,
+          note: note
+        });
+
+        const response = await fetch(`${GAS_API_URL}?${queryParams.toString()}`);
+        const result = await response.json();
+
+        if (result.success) {
+          document.getElementById('targetUrlInput').value = '';
+          document.getElementById('noteInput').value = '';
+          fetchData();
+        } else {
+          alert('紀錄失敗: ' + (result.message || result.error));
+        }
+      } catch (err) {
+        console.error('Click logging failed:', err);
+      }
+    }
+
+    // 渲染明細表格
+    function renderTable(data) {
+      const tbody = document.getElementById('statsTableBody');
+      tbody.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-12 text-center text-zinc-600 font-sans">目前尚無流量紀錄</td></tr>';
+        return;
+      }
+
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-zinc-800/30 transition-colors duration-150';
+        
+        const formattedDate = item.lastAccessed ? new Date(item.lastAccessed).toLocaleString('zh-TW', { hour12: false }) : '-';
+
+        tr.innerHTML = `
+          <td class="px-6 py-4 text-zinc-200 font-sans break-all">
+            <a href="${item.targetUrl}" target="_blank" class="hover:text-emerald-400 underline decoration-zinc-700 underline-offset-4 transition-colors">${item.targetUrl}</a>
+          </td>
+          <td class="px-6 py-4 text-center font-bold text-emerald-400">${item.totalViews}</td>
+          <td class="px-6 py-4 text-zinc-500 text-[11px]">${formattedDate}</td>
+          <td class="px-6 py-4 text-zinc-400 font-sans">${item.note || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 渲染指標數據與 Chart.js 圖表
+    function renderDashboard(data) {
+      const totalUrls = data.length;
+      const totalViews = data.reduce((sum, item) => sum + (Number(item.totalViews) || 0), 0);
+      const maxViews = data.reduce((max, item) => Math.max(max, Number(item.totalViews) || 0), 0);
+
+      document.getElementById('statTotalUrls').textContent = totalUrls;
+      document.getElementById('statTotalViews').textContent = totalViews;
+      document.getElementById('statMaxViews').textContent = maxViews;
+
+      // 取得 Top 5 數據
+      const sortedData = [...data].sort((a, b) => b.totalViews - a.totalViews).slice(0, 5);
+      const labels = sortedData.map(item => item.note ? `${item.note}` : item.targetUrl);
+      const views = sortedData.map(item => item.totalViews);
+
+      const ctx = document.getElementById('trafficChart').getContext('2d');
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '點擊瀏覽數',
+            data: views,
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            hoverBackgroundColor: '#10b981',
+            borderRadius: 6,
+            barThickness: 16
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#18181b',
+              titleColor: '#f4f4f5',
+              bodyColor: '#a1a1aa',
+              borderColor: '#27272a',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(39, 39, 42, 0.6)' },
+              ticks: { color: '#71717a', font: { family: 'Inter', size: 10 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: {
+                color: '#a1a1aa',
+                font: { family: 'Inter', size: 10 },
+                callback: function(val) {
+                  let label = this.getLabelForValue(val);
+                  return label.length > 14 ? label.substring(0, 14) + '…' : label;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

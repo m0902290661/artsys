@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115 私立弘明實驗高級中學 美術歷程系統</title>
+    <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
+    <style>
+        :root {
+            --primary-color: rgb(161, 161, 255);
+            --primary-hover: rgb(120, 120, 255);
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #eef2f7;
+            background-image: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%), url('login.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* 主容器：限制最大寬度，避免在超大螢幕拉寬破圖 */
+        main {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 480px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .left,
+        .right {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .left {
+            background: rgba(255, 255, 255, 0.4);
+            border-right: 1px solid rgba(220, 225, 235, 0.5);
+        }
+
+        .left h1 {
+            color: var(--text-main);
+            font-size: clamp(22px, 2.5vw, 28px);
+            line-height: 1.4;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .left p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 6px;
+        }
+
+        .left a {
+            color: var(--primary-hover);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .left a:hover {
+            text-decoration: underline;
+        }
+
+        /* 右側表單切換頁籤 */
+        .r-m {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .r-m button {
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 8px 16px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .r-m button.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* 表單內容元件 */
+        .form-container {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        #login input[type="text"],
+        #login input[type="password"],
+        #signup input[type="text"],
+        #signup input[type="password"] {
+            background-color: #fff;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            height: 42px;
+            padding: 0 14px;
+            font-size: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* 密碼可視化輸入框專用右側留白，避免文字蓋住按鈕 */
+        .password-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-group input {
+            padding-right: 42px !important;
+        }
+
+        /* 顯示/隱藏密碼切換按鈕 */
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            border-radius: 50%;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-hover);
+            background-color: rgba(161, 161, 255, 0.1);
+        }
+
+        .toggle-password svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        #login input:focus,
+        #signup input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(161, 161, 255, 0.2);
+        }
+
+        #login input[type="submit"],
+        #signup input[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            height: 44px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #login input[type="submit"]:hover,
+        #signup input[type="submit"]:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        #login input[type="submit"]:active,
+        #signup input[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        #login input[type="submit"]:disabled,
+        #signup input[type="submit"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+            transform: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式：平板與手機斷點 (< 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            main {
+                flex-direction: column;
+                min-height: auto;
+                max-width: 440px;
+            }
+
+            .left,
+            .right {
+                padding: 24px;
+            }
+
+            .left {
+                border-right: none;
+                border-bottom: 1px solid rgba(220, 225, 235, 0.5);
+                text-align: center;
+            }
+
+            .left h1 {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+
+            .r-m {
+                justify-content: center;
+            }
+
+            .r-m button {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        /* 極小螢幕 (< 380px) */
+        @media (max-width: 380px) {
+
+            .left,
+            .right {
+                padding: 18px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main id="main-content">
+        <div class="left">
+            <h1>弘明實驗高級中學<br>115美術歷程系統</h1>
+            <p>若您在使用中遇到問題 煩請您向我們 <a href="question.html">通報</a> 感謝 ！</p>
+            <p style="margin-top: 10px; font-weight: bold; opacity: 0.8;"><a href="updatelog.html">V 5.0</a></p>
+        </div>
+        <div class="right">
+            <div class="r-m">
+                <button id="btn-login" class="active" onclick="toggleForm('login')">登入系統</button>
+                <button id="btn-signup" onclick="toggleForm('signup')">帳號開通</button>
+            </div>
+
+            <div id="login" class="form-container" style="display: block;">
+                <form id="form-login">
+                    <input type="text" id="login-id" placeholder="學號" required autocomplete="username">
+
+                    <div class="password-group">
+                        <input type="password" id="login-pw" placeholder="密碼" required autocomplete="current-password">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePasswordVisibility('login-pw', this)" title="顯示/隱藏密碼">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <input type="submit" value="送出">
+                </form>
+            </div>
+
+            <div id="signup" class="form-container">
+                <form id="form-signup">
+                    <input type="text" id="signup-id" placeholder="學號" required autocomplete="username">
+
+                    <div class="password-group">
+                        <input type="password" id="signup-pw" placeholder="設定密碼" required autocomplete="new-password">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePasswordVisibility('signup-pw', this)" title="顯示/隱藏密碼">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="password-group">
+                        <input type="password" id="signup-pw2" placeholder="確認密碼" required autocomplete="new-password">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePasswordVisibility('signup-pw2', this)" title="顯示/隱藏密碼">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <input type="submit" value="送出">
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let GAS_API_URL = "";
+
+        // 密碼可視化切換函數
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isPassword = input.type === 'password';
+
+            input.type = isPassword ? 'text' : 'password';
+
+            // SVG 圖示 Path 定義 (開啟的眼睛 vs 劃過的眼睛)
+            const eyeOpenSvg = `
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            `;
+
+            const eyeClosedSvg = `
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+            `;
+
+            btn.querySelector('.eye-icon').innerHTML = isPassword ? eyeClosedSvg : eyeOpenSvg;
+        }
+
+        function postForm(payload) {
+            const formData = new URLSearchParams();
+            Object.keys(payload).forEach(key => formData.append(key, payload[key]));
+
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('api.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('無法讀取設定檔');
+                    return response.json();
+                })
+                .then(config => {
+                    // 檢查系統狀態是否為維護中
+                    if (config.status === 'maintenance') {
+                        window.location.href = 'fix.html';
+                        return;
+                    }
+                    GAS_API_URL = config.gasUrl;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('系統初始化失敗，請聯絡系統管理員。');
+                });
+        });
+
+        function toggleForm(type) {
+            const loginForm = document.getElementById('login');
+            const signupForm = document.getElementById('signup');
+            const btnLogin = document.getElementById('btn-login');
+            const btnSignup = document.getElementById('btn-signup');
+
+            if (type === 'login') {
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                btnLogin.classList.add('active');
+                btnSignup.classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                btnLogin.classList.remove('active');
+                btnSignup.classList.add('active');
+            }
+        }
+
+        document.getElementById('form-login').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
+
+            const submitButton = e.target.querySelector('input[type="submit"]');
+            if (submitButton.disabled) return;
+            submitButton.disabled = true;
+            submitButton.value = '登入中...';
+
+            const studentId = document.getElementById('login-id').value;
+            const password = document.getElementById('login-pw').value;
+
+            postForm({ action: 'login', studentId: studentId, password: password })
+                .then(data => {
+                    if (data.success) {
+                        alert('登入成功！歡迎 ' + data.user.name);
+                        const user = {
+                            ...data.user,
+                            sessionToken: data.sessionToken || data.user.sessionToken,
+                            sessionExpiresAt: data.sessionExpiresAt || data.user.sessionExpiresAt
+                        };
+
+                        sessionStorage.setItem('user', JSON.stringify(user));
+
+                        if (user.className === "管理員") {
+                            window.location.href = 'manage.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => alert('系統連線錯誤，請稍後再試'))
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.value = '送出';
+                });
+        });
+
+        document.getElementById('form-signup').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!GAS_API_URL) { alert('API 尚未就緒，請稍後再試'); return; }
+
+            const submitButton = e.target.querySelector('input[type="submit"]');
+            if (submitButton.disabled) return;
+            submitButton.disabled = true;
+            submitButton.value = '送出中...';
+
+            const studentId = document.getElementById('signup-id').value;
+            const password = document.getElementById('signup-pw').value;
+            const passwordConfirm = document.getElementById('signup-pw2').value;
+
+            if (password !== passwordConfirm) {
+                alert('兩次輸入的密碼不一致！');
+                submitButton.disabled = false;
+                submitButton.value = '送出';
+                return;
+            }
+
+            postForm({ action: 'signup', studentId: studentId, password: password })
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        toggleForm('login');
+                    }
+                })
+                .catch(err => alert('系統連線錯誤，請稍後再試'))
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.value = '送出';
+                });
+        });
+    </script>
+</body>
+
+</html>
