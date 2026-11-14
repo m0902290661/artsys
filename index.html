@@ -635,7 +635,6 @@
 
         <a id="nav-welcome" href="#" class="menu-link active" onclick="switchTab('welcome', this)">系統公告與首頁</a>
         <a id="nav-submission" href="#" class="menu-link" onclick="switchTab('submission', this)">作業繳交與歷程</a>
-        <a href="question.html" class="menu-link">問題回報專區</a>
         <a href="#" class="menu-link" onclick="logout()" style="margin-top: auto; color: var(--danger-color);">登出系統</a>
     </div>
 
@@ -645,7 +644,7 @@
             <div class="welcome-hero">
                 <h2>歡迎回來，<span id="hero-user-name">同學</span></h2>
                 <p>請留意最新的課程公告說明，或前往作業繳交專區管理您的歷程檔案。</p>
-                <p style="cursor: pointer; margin-top: 12px; font-size: 12px; color: #cbd5e1;" onclick="location.href='updatelog.html'">查看 v5.2 版本紀錄 →</p>
+                <p style="cursor: pointer; margin-top: 12px; font-size: 12px; color: #cbd5e1;" onclick="location.href='updatelog.html'">查看 v5.3 版本紀錄 →</p>
             </div>
 
             <div class="section-title">快捷功能</div>
@@ -657,6 +656,10 @@
                 <div class="quick-card" onclick="window.location.href='question.html'">
                     <h4>問題回報專區</h4>
                     <p>若遇帳號問題、系統錯誤或上傳疑問，可由此線上提報。</p>
+                </div>
+                <div class="quick-card" onclick="location.href='評語.html'">
+                    <h4>評語系統</h4>
+                    <p>查看老師、學長姐給予的建議</p>
                 </div>
             </div>
 
