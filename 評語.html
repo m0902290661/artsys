@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青綠未央 - 評語系統</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        dialog { padding: 20px; border-radius: 8px; border: 1px solid #ccc; width: 90%; max-width: 500px; }
+        .status-msg { font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        .success { color: green; }
+        .error { color: red; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        textarea { width: 100%; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div id="main-menu">
+        <h1>評語系統</h1>
+        <p>請選擇</p>
+        <button onclick="openQuery()">查詢</button>
+        <button onclick="openFill()">填寫</button>
+    </div>
+
+    <!-- 查詢對話框 -->
+    <dialog id="query-dialog">
+        <h2>查詢</h2>
+        <p>請選擇社團</p>
+        <select id="query-club-select"></select>
+        <button onclick="fetchReviews()">送出查詢</button>
+        <button onclick="closeDialogs()">關閉</button>
+        <div id="query-result"></div>
+    </dialog>
+
+    <!-- 填寫對話框 -->
+    <dialog id="fill-dialog">
+        <h2>填寫與修改</h2>
+        <p>驗證碼：<span id="user-greeting" class="status-msg"></span></p>
+        <input type="password" id="auth-code" oninput="checkUserRecord()" required placeholder="請輸入專屬驗證碼">
+        
+        <p>請選擇社團</p>
+        <select id="fill-club-select" onchange="checkUserRecord()"></select>
+        
+        <br><br>
+        <p>評語內容 (若今日已填寫將自動帶入)</p>
+        <textarea id="comment-text" rows="5" required></textarea>
+        <br><br>
+        <button onclick="submitForm()">儲存評語</button>
+        <button onclick="closeDialogs()">關閉</button>
+    </dialog>
+
+    <script>
+        // ★★★ 請替換為你最新部署的 GAS 網頁應用程式 URL ★★★
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwv-hYvchpOtGMPk190Quachm1ZIWe76GD1nKSJ2B0u0yyWAzesnKackoD7d4jDwcWMfQ/exec';
+
+        const queryDialog = document.getElementById('query-dialog');
+        const fillDialog = document.getElementById('fill-dialog');
+
+        window.onload = function() {
+            fetch(`${API_URL}?action=getClubs`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) populateClubs(data.data);
+                })
+                .catch(error => console.error('無法取得社團名單:', error));
+        };
+
+        function populateClubs(clubs) {
+            const querySelect = document.getElementById('query-club-select');
+            const fillSelect = document.getElementById('fill-club-select');
+            querySelect.innerHTML = '';
+            fillSelect.innerHTML = '';
+            
+            clubs.forEach(club => {
+                querySelect.add(new Option(club, club));
+                fillSelect.add(new Option(club, club));
+            });
+        }
+
+        function openQuery() { queryDialog.showModal(); }
+        function openFill() { 
+            fillDialog.showModal(); 
+            checkUserRecord();
+        }
+        function closeDialogs() { 
+            queryDialog.close(); 
+            fillDialog.close(); 
+            document.getElementById('query-result').innerHTML = ''; 
+        }
+
+        // 檢查驗證碼並自動帶入今日評語
+        let debounceTimer;
+        function checkUserRecord() {
+            clearTimeout(debounceTimer);
+            const code = document.getElementById('auth-code').value;
+            const club = document.getElementById('fill-club-select').value;
+            const greeting = document.getElementById('user-greeting');
+            const commentBox = document.getElementById('comment-text');
+
+            if (!code) {
+                greeting.textContent = '';
+                commentBox.value = '';
+                return;
+            }
+
+            // 使用 debounce 避免連續輸入時頻繁請求 API
+            debounceTimer = setTimeout(() => {
+                greeting.textContent = '驗證中...';
+                greeting.className = 'status-msg';
+
+                fetch(`${API_URL}?action=getUserInfo&code=${encodeURIComponent(code)}&club=${encodeURIComponent(club)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            greeting.textContent = `你好，${data.userName}`;
+                            greeting.className = 'status-msg success';
+                            commentBox.value = data.todayReview || '';
+                        } else {
+                            greeting.textContent = '無效的驗證碼';
+                            greeting.className = 'status-msg error';
+                            commentBox.value = '';
+                        }
+                    }).catch(err => {
+                        greeting.textContent = '網路異常';
+                        greeting.className = 'status-msg error';
+                    });
+            }, 500);
+        }
+
+        // 送出評語 (修改為送出後不關閉視窗)
+        function submitForm() {
+            const code = document.getElementById('auth-code').value;
+            const club = document.getElementById('fill-club-select').value;
+            const comment = document.getElementById('comment-text').value;
+
+            if(!code || !comment) {
+                alert("請填寫驗證碼與評語內容！");
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'submitReview',
+                    code: code,
+                    club: club,
+                    comment: comment
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if(data.success) {
+                    // 重新觸發檢查，這會自動把剛剛存檔的最新評語載入到文字框中，讓視窗保持開啟
+                    checkUserRecord();
+                }
+            })
+            .catch(error => alert('送出失敗：' + error));
+        }
+
+        function fetchReviews() {
+            const club = document.getElementById('query-club-select').value;
+            const resultDiv = document.getElementById('query-result');
+            resultDiv.innerHTML = '<p>查詢中...</p>';
+
+            fetch(`${API_URL}?action=getReviews&club=${encodeURIComponent(club)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if(!data.success) {
+                        resultDiv.innerHTML = '<p class="error">查詢發生錯誤。</p>';
+                        return;
+                    }
+
+                    const reviews = data.data;
+                    if(reviews.length === 0) {
+                        resultDiv.innerHTML = '<p>目前尚無評語。</p>';
+                        return;
+                    }
+                    
+                    // 建立表格
+                    let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">時間</th>
+                                    <th style="width: 20%;">填寫人</th>
+                                    <th>評語內容</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    // 陣列反轉，讓最新的評語顯示在最上方
+                    reviews.reverse().forEach(r => {
+                        html += `
+                            <tr>
+                                <td>${r.time}</td>
+                                <td>${r.submitter}</td>
+                                <td>${r.comment}</td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                    resultDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = '<p class="error">網路錯誤，無法查詢。</p>';
+                });
+        }
+    </script>
+</body>
+</html>

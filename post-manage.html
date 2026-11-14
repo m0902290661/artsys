@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告事項管理 - 美術歷程管理後台</title>
+    <link rel="icon" type="png" href="https://jsh.dafuntea.com/去背的下載.png">
+    <style>
+        :root {
+            --primary: #8c8cff;
+            --primary-h: #6e6eff;
+            --danger: #e05252;
+            --success: #2b8a3e;
+            --warning: #d97706;
+            --bg: #f7f9fc;
+            --text: #2f343b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .left {
+            width: 240px;
+            padding: 30px 20px;
+            background: #fff;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .right {
+            flex: 1;
+            min-width: 0;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin: 0 0 15px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .admin-info {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .menu-link {
+            display: block;
+            padding: 12px 16px;
+            margin: 4px 0;
+            color: #555;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .menu-link:hover {
+            background: #f1f3f9;
+        }
+
+        .menu-link.active {
+            background: var(--primary);
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(161, 161, 255, 0.3);
+        }
+
+        .panel {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .collapse-form {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0 20px;
+        }
+
+        .collapse-form.open {
+            max-height: 800px;
+            padding: 20px;
+            margin: 15px 0 20px;
+            border: 1px solid #e5e8ef;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input,
+        textarea {
+            min-height: 38px;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+            width: 100%;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .field-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        button {
+            min-height: 38px;
+            padding: 8px 20px;
+            border: 0;
+            border-radius: 6px;
+            color: #fff;
+            background: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary {
+            color: #4c535d;
+            background: #f1f3f9;
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #edf0f5;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #606266;
+            font-weight: 600;
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            color: #909399;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .global-loader {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .global-loader.show {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="global-loader" class="global-loader">
+        <div class="spinner"></div><span id="loader-text">讀取中...</span>
+    </div>
+
+    <aside class="left">
+        <h1>美術歷程管理後台</h1>
+        <div class="admin-info">管理員：<span id="admin-name">..</span><br>帳號：<span id="admin-id">-</span></div>
+        <a href="manage.html" class="menu-link">🔙 返回主管理後台</a>
+        <a href="post-manage.html" class="menu-link active">📢 公告事項管理</a>
+        <a href="#" class="menu-link" onclick="logout()" style="color:var(--danger); margin-top:auto;">登出系統</a>
+    </aside>
+
+    <main class="right">
+        <section class="panel">
+            <h2>📢 最新公告事項管理</h2>
+            <div class="toolbar">
+                <button type="button" onclick="openPostForm('add')">➕ 發布新公告</button>
+                <button type="button" class="secondary" onclick="loadAnnouncements()">🔄 重新整理</button>
+            </div>
+
+            <div id="post-collapse" class="collapse-form">
+                <form id="post-form">
+                    <input type="hidden" id="post-action-mode" value="add">
+                    <input type="hidden" id="post-edit-id" value="">
+                    <h3 id="post-form-title" style="margin-top:0; font-size:15px;">編輯公告</h3>
+                    <div class="field-grid">
+                        <label>公告標題<input type="text" id="post-title" required placeholder="例如：115學年度第一學期美術歷程繳交說明"></label>
+                        <label>發布者顯示名稱<input type="text" id="post-author" placeholder="留空預設帶入您的名字"></label>
+                        <label>公告內容（內含網址將自動轉為超連結）
+                            <textarea id="post-content" required placeholder="請輸入公告詳細說明文字..."></textarea>
+                        </label>
+                        <label>附加檔案/附件（可選）
+                            <input type="file" id="post-attachment-file" style="min-height:auto; padding:5px;">
+                            <div id="current-attachment-box" style="display:none; margin-top:5px; font-size:13px; color:#555;">
+                                目前附件：<a id="current-attachment-link" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">附件</a>
+                                <label style="display:inline-flex; align-items:center; gap:4px; margin-left:10px; cursor:pointer; color:var(--danger); font-weight:normal;">
+                                    <input type="checkbox" id="remove-attachment-check" style="min-height:auto; width:auto;"> 移除目前附件
+                                </label>
+                            </div>
+                        </label>
+                    </div>
+                    <button type="submit">發布/儲存</button>
+                    <button type="button" class="secondary" onclick="closePostForm()">取消</button>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 160px;">發布時間</th>
+                            <th style="width: 110px;">發布者</th>
+                            <th style="width: 200px;">標題</th>
+                            <th>內容與附件</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="post-list">
+                        <tr>
+                            <td colspan="5" class="empty">資料載入中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let GAS_API_URL = "";
+        let currentUser = null;
+        let postRows = [];
+
+        function toggleGlobalLoader(show, text) {
+            const loader = document.getElementById('global-loader');
+            document.getElementById('loader-text').innerText = text || "同步中...";
+            loader.classList.toggle('show', show);
+            document.querySelectorAll('input, select, button, textarea').forEach(el => { if (!el.classList.contains('menu-link')) el.disabled = show; });
+        }
+
+        function escapeHtml(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+        }
+
+        function autoLink(text) {
+            const urlPattern = /(https?:\/\/[^\s<]+)/g;
+            return text.replace(urlPattern, '<a href="$1" target="_blank" style="color:var(--primary); text-decoration:underline;">$1</a>');
+        }
+
+        function formatDate(v) {
+            if (!v) return '-';
+            const d = new Date(v);
+            return isNaN(d.getTime()) ? escapeHtml(v) : d.toLocaleString('zh-TW');
+        }
+
+        function getAuthParams() {
+            return { adminId: currentUser?.studentId || '', studentId: currentUser?.studentId || '', sessionToken: currentUser?.sessionToken || '' };
+        }
+
+        function appendAuth(url) {
+            return url + '&' + new URLSearchParams(getAuthParams()).toString();
+        }
+
+        function forceLogout(m) {
+            sessionStorage.removeItem('user');
+            if (m) alert(m);
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            toggleGlobalLoader(true, "登出中...");
+            if (GAS_API_URL && currentUser?.sessionToken) {
+                fetch(GAS_API_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams({ action: 'logout', studentId: currentUser.studentId, sessionToken: currentUser.sessionToken })
+                }).finally(() => {
+                    sessionStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                });
+            } else {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function validateSession() {
+            return fetch(appendAuth(GAS_API_URL + '?action=validateSession'))
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.success) throw new Error(d.message);
+                    if (d.user.className !== "管理員") {
+                        window.location.href = "index.html";
+                        throw { redirect: true };
+                    }
+                    return d.user;
+                });
+        }
+
+        function apiGet(action, text) {
+            toggleGlobalLoader(true, text);
+            return fetch(appendAuth(GAS_API_URL + '?action=' + encodeURIComponent(action)))
+                .then(r => r.json())
+                .then(d => {
+                    if (d?.success === false) throw new Error(d.message);
+                    return d;
+                }).finally(() => toggleGlobalLoader(false));
+        }
+
+        function apiPost(payload, text) {
+            toggleGlobalLoader(true, text);
+            const body = new URLSearchParams(Object.assign({}, getAuthParams(), payload));
+            return fetch(GAS_API_URL, {
+                method: 'POST',
+                body: body.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).then(r => r.json()).then(d => {
+                if (d?.success === false && /登入|密鑰|逾時|權限/.test(d.message || '')) {
+                    forceLogout(d.message);
+                    throw new Error(d.message);
+                }
+                return d;
+            }).finally(() => toggleGlobalLoader(false));
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const userData = sessionStorage.getItem('user');
+            if (!userData) return window.location.href = 'login.html';
+            try { currentUser = JSON.parse(userData); } catch (e) { return window.location.href = 'login.html'; }
+            if (currentUser.className !== "管理員") return window.location.href = "index.html";
+
+            fetch('api.json').then(r => r.json()).then(config => {
+                if (config.status === 'maintenance') {
+                    window.location.href = 'fix.html';
+                    return;
+                }
+                GAS_API_URL = config.gasUrl;
+                return validateSession();
+            }).then(user => {
+                if (!user) return;
+                currentUser = user;
+                document.getElementById('admin-name').innerText = user.name ?? '管理員';
+                document.getElementById('admin-id').innerText = user.studentId ?? '-';
+                return loadAnnouncements();
+            }).catch(err => !err?.redirect && forceLogout(err?.message || '驗證失敗'));
+        });
+
+        function loadAnnouncements() {
+            return apiGet('getAnnouncements', '讀取公告列表中...').then(d => {
+                postRows = Array.isArray(d) ? d : [];
+                renderAnnouncements();
+            }).catch(() => {
+                postRows = [];
+                renderAnnouncements();
+            });
+        }
+
+        function renderAnnouncements() {
+            const tbody = document.getElementById('post-list');
+            if (!postRows.length) {
+                tbody.innerHTML = "<tr><td colspan='5'><div class='empty'>目前尚無公告事項。</div></td></tr>";
+                return;
+            }
+
+            tbody.innerHTML = postRows.map((item) => {
+                const targetId = item.id;
+                let contentHtml = autoLink(escapeHtml(item.content || '-'));
+                if (item.attachmentUrl) {
+                    contentHtml += `<br><span style="font-size:12px; color:var(--primary);">📎 附件: <a href="${escapeHtml(item.attachmentUrl)}" target="_blank" style="color:var(--primary); font-weight:bold;">${escapeHtml(item.attachmentName || '檢視')}</a></span>`;
+                }
+
+                return `
+                    <tr>
+                        <td>${formatDate(item.createdAt)}</td>
+                        <td><span style="background:#edf2ff; color:#4c6ef5; padding:3px 8px; border-radius:4px; font-weight:600; font-size:12px;">👤 ${escapeHtml(item.author || '管理員')}</span></td>
+                        <td style="font-weight:600;">${escapeHtml(item.title)}</td>
+                        <td style="color:#555; white-space:pre-wrap; max-width:300px;">${contentHtml}</td>
+                        <td>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" class="secondary" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="openPostForm('edit', ${targetId})">編輯</button>
+                                <button type="button" class="danger" style="min-height:30px; padding:4px 12px; font-size:12px;" onclick="deleteAnnouncement(${targetId})">刪除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openPostForm(mode, targetId) {
+            const f = document.getElementById('post-collapse');
+            document.getElementById('post-form-title').innerText = mode === 'edit' ? "✏️ 編輯公告" : "➕ 發布公告";
+            document.getElementById('post-action-mode').value = mode;
+            document.getElementById('post-attachment-file').value = '';
+
+            const attachBox = document.getElementById('current-attachment-box');
+            const removeCheck = document.getElementById('remove-attachment-check');
+            removeCheck.checked = false;
+
+            if (mode === 'edit' && targetId !== undefined) {
+                const item = postRows.find(r => Number(r.id) === Number(targetId));
+                if (!item) return alert("找不到該公告項目");
+
+                document.getElementById('post-edit-id').value = item.id;
+                document.getElementById('post-title').value = item.title ?? '';
+                document.getElementById('post-author').value = item.author ?? currentUser?.name ?? '管理員';
+                document.getElementById('post-content').value = item.content ?? '';
+
+                if (item.attachmentUrl) {
+                    attachBox.style.display = 'block';
+                    const link = document.getElementById('current-attachment-link');
+                    link.href = item.attachmentUrl;
+                    link.innerText = item.attachmentName || '檢視附件';
+                } else {
+                    attachBox.style.display = 'none';
+                }
+            } else {
+                document.getElementById('post-form').reset();
+                document.getElementById('post-author').value = currentUser?.name ?? '管理員';
+                attachBox.style.display = 'none';
+            }
+            f.classList.add('open');
+        }
+
+        function closePostForm() {
+            document.getElementById('post-collapse').classList.remove('open');
+        }
+
+        document.getElementById('post-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const mode = document.getElementById('post-action-mode').value;
+            const fileInput = document.getElementById('post-attachment-file');
+            const removeAttachment = document.getElementById('remove-attachment-check').checked;
+
+            const payload = {
+                action: mode === 'edit' ? 'editAnnouncement' : 'addAnnouncement',
+                id: document.getElementById('post-edit-id').value,
+                title: document.getElementById('post-title').value.trim(),
+                author: document.getElementById('post-author').value.trim() || currentUser?.name || '管理員',
+                content: document.getElementById('post-content').value.trim(),
+                removeAttachment: removeAttachment ? "true" : "false"
+            };
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                toggleGlobalLoader(true, "正在上傳附件並發布公告...");
+
+                reader.onload = function (e) {
+                    payload.attachmentBase64 = e.target.result;
+                    payload.attachmentFileName = file.name;
+                    payload.attachmentMimeType = file.type;
+
+                    apiPost(payload).then(d => {
+                        alert(d?.message || '發布成功');
+                        closePostForm();
+                        loadAnnouncements();
+                    }).catch(err => alert(err.message));
+                };
+                reader.readAsDataURL(file);
+            } else {
+                apiPost(payload).then(d => {
+                    alert(d?.message || '發布成功');
+                    closePostForm();
+                    loadAnnouncements();
+                }).catch(err => alert(err.message));
+            }
+        });
+
+        function deleteAnnouncement(id) {
+            if (confirm('確定刪除此公告嗎？')) {
+                apiPost({ action: 'deleteAnnouncement', id }).then(() => loadAnnouncements()).catch(e => alert(e.message));
+            }
+        }
+    </script>
+</body>
+
+</html>
